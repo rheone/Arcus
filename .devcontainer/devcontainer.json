@@ -22,10 +22,11 @@
 	"customizations": {
 		"vscode": {
 			"extensions": [
-				"csharpier.csharpier-vscode",
 				"anthropic.claude-code",			
+				"csharpier.csharpier-vscode",
 				"davidanson.vscode-markdownlint",
 				"esbenp.prettier-vscode",
+				"github.vscode-github-actions",
 				"ms-dotnettools.csdevkit",
 				"ms-dotnettools.csharp",
 				"ms-python.python",
