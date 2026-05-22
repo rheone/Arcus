@@ -1,0 +1,64 @@
+// For format details, see https://aka.ms/devcontainer.json. For config options, see the
+// README at: https://github.com/devcontainers/templates/tree/main/src/dotnet
+{
+	"name": "Arcus Container",
+	// Or use a Dockerfile or Docker Compose file. More info: https://containers.dev/guide/dockerfile
+	"image": "mcr.microsoft.com/devcontainers/dotnet:10.0",
+
+	"runArgs": [
+		"--name",
+		"arcus-devcontainer"
+	],
+
+	// Features to add to the dev container. More info: https://containers.dev/features.
+	"features": {
+		"ghcr.io/devcontainers/features/powershell:2": {},
+		"ghcr.io/devcontainers/features/python:1": {},
+		"ghcr.io/jsburckhardt/devcontainer-features/opencode:1": {},
+		"ghcr.io/nikiforovall/devcontainer-features/dotnet-csharpier:1": {}
+		// "ghcr.io/siri404/devcontainer-ai-features/claude-code:1": {}
+    },
+
+	"customizations": {
+		"vscode": {
+			"extensions": [
+				"csharpier.csharpier-vscode",
+				"anthropic.claude-code",			
+				"davidanson.vscode-markdownlint",
+				"esbenp.prettier-vscode",
+				"ms-dotnettools.csdevkit",
+				"ms-dotnettools.csharp",
+				"ms-python.python",
+				"ms-vscode.powershell",
+				"oderwat.indent-rainbow",
+				"streetsidesoftware.code-spell-checker",
+				"tyriar.sort-lines",
+				"yzhang.markdown-all-in-one"
+			],
+			"settings": {
+				"files.encoding": "utf8bom",
+				"files.autoGuessEncoding": false,
+				"files.eol": "\r\n",
+				"editor.formatOnSave": true,
+			}
+		}
+	},
+
+	// Use 'forwardPorts' to make a list of ports inside the container available locally.
+	// "forwardPorts": [5000, 5001],
+	// "portsAttributes": {
+	//		"5001": {
+	//			"protocol": "https"
+	//		}
+	// }
+
+	// Use 'postCreateCommand' to run commands after the container is created.
+	"postCreateCommand": "dotnet restore src/Arcus.sln",
+	"postStartCommand": "git config --global --add safe.directory ${containerWorkspaceFolder}"
+
+	// Configure tool-specific properties.
+	// "customizations": {},
+
+	// Uncomment to connect as root instead. More info: https://aka.ms/dev-containers-non-root.
+	// "remoteUser": "root"
+}
