@@ -84,6 +84,11 @@ TryExcludeAll
 
 ``TryExcludeAll`` is a tricky beast, but if you're willing to take the time to tame it'll not only respect you, but it may also take care of you in very specific cases. The method takes a ``IPAddressRange initialRange`` and with that it attempts to systematically remove each of the sub ranges defined within ``IEnumerable<IPAddressRange> excludedRanges``. On success, the operation returns ``true`` and will *out* an ``IEnumerable<IPAddressRange> result`` which is comprised of a distinct remaining ranges after ``excludedRanges`` have been carved out.
 
+.. note::
+
+   A return value of ``false`` signals an error condition (null input, address-family mismatch, or null elements in ``excludedRanges``), **not** an empty result set. A ``true`` return with an empty ``result`` means the exclusions cover the entire ``initialRange``.
+
+   **Family-boundary behavior:** when an exclusion ends at the family maximum address (e.g., ``255.255.255.255`` for IPv4) no trailing segment can be produced; the method returns ``true`` with only the leading segment (which may itself be empty). When an exclusion starts at the family minimum address (e.g., ``0.0.0.0``) no leading segment can be produced; the method returns ``true`` with only the trailing segment.
 
 .. code-block:: c#
 

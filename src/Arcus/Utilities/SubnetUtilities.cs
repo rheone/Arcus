@@ -12,9 +12,24 @@ namespace Arcus.Utilities
     public static class SubnetUtilities
     {
         /// <summary>
-        ///     A collection of all known private IP Address ranges
+        ///     A collection of all known private IP Address ranges.
         /// </summary>
-        public static IReadOnlyList<Subnet> PrivateIPAddressRangesList = new[]
+        /// <remarks>
+        ///     <para>
+        ///         Contains the four RFC-defined private/ULA address blocks:
+        ///         <c>10.0.0.0/8</c> (RFC 1918), <c>172.16.0.0/12</c> (RFC 1918),
+        ///         <c>192.168.0.0/16</c> (RFC 1918), and <c>fd00::/8</c> (RFC 4193 ULA).
+        ///     </para>
+        ///     <para>
+        ///         <b>Breaking change (readonly):</b> This field is now <see langword="readonly" />.
+        ///         Prior to this version the field reference could be reassigned by external code.
+        ///         Code that assigned to <c>SubnetUtilities.PrivateIPAddressRangesList = ...</c>
+        ///         will no longer compile. The <see cref="IReadOnlyList{T}" /> contract already
+        ///         prevented mutation of the list contents; this change extends that guarantee to
+        ///         the field reference itself.
+        ///     </para>
+        /// </remarks>
+        public static readonly IReadOnlyList<Subnet> PrivateIPAddressRangesList = new[]
         {
             // IPv4 RFC 1918
             Subnet.Parse("10.0.0.0", 8),
@@ -25,9 +40,21 @@ namespace Arcus.Utilities
         }.ToList().AsReadOnly();
 
         /// <summary>
-        ///     A collection of all known Link Local IP Address ranges
+        ///     A collection of all known Link Local IP Address ranges.
         /// </summary>
-        public static IReadOnlyList<Subnet> LinkLocalIPAddressRangesList = new[]
+        /// <remarks>
+        ///     <para>
+        ///         Contains <c>169.254.0.0/16</c> (RFC 3927 IPv4 link-local) and
+        ///         <c>fe80::/10</c> (RFC 4291 IPv6 link-local).
+        ///     </para>
+        ///     <para>
+        ///         <b>Breaking change (readonly):</b> This field is now <see langword="readonly" />.
+        ///         Prior to this version the field reference could be reassigned by external code.
+        ///         Code that assigned to <c>SubnetUtilities.LinkLocalIPAddressRangesList = ...</c>
+        ///         will no longer compile.
+        ///     </para>
+        /// </remarks>
+        public static readonly IReadOnlyList<Subnet> LinkLocalIPAddressRangesList = new[]
         {
             // RFC 3927
             Subnet.Parse("169.254.0.0", 16),

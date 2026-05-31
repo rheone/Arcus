@@ -3,6 +3,10 @@ Subnet Utilities
 
 ``Arcus.Utilities.SubnetUtilities`` is a static utility class containing miscellaneous operations for :ref:`Subnet` and collections there of. It is a catchall for methods and functionally that didn't make sense on the ``Subnet`` class itself.
 
+.. warning::
+
+   **Breaking change:** ``PrivateIPAddressRangesList`` and ``LinkLocalIPAddressRangesList`` are now declared ``readonly``. Code that previously reassigned either field (e.g., ``SubnetUtilities.PrivateIPAddressRangesList = myList``) will no longer compile. The ``IReadOnlyList<Subnet>`` type already prevented mutation of the list contents; ``readonly`` now extends that guarantee to the field reference itself.
+
 find Fewest Consecutive Subnets
 -------------------------------
 

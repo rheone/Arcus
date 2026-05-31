@@ -293,9 +293,8 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Rebuild the initial range as an <see cref="IEnumerable{T}" /> of ranges excluding the excluded ranges
-        ///     excluded ranges are expected to each be sub ranges of the initial range
-        ///     an attempt will be made to TryCollapseAll the excluded
+        ///     Rebuild the initial range as an <see cref="IEnumerable{T}" /> of ranges excluding the excluded ranges.
+        ///     Excluded ranges are expected to each be sub-ranges of the initial range.
         /// </summary>
         /// <param name="initialRange">the initial <see cref="IPAddressRange" /> to exclude from</param>
         /// <param name="excludedRanges">
@@ -303,16 +302,34 @@ namespace Arcus
         ///     <paramref name="initialRange" />
         /// </param>
         /// <param name="result">the resulting  <see cref="IPAddressRange" /> <see cref="IEnumerable{T}" /></param>
-        /// <exception cref="InvalidOperationException">unexpected invalid operation.</exception>
         /// <returns>true on success</returns>
+        /// <remarks>
+        ///     <para>
+        ///         A return value of <see langword="false" /> indicates an error condition (null input, address-family mismatch,
+        ///         or null elements in <paramref name="excludedRanges" />), not an empty result set. A <see langword="true" />
+        ///         return with an empty <paramref name="result" /> means the exclusions cover the entire
+        ///         <paramref name="initialRange" />.
+        ///     </para>
+        ///     <para>
+        ///         <b>Family-maximum boundary:</b> when an exclusion ends at the family maximum address
+        ///         (e.g., <c>255.255.255.255</c> for IPv4 or <c>ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff</c> for IPv6),
+        ///         no trailing segment can be produced after it. The method returns <see langword="true" /> with only the
+        ///         leading segment in <paramref name="result" /> (which may itself be empty if the exclusion also covers
+        ///         the start of the range).
+        ///     </para>
+        ///     <para>
+        ///         <b>Family-minimum boundary:</b> when an exclusion starts at the family minimum address
+        ///         (e.g., <c>0.0.0.0</c> for IPv4 or <c>::</c> for IPv6), no leading segment can be produced before it.
+        ///         The method returns <see langword="true" /> with only the trailing segment in <paramref name="result" />
+        ///         (which may itself be empty if the exclusion also covers the end of the range).
+        ///     </para>
+        /// </remarks>
         public static bool TryExcludeAll(
             IPAddressRange initialRange,
             IEnumerable<IPAddressRange> excludedRanges,
             out IEnumerable<IPAddressRange> result
         )
         {
-            // TODO the logical flow here is confusing, see if it can be cleaned up a bit
-
             if (initialRange is null || excludedRanges is null)
             {
                 result = Enumerable.Empty<IPAddressRange>();
@@ -328,15 +345,14 @@ namespace Arcus
                 return false;
             }
 
-            // no rangers to exclude, out copy of original
+            // no ranges to exclude; return copy of original
             if (!excludedRangesList.Any())
             {
                 result = new List<IPAddressRange> { new IPAddressRange(initialRange.Head, initialRange.Tail) };
-
                 return true;
             }
 
-            // all families don't match match
+            // all families must match
             if (excludedRangesList.Any(r => r.AddressFamily != initialRange.AddressFamily))
             {
                 result = Enumerable.Empty<IPAddressRange>();
@@ -354,38 +370,67 @@ namespace Arcus
                 if (exclusion.Contains(last))
                 {
                     resultList.RemoveAt(lastIndex);
-                    break; // can't loop any more
+                    break;
                 }
 
                 if (exclusion.Contains(initialRange.Tail))
                 {
-                    var head = resultList[lastIndex].Head;
-                    var tail = exclusion.Head.Increment(-1);
-                    resultList[lastIndex] = new IPAddressRange(head, tail);
-                    continue; // can't loop any more
+                    // exclusion reaches the end of the initial range; no trailing segment possible.
+                    // Retain the leading segment only if the exclusion does not also start at the family minimum.
+                    if (!exclusion.Head.IsAtMin())
+                    {
+                        var head = resultList[lastIndex].Head;
+                        var tail = exclusion.Head.Increment(-1);
+                        resultList[lastIndex] = new IPAddressRange(head, tail);
+                    }
+                    else
+                    {
+                        // exclusion starts at the family minimum; nothing remains
+                        resultList.RemoveAt(lastIndex);
+                    }
+
+                    break;
                 }
 
-                // exclusion contains head
+                // exclusion contains head of remaining segment
                 if (exclusion.Contains(last.Head))
                 {
+                    if (exclusion.Tail.IsAtMax())
+                    {
+                        // exclusion reaches the family maximum; nothing remains in this segment
+                        resultList.RemoveAt(lastIndex);
+                        break;
+                    }
+
                     // push head one point beyond tail of exclusion
                     var head = exclusion.Tail.Increment();
                     var tail = resultList[lastIndex].Tail;
                     resultList[lastIndex] = new IPAddressRange(head, tail);
-                    continue; // next iteration
+                    continue;
                 }
 
-                // exclusion is within last, carve exclusion to two pieces
+                // exclusion is within last; carve last into a leading and trailing segment
                 if (!last.Overlaps(exclusion))
                 {
-                    throw new InvalidOperationException("An unexpected overlap check operation occurred"); // should not have made it here
+                    throw new InvalidOperationException("An unexpected overlap check operation occurred");
                 }
 
-                resultList[lastIndex] = new IPAddressRange(resultList[lastIndex].Head, exclusion.Head.Increment(-1));
+                if (!exclusion.Head.IsAtMin())
+                {
+                    // retain the leading segment up to one address before the exclusion starts
+                    resultList[lastIndex] = new IPAddressRange(resultList[lastIndex].Head, exclusion.Head.Increment(-1));
+                }
+                else
+                {
+                    // exclusion starts at the family minimum; no leading segment
+                    resultList.RemoveAt(lastIndex);
+                }
 
-                // carve out a piece at starting at exclusion head, ending at exclusion tail
-                // thus meaning one less than head at previous, and one more at head at next
-                resultList.Add(new IPAddressRange(exclusion.Tail.Increment(), initialRange.Tail));
+                if (!exclusion.Tail.IsAtMax())
+                {
+                    // add the trailing segment from one address after the exclusion ends to the end of the initial range
+                    resultList.Add(new IPAddressRange(exclusion.Tail.Increment(), initialRange.Tail));
+                }
             }
 
             result = resultList;

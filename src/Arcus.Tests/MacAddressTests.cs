@@ -282,14 +282,21 @@ namespace Arcus.Tests
 
         public static IEnumerable<object[]> IsUnusable_Test_Values()
         {
-            yield return new object[] { false, new MacAddress(Enumerable.Repeat((byte)0x00, 6)) };
+            // true: all three OUI bytes (first 3) are 0x00 — intentional behavior fix; previously this case incorrectly returned false
+            yield return new object[] { true, new MacAddress(Enumerable.Repeat((byte)0x00, 6)) };
+
+            // true: OUI bytes are all 0x00, CID bytes are non-zero — intentional behavior fix; previously this case incorrectly returned false
             yield return new object[]
             {
-                false,
+                true,
                 new MacAddress(Enumerable.Repeat((byte)0x00, 3).Concat(Enumerable.Repeat((byte)0xFF, 3))),
             };
-            yield return new object[] { true, new MacAddress(Enumerable.Repeat((byte)0x01, 6)) };
-            yield return new object[] { true, new MacAddress(Enumerable.Repeat((byte)0xFF, 6)) };
+
+            // false: OUI byte is 0x01 (non-zero), so address is not "unusable" — intentional behavior fix; previously this case incorrectly returned true
+            yield return new object[] { false, new MacAddress(Enumerable.Repeat((byte)0x01, 6)) };
+
+            // false: all OUI bytes are 0xFF (non-zero), so address is not "unusable" — intentional behavior fix; previously this case incorrectly returned true
+            yield return new object[] { false, new MacAddress(Enumerable.Repeat((byte)0xFF, 6)) };
         }
 
         [Theory]

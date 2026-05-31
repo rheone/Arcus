@@ -11,9 +11,31 @@
 
 Arcus is a C# manipulation library for calculating, parsing, formatting, converting, and comparing both IPv4 and IPv6 addresses and subnets. It accounts for 128-bit numbers on 32-bit platforms.
 
-## ❗Breaking Changes in Version 3+
+## ❗Breaking Changes
 
-### IP Address Parsing based on .NET Targets
+### `SubnetUtilities.PrivateIPAddressRangesList` and `LinkLocalIPAddressRangesList` are now `readonly`
+
+The two public static fields `SubnetUtilities.PrivateIPAddressRangesList` and `SubnetUtilities.LinkLocalIPAddressRangesList` are now declared `readonly`. Previously the field *reference* could be replaced by external code (e.g., `SubnetUtilities.PrivateIPAddressRangesList = myList`). That pattern will no longer compile. The `IReadOnlyList<Subnet>` type already prevented mutation of the list *contents*; `readonly` now also prevents replacement of the list itself.
+
+**Migration:** If you were replacing these fields to customize private-address detection, extract that logic into a separate variable and pass it explicitly to your own helper methods.
+
+---
+
+### Behavior corrections (non-breaking for correct usage)
+
+The following bugs have been fixed. If your code was intentionally relying on the incorrect behavior, you will need to update it.
+
+| Type / Member | Previous (incorrect) | Fixed |
+| --- | --- | --- |
+| `AbstractIPAddressRange.Overlaps(IIPAddressRange)` | `B.Overlaps(A)` returned `false` when B was wholly inside A | Both directions now return `true` (symmetric) |
+| `AbstractIPAddressRange.ContainsAnyPrivateAddresses()` | Checked only endpoints; missed ranges that span a private block with public endpoints | Uses range-overlap detection across `PrivateIPAddressRangesList` |
+| `AbstractIPAddressRange.ContainsAllPublicAddresses()` | Checked only endpoints; returned `true` for ranges whose endpoints are public but whose interior spans a private block | Uses range-overlap detection |
+| `IPAddressRange.TryExcludeAll` | Threw `InvalidOperationException` when an exclusion ended at the family maximum address | Returns `(true, leading segment)` or `(true, [])` as appropriate |
+| `MacAddress.IsUnusable` | Returned `true` for almost every real MAC address (implementation was logically inverted relative to its documentation) | Returns `true` only when all three OUI bytes are `0x00` |
+
+---
+
+### Version 3+ — IP Address Parsing based on .NET Targets
 
 In .NET versions up to and including .NET 4.8 (which corresponds to .NET Standard 2.0), stricter parsing rules were enforced for `IPAddress` according to the IPv6 specification. Specifically, the presence of a terminal '%' character without a valid zone index is considered invalid in these versions. As a result, the input `abcd::%` fails to parse, leading to a null or failed address parsing depending on `Parse`/`TryParse`. This behavior represents a breaking change from Arcus's previous target of .NET Standard 1.3. and may provide confusion for .NET 4.8 / .NET Standard 2.0 versions.
 

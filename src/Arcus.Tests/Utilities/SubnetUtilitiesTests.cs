@@ -8,7 +8,6 @@ using Xunit;
 
 namespace Arcus.Tests.Utilities
 {
-#pragma warning disable SA1404
     public class SubnetUtilitiesTests
     {
         #region PrivateIPAddressRangesList
@@ -32,10 +31,8 @@ namespace Arcus.Tests.Utilities
             Assert.IsAssignableFrom<IReadOnlyList<Subnet>>(list);
             Assert.Equal(4, list.Count);
             Assert.Equal(list.Count, list.Distinct().Count());
-
             Assert.Contains(list, s => s.IsIPv4);
             Assert.Contains(list, s => s.IsIPv6);
-
             Assert.All(
                 list,
                 subnet =>
@@ -46,7 +43,7 @@ namespace Arcus.Tests.Utilities
             );
         }
 
-        #endregion end: PrivateIPAddressRangesList
+        #endregion // end: PrivateIPAddressRangesList
 
         #region LinkLocalIPAddressRangesList
 
@@ -63,10 +60,8 @@ namespace Arcus.Tests.Utilities
             Assert.IsAssignableFrom<IReadOnlyList<Subnet>>(list);
             Assert.Equal(2, list.Count);
             Assert.Equal(list.Count, list.Distinct().Count());
-
             Assert.Contains(list, s => s.IsIPv4);
             Assert.Contains(list, s => s.IsIPv6);
-
             Assert.All(
                 list,
                 subnet =>
@@ -77,12 +72,15 @@ namespace Arcus.Tests.Utilities
             );
         }
 
-        #endregion end: LinkLocalIPAddressRangesList
+        #endregion // end: LinkLocalIPAddressRangesList
 
         #region FewestConsecutiveSubnetsFor
 
-        public static IEnumerable<object[]> FewestConsecutiveSubnetsFor_Test_Values()
+        // IEnumerable<object[]> is required here because IEnumerable<Subnet> is not an xUnit-serializable type
+        // and cannot be used as a TheoryData<> type parameter directly.
+        public static IEnumerable<object[]> FewestConsecutiveSubnetsFor_ValidInputs_ReturnsExpectedSubnets_Test_Data()
         {
+            // single IPv4 address (same left and right)
             yield return new object[]
             {
                 new[] { Subnet.Parse("128.64.20.3/32") },
@@ -90,6 +88,7 @@ namespace Arcus.Tests.Utilities
                 IPAddress.Parse("128.64.20.3"),
             };
 
+            // small IPv4 range
             yield return new object[]
             {
                 new[] { "128.64.20.3/32", "128.64.20.4/30", "128.64.20.8/30", "128.64.20.12/32" }.Select(s => Subnet.Parse(s)),
@@ -97,6 +96,7 @@ namespace Arcus.Tests.Utilities
                 IPAddress.Parse("128.64.20.12"),
             };
 
+            // small IPv4 range (reversed order — verifies min/max normalization)
             yield return new object[]
             {
                 new[] { "128.64.20.3/32", "128.64.20.4/30", "128.64.20.8/30", "128.64.20.12/32" }.Select(s => Subnet.Parse(s)),
@@ -104,6 +104,7 @@ namespace Arcus.Tests.Utilities
                 IPAddress.Parse("128.64.20.3"),
             };
 
+            // IPv4 range ending in /31
             yield return new object[]
             {
                 new[] { "192.168.1.3/32", "192.168.1.4/31" }.Select(s => Subnet.Parse(s)),
@@ -111,6 +112,7 @@ namespace Arcus.Tests.Utilities
                 IPAddress.Parse("192.168.1.5"),
             };
 
+            // single IPv6 address (same left and right)
             yield return new object[]
             {
                 new[] { Subnet.Parse("2001:400:4402::/128") },
@@ -118,6 +120,7 @@ namespace Arcus.Tests.Utilities
                 IPAddress.Parse("2001:400:4402::"),
             };
 
+            // full IPv6 /48 block — exact subnet boundary
             yield return new object[]
             {
                 new[] { Subnet.Parse("2001:400:4402::/48") },
@@ -125,6 +128,7 @@ namespace Arcus.Tests.Utilities
                 IPAddress.Parse("2001:400:4402:ffff:ffff:ffff:ffff:ffff"),
             };
 
+            // complex IPv6 range crossing many subnet boundaries
             yield return new object[]
             {
                 new[]
@@ -199,6 +203,7 @@ namespace Arcus.Tests.Utilities
                 IPAddress.Parse("2001:400:4402:ffff:ffff:ffff:ffff:ffff"),
             };
 
+            // near-full IPv4 range (0.0.0.1 to 255.255.255.254)
             yield return new object[]
             {
                 new[]
@@ -270,6 +275,7 @@ namespace Arcus.Tests.Utilities
                 IPAddress.Parse("255.255.255.254"),
             };
 
+            // near-full IPv6 range (::1 to ffff:...:fffe)
             yield return new object[]
             {
                 new[]
@@ -535,10 +541,16 @@ namespace Arcus.Tests.Utilities
         }
 
         [Theory]
-        [MemberData(nameof(FewestConsecutiveSubnetsFor_Test_Values))]
-        public void FewestConsecutiveSubnetsFor_Test(IEnumerable<Subnet> expected, IPAddress left, IPAddress right)
+        [MemberData(nameof(FewestConsecutiveSubnetsFor_ValidInputs_ReturnsExpectedSubnets_Test_Data))]
+        public void FewestConsecutiveSubnetsFor_ValidInputs_ReturnsExpectedSubnets_Test(
+            IEnumerable<Subnet> expected,
+            IPAddress left,
+            IPAddress right
+        )
         {
             // Arrange
+            var expectedList = expected.ToList();
+
             // Act
             var result = SubnetUtilities.FewestConsecutiveSubnetsFor(left, right).ToList();
 
@@ -546,52 +558,53 @@ namespace Arcus.Tests.Utilities
             Assert.NotNull(result);
             Assert.NotEmpty(result);
             Assert.All(result, Assert.NotNull);
-
-            var expectedList = expected.ToList();
-
-            // Assert.Equal(expectedList, result); // directly calling Assert.Equals results in unexpected behavior; unwinding equality explicitly
             Assert.Equal(expectedList.Count, result.Count);
             Assert.All(expectedList, subnet => Assert.Contains(subnet, result));
             Assert.All(result, subnet => Assert.Contains(subnet, expectedList));
-
-            Assert.True(result.SequenceEqual(new SortedSet<Subnet>(result, new DefaultIPAddressRangeComparer())));
+            Assert.True(result.SequenceEqual(new SortedSet<Subnet>(result, new DefaultIIPAddressRangeComparer())));
         }
 
-        public static IEnumerable<object[]> FewestConsecutiveSubnetsFor_MissMatchAddressFamilies_ThrowsInvalidOperationException_Test_Values()
-        {
-            yield return new object[] { IPAddress.Any, IPAddress.IPv6Any };
-            yield return new object[] { IPAddress.IPv6Any, IPAddress.Any };
-        }
+        public static TheoryData<
+            IPAddress,
+            IPAddress
+        > FewestConsecutiveSubnetsFor_MismatchedAddressFamilies_ThrowsInvalidOperationException_Test_Data =>
+            new TheoryData<IPAddress, IPAddress> { { IPAddress.Any, IPAddress.IPv6Any }, { IPAddress.IPv6Any, IPAddress.Any } };
 
         [Theory]
-        [MemberData(nameof(FewestConsecutiveSubnetsFor_MissMatchAddressFamilies_ThrowsInvalidOperationException_Test_Values))]
-        public void FewestConsecutiveSubnetsFor_MissMatchAddressFamilies_ThrowsInvalidOperationException_Test(
-            IPAddress alpha,
-            IPAddress beta
+        [MemberData(nameof(FewestConsecutiveSubnetsFor_MismatchedAddressFamilies_ThrowsInvalidOperationException_Test_Data))]
+        public void FewestConsecutiveSubnetsFor_MismatchedAddressFamilies_ThrowsInvalidOperationException_Test(
+            IPAddress left,
+            IPAddress right
         )
         {
+            // Arrange
             // Act
             // Assert
-            Assert.Throws<InvalidOperationException>(() => SubnetUtilities.FewestConsecutiveSubnetsFor(alpha, beta));
+            Assert.Throws<InvalidOperationException>(() => SubnetUtilities.FewestConsecutiveSubnetsFor(left, right));
         }
 
-        public static IEnumerable<object[]> FewestConsecutiveSubnetsFor_Input_Null_ThrowsArgumentNullException_Test_Values()
-        {
-            yield return new object[] { null, null };
-            yield return new object[] { IPAddress.Any, null };
-            yield return new object[] { null, IPAddress.Any };
-        }
+        public static TheoryData<
+            IPAddress,
+            IPAddress
+        > FewestConsecutiveSubnetsFor_NullArgument_ThrowsArgumentNullException_Test_Data =>
+            new TheoryData<IPAddress, IPAddress>
+            {
+                { null, null },
+                { IPAddress.Any, null },
+                { null, IPAddress.Any },
+            };
 
         [Theory]
-        [MemberData(nameof(FewestConsecutiveSubnetsFor_Input_Null_ThrowsArgumentNullException_Test_Values))]
-        public void FewestConsecutiveSubnetsFor_Input_Null_ThrowsArgumentNullException_Test(IPAddress alpha, IPAddress beta)
+        [MemberData(nameof(FewestConsecutiveSubnetsFor_NullArgument_ThrowsArgumentNullException_Test_Data))]
+        public void FewestConsecutiveSubnetsFor_NullArgument_ThrowsArgumentNullException_Test(IPAddress left, IPAddress right)
         {
+            // Arrange
             // Act
             // Assert
-            Assert.Throws<ArgumentNullException>(() => SubnetUtilities.FewestConsecutiveSubnetsFor(alpha, beta));
+            Assert.Throws<ArgumentNullException>(() => SubnetUtilities.FewestConsecutiveSubnetsFor(left, right));
         }
 
-        #endregion
+        #endregion // end: FewestConsecutiveSubnetsFor
 
         #region LargestSubnet
 
@@ -639,15 +652,24 @@ namespace Arcus.Tests.Utilities
         }
 
         [Fact]
-        public void LargestSubnet_Single_ReturnSingle_Test()
+        public void LargestSubnet_AllNullElements_ThrowsInvalidOperationException_Test()
+        {
+            // Arrange
+            var subnets = new Subnet[] { null, null, null };
+
+            // Act
+            // Assert
+            Assert.Throws<InvalidOperationException>(() => SubnetUtilities.LargestSubnet(subnets));
+        }
+
+        [Fact]
+        public void LargestSubnet_Single_ReturnsSingle_Test()
         {
             // Arrange
             var expected = new Subnet(IPAddress.Any, 16);
-
             var subnets = new[] { expected };
 
             // Act
-
             var result = SubnetUtilities.LargestSubnet(subnets);
 
             // Assert
@@ -659,18 +681,16 @@ namespace Arcus.Tests.Utilities
         {
             // Arrange
             var expected = new Subnet(IPAddress.Any, 16);
-
             var subnets = new[] { expected, new Subnet(IPAddress.Any, 24), new Subnet(IPAddress.Any, 32) };
 
             // Act
-
             var result = SubnetUtilities.LargestSubnet(subnets);
 
             // Assert
             Assert.Same(expected, result);
         }
 
-        #endregion
+        #endregion // end: LargestSubnet
 
         #region SmallestSubnet
 
@@ -718,11 +738,21 @@ namespace Arcus.Tests.Utilities
         }
 
         [Fact]
-        public void SmallestSubnet_Single_ReturnSingle_Test()
+        public void SmallestSubnet_AllNullElements_ThrowsInvalidOperationException_Test()
+        {
+            // Arrange
+            var subnets = new Subnet[] { null, null, null };
+
+            // Act
+            // Assert
+            Assert.Throws<InvalidOperationException>(() => SubnetUtilities.SmallestSubnet(subnets));
+        }
+
+        [Fact]
+        public void SmallestSubnet_Single_ReturnsSingle_Test()
         {
             // Arrange
             var expected = new Subnet(IPAddress.Any, 16);
-
             var subnets = new[] { expected };
 
             // Act
@@ -733,21 +763,19 @@ namespace Arcus.Tests.Utilities
         }
 
         [Fact]
-        public void SmallestSubnet_ReturnsSmallestSubnet_Test()
+        public void SmallestSubnet_ReturnsSmallest_Test()
         {
             // Arrange
             var expected = new Subnet(IPAddress.Any, 32);
-
             var subnets = new[] { expected, new Subnet(IPAddress.Any, 24), new Subnet(IPAddress.Any, 16) };
 
             // Act
-
             var result = SubnetUtilities.SmallestSubnet(subnets);
 
             // Assert
             Assert.Same(expected, result);
         }
 
-        #endregion
+        #endregion // end: SmallestSubnet
     }
 }

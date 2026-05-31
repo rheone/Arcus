@@ -134,8 +134,8 @@ namespace Arcus
         public bool IsDefault => this.Equals(DefaultMacAddress);
 
         /// <summary>Gets a value indicating whether checks if the MAC Address is "unusable"</summary>
-        /// <value>returns <see true="true" /> if all the OUI bits of the MAC Address are unset</value>
-        public bool IsUnusable => this._address.Take(3).Any(b => b != 0);
+        /// <value>returns <see langword="true" /> if all three OUI bytes (the first three bytes) of the MAC Address are <c>0x00</c></value>
+        public bool IsUnusable => this._address.Take(3).All(b => b == 0);
 
         #region From Interface IComparable
 

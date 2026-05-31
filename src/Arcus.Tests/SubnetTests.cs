@@ -70,25 +70,28 @@ namespace Arcus.Tests
 
         #region CompareTo / Operators
 
-        public static IEnumerable<object[]> Comparison_Values()
+        public static TheoryData<int, Subnet, Subnet> Comparison_Values()
         {
-            yield return new object[] { 0, Subnet.Parse("192.168.0.0/16"), Subnet.Parse("192.168.0.0/16") };
-            yield return new object[] { 0, Subnet.Parse("ab:cd::/64"), Subnet.Parse("ab:cd::/64") };
-            yield return new object[] { 1, Subnet.Parse("192.168.0.0/16"), null };
-            yield return new object[] { 1, Subnet.Parse("ab:cd::/64"), null };
-            yield return new object[] { 1, Subnet.Parse("192.168.0.0/16"), Subnet.Parse("192.168.0.0/20") };
-            yield return new object[] { -1, Subnet.Parse("192.168.0.0/20"), Subnet.Parse("192.168.0.0/16") };
-            yield return new object[] { 1, Subnet.Parse("ab:cd::/64"), Subnet.Parse("ab:cd::/96") };
-            yield return new object[] { -1, Subnet.Parse("ab:cd::/96"), Subnet.Parse("ab:cd::/64") };
-            yield return new object[] { -1, Subnet.Parse("0.0.0.0/0"), Subnet.Parse("::/0") };
-            yield return new object[] { 1, Subnet.Parse("::/0"), Subnet.Parse("0.0.0.0/0") };
-            yield return new object[] { -1, Subnet.Parse("0.0.0.0/32"), Subnet.Parse("::/128") };
-            yield return new object[] { 1, Subnet.Parse("::/128"), Subnet.Parse("0.0.0.0/32") };
+            return new TheoryData<int, Subnet, Subnet>
+            {
+                { 0, Subnet.Parse("192.168.0.0/16"), Subnet.Parse("192.168.0.0/16") },
+                { 0, Subnet.Parse("ab:cd::/64"), Subnet.Parse("ab:cd::/64") },
+                { 1, Subnet.Parse("192.168.0.0/16"), null },
+                { 1, Subnet.Parse("ab:cd::/64"), null },
+                { 1, Subnet.Parse("192.168.0.0/16"), Subnet.Parse("192.168.0.0/20") },
+                { -1, Subnet.Parse("192.168.0.0/20"), Subnet.Parse("192.168.0.0/16") },
+                { 1, Subnet.Parse("ab:cd::/64"), Subnet.Parse("ab:cd::/96") },
+                { -1, Subnet.Parse("ab:cd::/96"), Subnet.Parse("ab:cd::/64") },
+                { -1, Subnet.Parse("0.0.0.0/0"), Subnet.Parse("::/0") },
+                { 1, Subnet.Parse("::/0"), Subnet.Parse("0.0.0.0/0") },
+                { -1, Subnet.Parse("0.0.0.0/32"), Subnet.Parse("::/128") },
+                { 1, Subnet.Parse("::/128"), Subnet.Parse("0.0.0.0/32") },
+            };
         }
 
         [Theory]
         [MemberData(nameof(Comparison_Values))]
-        public void CompareTo_Test(int expected, Subnet left, Subnet right)
+        public void CompareTo_Subnet_ReturnsExpectedSign_Test(int expected, Subnet left, Subnet right)
         {
             // Arrange
             // Act
@@ -96,6 +99,43 @@ namespace Arcus.Tests
 
             // Assert
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void CompareTo_Object_NonSubnet_Throws_ArgumentException_Test()
+        {
+            // Arrange
+            var subnet = Subnet.Parse("192.168.0.0/16");
+
+            // Act / Assert
+            Assert.Throws<ArgumentException>(() => subnet.CompareTo("not a subnet"));
+        }
+
+        [Fact]
+        public void CompareTo_Object_Null_ReturnsPositive_Test()
+        {
+            // Arrange
+            var subnet = Subnet.Parse("192.168.0.0/16");
+
+            // Act
+            var result = subnet.CompareTo((object)null);
+
+            // Assert
+            Assert.Equal(1, result);
+        }
+
+        [Fact]
+        public void CompareTo_Object_SubnetBox_ReturnsZero_Test()
+        {
+            // Arrange
+            var subnet = Subnet.Parse("192.168.0.0/16");
+            object boxed = Subnet.Parse("192.168.0.0/16");
+
+            // Act
+            var result = subnet.CompareTo(boxed);
+
+            // Assert
+            Assert.Equal(0, result);
         }
 
         [Theory]
@@ -170,7 +210,49 @@ namespace Arcus.Tests
             Assert.Equal(expected <= 0, result);
         }
 
-        #endregion
+        [Fact]
+        public void Operator_LessThan_NullLeft_NonNullRight_ReturnsTrue_Test()
+        {
+            // Arrange
+            Subnet left = null;
+            var right = Subnet.Parse("192.168.0.0/16");
+
+            // Act
+            var result = left < right;
+
+            // Assert
+            Assert.True(result);
+        }
+
+        [Fact]
+        public void Operator_LessThan_BothNull_ReturnsFalse_Test()
+        {
+            // Arrange
+            Subnet left = null;
+            Subnet right = null;
+
+            // Act
+            var result = left < right;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void Operator_GreaterThan_NullLeft_ReturnsFalse_Test()
+        {
+            // Arrange
+            Subnet left = null;
+            var right = Subnet.Parse("192.168.0.0/16");
+
+            // Act
+            var result = left > right;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        #endregion // end: CompareTo / Operators
 
         #region Netmask
 
@@ -187,7 +269,53 @@ namespace Arcus.Tests
             Assert.Null(netmask);
         }
 
+        [Fact]
+        public void Netmask_NotNull_ForIPv4_Test()
+        {
+            // Arrange
+            var subnet = new Subnet(IPAddress.Parse("192.168.1.0"), 24);
+
+            // Act
+            var netmask = subnet.Netmask;
+
+            // Assert
+            Assert.NotNull(netmask);
+            Assert.Equal(IPAddress.Parse("255.255.255.0"), netmask);
+        }
+
         #endregion // end: Netmask
+
+        #region NetworkPrefixAddress / BroadcastAddress
+
+        [Fact]
+        public void NetworkPrefixAddress_EqualsHead_Test()
+        {
+            // Arrange
+            var subnet = Subnet.Parse("192.168.1.0/24");
+
+            // Act
+            var networkPrefix = subnet.NetworkPrefixAddress;
+
+            // Assert
+            Assert.Equal(subnet.Head, networkPrefix);
+            Assert.Equal(IPAddress.Parse("192.168.1.0"), networkPrefix);
+        }
+
+        [Fact]
+        public void BroadcastAddress_EqualsTail_Test()
+        {
+            // Arrange
+            var subnet = Subnet.Parse("192.168.1.0/24");
+
+            // Act
+            var broadcast = subnet.BroadcastAddress;
+
+            // Assert
+            Assert.Equal(subnet.Tail, broadcast);
+            Assert.Equal(IPAddress.Parse("192.168.1.255"), broadcast);
+        }
+
+        #endregion // end: NetworkPrefixAddress / BroadcastAddress
 
         #region Overlaps
 
@@ -215,6 +343,30 @@ namespace Arcus.Tests
             Assert.Equal(expected, result);
         }
 
+        [Fact]
+        public void Overlaps_WhollyContainedIIPAddressRange_IsSymmetric_Test()
+        {
+            // When a range is wholly contained inside a subnet, both directions must return true.
+            // This exercises AbstractIPAddressRange.Overlaps(IIPAddressRange) — the Subnet-typed
+            // overload already handled this correctly; the base-class path had an asymmetry bug.
+            var outer = Subnet.Parse("192.168.0.0/16");
+            var inner = new IPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"));
+
+            Assert.True(outer.Overlaps((IIPAddressRange)inner), "outer.Overlaps(inner) should be true");
+            Assert.True(inner.Overlaps((IIPAddressRange)outer), "inner.Overlaps(outer) should be true — symmetry");
+        }
+
+        [Fact]
+        public void Overlaps_WhollyContainedSubnet_IsSymmetric_Test()
+        {
+            // Subnet-typed overload: both directions must return true when one subnet is inside the other.
+            var outer = Subnet.Parse("10.0.0.0/8");
+            var inner = Subnet.Parse("10.10.0.0/16");
+
+            Assert.True(outer.Overlaps(inner), "outer.Overlaps(inner) should be true");
+            Assert.True(inner.Overlaps(outer), "inner.Overlaps(outer) should be true — symmetry");
+        }
+
         #endregion // end: Overlaps
 
         #region ToString
@@ -236,7 +388,7 @@ namespace Arcus.Tests
             Assert.Equal(expected, result);
         }
 
-        #endregion
+        #endregion // end: ToString
 
         #region UsableHostAddressCount
 
@@ -290,7 +442,33 @@ namespace Arcus.Tests
             Assert.Equal(expected, result);
         }
 
-        #endregion
+        [Fact]
+        public void UsableHostAddressCount_SingleHost_ReturnsZero_Test()
+        {
+            // Arrange
+            var subnet = new Subnet(IPAddress.Parse("10.0.0.1"), 32);
+
+            // Act
+            var result = subnet.UsableHostAddressCount;
+
+            // Assert
+            Assert.Equal(BigInteger.Zero, result);
+        }
+
+        [Fact]
+        public void UsableHostAddressCount_SlashZero_ReturnsLengthMinusTwo_Test()
+        {
+            // Arrange
+            var subnet = new Subnet(IPAddress.Any, 0);
+
+            // Act
+            var result = subnet.UsableHostAddressCount;
+
+            // Assert
+            Assert.Equal(BigInteger.Pow(2, 32) - 2, result);
+        }
+
+        #endregion // end: UsableHostAddressCount
 
         #region Contains
 
@@ -338,20 +516,21 @@ namespace Arcus.Tests
             // Act
             var result = subnet.Contains(containsSubnet);
 
-            // Arrange
+            // Assert
             Assert.Equal(expected, result);
         }
 
         [Fact]
-        public void Ipv4SubnetDoesNotContainIPv6Test()
+        public void Contains_IPAddress_IPv4SubnetDoesNotContainIPv6_Test()
         {
             // Arrange
             var subnet = Subnet.Parse("0.0.0.0/0");
 
             // Act
+            var result = subnet.Contains(IPAddress.Parse("::"));
 
             // Assert
-            Assert.False(subnet.Contains(IPAddress.Parse("::")));
+            Assert.False(result);
         }
 
         #endregion // end: Contains(Subnet)
@@ -360,21 +539,25 @@ namespace Arcus.Tests
 
         #region TryIPv4FromPartial
 
-        public static IEnumerable<object[]> TryIPv4FromPartial_Test_Values()
+        public static TheoryData<Subnet, string> TryIPv4FromPartial_Test_Values()
         {
-            yield return new object[] { null, null };
-            yield return new object[] { null, string.Empty };
-            yield return new object[] { null, "potato" };
-            yield return new object[] { Subnet.Parse("192.0.0.0/8"), "192" };
-            yield return new object[] { Subnet.Parse("192.0.0.0/8"), "192." };
-            yield return new object[] { Subnet.Parse("192.168.0.0/16"), "192.168" };
-            yield return new object[] { Subnet.Parse("192.168.0.0/16"), "192.168." };
-            yield return new object[] { Subnet.Parse("192.168.1.0/24"), "192.168.1" };
-            yield return new object[] { Subnet.Parse("192.168.1.0/24"), "192.168.1." };
-            yield return new object[] { Subnet.Parse("192.168.1.1/32"), "192.168.1.1" };
-            yield return new object[] { null, "192.168.1.1." };
-            yield return new object[] { null, "192.168.0.1.5" };
-            yield return new object[] { null, "10.209.005.029" }; // Addresses #59 - [BUG] Subnet.TryIPv4FromPartial(string , out Subnet) throws FormatException if the string input contains a malformed 0-prefixed octet that is not a valid octal number.
+            return new TheoryData<Subnet, string>
+            {
+                { null, null },
+                { null, string.Empty },
+                { null, "potato" },
+                { Subnet.Parse("192.0.0.0/8"), "192" },
+                { Subnet.Parse("192.0.0.0/8"), "192." },
+                { Subnet.Parse("192.168.0.0/16"), "192.168" },
+                { Subnet.Parse("192.168.0.0/16"), "192.168." },
+                { Subnet.Parse("192.168.1.0/24"), "192.168.1" },
+                { Subnet.Parse("192.168.1.0/24"), "192.168.1." },
+                { Subnet.Parse("192.168.1.1/32"), "192.168.1.1" },
+                { null, "192.168.1.1." },
+                { null, "192.168.0.1.5" },
+                // Addresses #59 - TryIPv4FromPartial throws FormatException for 0-prefixed octet not valid as octal
+                { null, "10.209.005.029" },
+            };
         }
 
         [Theory]
@@ -467,10 +650,8 @@ namespace Arcus.Tests
                     yield return new object[] { subnets, $"{inputString}:" };
                 }
 
-                if (
-                    !string.IsNullOrEmpty(inputString) // no match for an empty string
-                    && inputString != hextets[0]
-                ) // TODO should this work, a hextet w/o any ':'? Unsure
+                // A bare hextet without any ':' is not treated as a valid partial IPv6 address
+                if (!string.IsNullOrEmpty(inputString) && inputString != hextets[0])
                 {
                     yield return new object[] { subnets, inputString };
                 }
@@ -547,7 +728,35 @@ namespace Arcus.Tests
         [Fact]
         public void Ctor_IPAddress_NullIPAddress_Throws_ArgumentNullException_Test()
         {
-            Assert.Throws<ArgumentNullException>(() => new Subnet(null));
+            // Arrange
+            // Act / Assert
+            Assert.Throws<ArgumentNullException>(() => new Subnet((IPAddress)null));
+        }
+
+        [Fact]
+        public void Ctor_IPAddress_SetsRoutingPrefix32_ForIPv4_Test()
+        {
+            // Arrange
+            var address = IPAddress.Parse("10.0.0.1");
+
+            // Act
+            var subnet = new Subnet(address);
+
+            // Assert
+            Assert.Equal(32, subnet.RoutingPrefix);
+        }
+
+        [Fact]
+        public void Ctor_IPAddress_SetsRoutingPrefix128_ForIPv6_Test()
+        {
+            // Arrange
+            var address = IPAddress.IPv6Loopback;
+
+            // Act
+            var subnet = new Subnet(address);
+
+            // Assert
+            Assert.Equal(128, subnet.RoutingPrefix);
         }
 
         #endregion // end: Ctor(IPAddress)
@@ -557,6 +766,8 @@ namespace Arcus.Tests
         [Fact]
         public void Ctor_IPAddress_Int_NullIPAddress_Throws_ArgumentNullException_Test()
         {
+            // Arrange
+            // Act / Assert
             Assert.Throws<ArgumentNullException>(() => new Subnet(null, 42));
         }
 
@@ -565,36 +776,33 @@ namespace Arcus.Tests
         [InlineData("192.168.1.1", 33)]
         [InlineData("::", -1)]
         [InlineData("::", 129)]
-        public void Ctor_IPAddress_Int_IntOutOfRange_Throws_ArgumentNullException_Test(string address, int routingPrefix)
+        public void Ctor_IPAddress_Int_IntOutOfRange_Throws_ArgumentOutOfRangeException_Test(string address, int routingPrefix)
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => new Subnet(IPAddress.Parse(address), routingPrefix));
+            // Arrange
+            var ipAddress = IPAddress.Parse(address);
+
+            // Act / Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => new Subnet(ipAddress, routingPrefix));
         }
 
-        #endregion
+        #endregion // end: Ctor(IPAddress, int)
 
         #region Ctor(IPAddress, IPAddress)
 
         public static IEnumerable<object[]> Ctor_IPAddress_IPAddress_Test_Values()
         {
-            yield return new object[]
-            {
-                new Subnet(IPAddress.Parse("0.0.0.0"), 0),
-                IPAddress.Parse("0.0.0.0"),
-                IPAddress.Parse("255.255.255.255"),
-            };
-            yield return new object[]
-            {
-                new Subnet(IPAddress.Parse("::"), 0),
-                IPAddress.Parse("::"),
-                IPAddress.Parse("FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF:FFFF"),
-            };
+            var seen = new HashSet<string>();
 
             foreach (var address in IPv4Addresses())
             {
                 for (var routePrefix = 0; routePrefix <= 32; routePrefix++)
                 {
                     var subnet = new Subnet(address, routePrefix);
-                    yield return new object[] { subnet, subnet.Head, subnet.Tail };
+                    var key = $"{subnet.ToString("f", null)}|{subnet.Head}|{subnet.Tail}";
+                    if (seen.Add(key))
+                    {
+                        yield return new object[] { subnet, subnet.Head, subnet.Tail };
+                    }
                 }
             }
 
@@ -603,7 +811,11 @@ namespace Arcus.Tests
                 for (var routePrefix = 0; routePrefix <= 128; routePrefix++)
                 {
                     var subnet = new Subnet(address, routePrefix);
-                    yield return new object[] { subnet, subnet.Head, subnet.Tail };
+                    var key = $"{subnet.ToString("f", null)}|{subnet.Head}|{subnet.Tail}";
+                    if (seen.Add(key))
+                    {
+                        yield return new object[] { subnet, subnet.Head, subnet.Tail };
+                    }
                 }
             }
 
@@ -647,8 +859,7 @@ namespace Arcus.Tests
             _ = IPAddress.TryParse(primary, out var primaryAddress);
             _ = IPAddress.TryParse(secondary, out var secondaryAddress);
 
-            // Act
-            // Assert
+            // Act / Assert
             Assert.Throws<ArgumentNullException>(() => new Subnet(primaryAddress, secondaryAddress));
         }
 
@@ -664,8 +875,7 @@ namespace Arcus.Tests
             var primaryAddress = IPAddress.Parse(primary);
             var secondaryAddress = IPAddress.Parse(secondary);
 
-            // Act
-            // Assert
+            // Act / Assert
             Assert.Throws<InvalidOperationException>(() => new Subnet(primaryAddress, secondaryAddress));
         }
 
@@ -681,8 +891,7 @@ namespace Arcus.Tests
             var primaryAddress = IPAddress.Parse(primary);
             var secondaryAddress = IPAddress.Parse(secondary);
 
-            // Act
-            // Assert
+            // Act / Assert
             Assert.Throws<ArgumentException>(() => new Subnet(primaryAddress, secondaryAddress));
         }
 
@@ -723,7 +932,7 @@ namespace Arcus.Tests
             }
         }
 #endif
-        #endregion end: ISerializable
+        #endregion // end: ISerializable
 
         #region Static Factory Methods
 
@@ -731,12 +940,19 @@ namespace Arcus.Tests
 
         public static IEnumerable<object[]> FromBytes_Bytes_Bytes_Test_Values()
         {
+            var seen = new HashSet<string>();
+
             foreach (var ipAddress in IPv4Addresses())
             {
                 for (var i = 0; i <= 32; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { subnet, subnet.Head.GetAddressBytes(), subnet.Tail.GetAddressBytes() };
+                    var key =
+                        $"{BitConverter.ToString(subnet.Head.GetAddressBytes())}|{BitConverter.ToString(subnet.Tail.GetAddressBytes())}";
+                    if (seen.Add(key))
+                    {
+                        yield return new object[] { subnet, subnet.Head.GetAddressBytes(), subnet.Tail.GetAddressBytes() };
+                    }
                 }
             }
 
@@ -745,7 +961,12 @@ namespace Arcus.Tests
                 for (var i = 0; i <= 128; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { subnet, subnet.Head.GetAddressBytes(), subnet.Tail.GetAddressBytes() };
+                    var key =
+                        $"{BitConverter.ToString(subnet.Head.GetAddressBytes())}|{BitConverter.ToString(subnet.Tail.GetAddressBytes())}";
+                    if (seen.Add(key))
+                    {
+                        yield return new object[] { subnet, subnet.Head.GetAddressBytes(), subnet.Tail.GetAddressBytes() };
+                    }
                 }
             }
 
@@ -784,8 +1005,7 @@ namespace Arcus.Tests
         public void FromBytes_Null_Input_Throws_ArgumentNullException_Test(byte[] lowAddressBytes, byte[] highAddressBytes)
         {
             // Arrange
-            // Act
-            // Assert
+            // Act / Assert
             Assert.Throws<ArgumentNullException>(() => Subnet.FromBytes(lowAddressBytes, highAddressBytes));
         }
 
@@ -798,8 +1018,9 @@ namespace Arcus.Tests
         {
             // Arrange
             // Act
-            // Assert
             var exception = Assert.Throws<ArgumentException>(() => Subnet.FromBytes(lowAddressBytes, highAddressBytes));
+
+            // Assert
             Assert.IsType<ArgumentException>(exception.InnerException);
         }
 
@@ -821,12 +1042,25 @@ namespace Arcus.Tests
             yield return new object[] { false, null, IPAddress.IPv6Any.GetAddressBytes(), new byte[] { 0x00 } };
             yield return new object[] { false, null, IPAddress.Any.GetAddressBytes(), new byte[] { 0x00 } };
 
+            var seen = new HashSet<string>();
+
             foreach (var ipAddress in IPv4Addresses())
             {
                 for (var i = 0; i <= 32; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { true, subnet, subnet.Head.GetAddressBytes(), subnet.Tail.GetAddressBytes() };
+                    var key =
+                        $"{BitConverter.ToString(subnet.Head.GetAddressBytes())}|{BitConverter.ToString(subnet.Tail.GetAddressBytes())}";
+                    if (seen.Add(key))
+                    {
+                        yield return new object[]
+                        {
+                            true,
+                            subnet,
+                            subnet.Head.GetAddressBytes(),
+                            subnet.Tail.GetAddressBytes(),
+                        };
+                    }
                 }
             }
 
@@ -835,7 +1069,18 @@ namespace Arcus.Tests
                 for (var i = 0; i <= 128; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { true, subnet, subnet.Head.GetAddressBytes(), subnet.Tail.GetAddressBytes() };
+                    var key =
+                        $"{BitConverter.ToString(subnet.Head.GetAddressBytes())}|{BitConverter.ToString(subnet.Tail.GetAddressBytes())}";
+                    if (seen.Add(key))
+                    {
+                        yield return new object[]
+                        {
+                            true,
+                            subnet,
+                            subnet.Head.GetAddressBytes(),
+                            subnet.Tail.GetAddressBytes(),
+                        };
+                    }
                 }
             }
 
@@ -893,7 +1138,7 @@ namespace Arcus.Tests
                 for (var i = 0; i <= 128; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { subnet, $"{subnet}" };
+                    yield return new object[] { subnet, $"{ipAddress}/{i}" };
                 }
             }
 
@@ -927,12 +1172,45 @@ namespace Arcus.Tests
         }
 
         [Fact]
-        public void Parse_Failure_Throws_FormatException_Test()
+        public void Parse_String_Null_Throws_ArgumentNullException_Test()
         {
             // Arrange
-            // Act
-            // Assert
+            // Act / Assert
+            Assert.Throws<ArgumentNullException>(() => Subnet.Parse((string)null));
+        }
+
+        [Theory]
+        [InlineData("")]
+        [InlineData("   ")]
+        public void Parse_String_WhiteSpace_Throws_ArgumentException_Test(string input)
+        {
+            // Arrange
+            // Act / Assert
+            Assert.Throws<ArgumentException>(() => Subnet.Parse(input));
+        }
+
+        [Fact]
+        public void Parse_String_BadFormat_Throws_FormatException_Test()
+        {
+            // Arrange
+            // Act / Assert
             Assert.Throws<FormatException>(() => Subnet.Parse("potato"));
+        }
+
+        [Fact]
+        public void Parse_String_IPv4RoutingPrefixTooLarge_Throws_ArgumentException_Test()
+        {
+            // Arrange
+            // Act / Assert
+            Assert.Throws<ArgumentException>(() => Subnet.Parse("192.168.1.0/33"));
+        }
+
+        [Fact]
+        public void Parse_String_IPv6RoutingPrefixTooLarge_Throws_ArgumentException_Test()
+        {
+            // Arrange
+            // Act / Assert
+            Assert.Throws<ArgumentException>(() => Subnet.Parse("::/129"));
         }
 
         #endregion // end: Parse(string)
@@ -967,7 +1245,7 @@ namespace Arcus.Tests
                 for (var i = 0; i <= 128; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { subnet, $"{subnet}" };
+                    yield return new object[] { subnet, $"{ipAddress}/{i}" };
                 }
 
                 yield return new object[] { new Subnet(ipAddress, ipAddress), ipAddress.ToString() };
@@ -1014,7 +1292,7 @@ namespace Arcus.Tests
                 for (var i = 0; i <= 32; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { subnet, subnet.Head.ToString(), i };
+                    yield return new object[] { subnet, ipAddress.ToString(), i };
                 }
             }
 
@@ -1023,7 +1301,7 @@ namespace Arcus.Tests
                 for (var i = 0; i <= 128; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { subnet, subnet.Head.ToString(), i };
+                    yield return new object[] { subnet, ipAddress.ToString(), i };
                 }
             }
 
@@ -1055,6 +1333,37 @@ namespace Arcus.Tests
             Assert.Equal(expected, subnet);
         }
 
+        [Fact]
+        public void Parse_String_Int_NullAddressString_Throws_ArgumentNullException_Test()
+        {
+            // Arrange
+            // Act / Assert
+            Assert.Throws<ArgumentNullException>(() => Subnet.Parse((string)null, 24));
+        }
+
+        [Fact]
+        public void Parse_String_Int_BadAddressFormat_Throws_FormatException_Test()
+        {
+            // Arrange
+            // Act / Assert
+            Assert.Throws<FormatException>(() => Subnet.Parse("potato", 24));
+        }
+
+        [Theory]
+        [InlineData("192.168.1.0", -1)]
+        [InlineData("192.168.1.0", 33)]
+        [InlineData("::", -1)]
+        [InlineData("::", 129)]
+        public void Parse_String_Int_RoutingPrefixOutOfRange_Throws_ArgumentOutOfRangeException_Test(
+            string addressString,
+            int routingPrefix
+        )
+        {
+            // Arrange
+            // Act / Assert
+            Assert.Throws<ArgumentOutOfRangeException>(() => Subnet.Parse(addressString, routingPrefix));
+        }
+
         #endregion // end: Parse(string, int)
 
         #region TryParse(string, int)
@@ -1067,14 +1376,13 @@ namespace Arcus.Tests
             yield return new object[] { false, null, IPAddress.IPv6Any.ToString(), -5 };
             yield return new object[] { false, null, IPAddress.Any.ToString(), 33 };
             yield return new object[] { false, null, IPAddress.IPv6Any.ToString(), 129 };
-            yield return new object[] { false, null, null, 0 };
 
             foreach (var ipAddress in IPv4Addresses())
             {
                 for (var i = 0; i <= 32; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { true, subnet, subnet.Head.ToString(), i };
+                    yield return new object[] { true, subnet, ipAddress.ToString(), i };
                 }
             }
 
@@ -1083,7 +1391,7 @@ namespace Arcus.Tests
                 for (var i = 0; i <= 128; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { true, subnet, subnet.Head.ToString(), i };
+                    yield return new object[] { true, subnet, ipAddress.ToString(), i };
                 }
             }
 
@@ -1122,12 +1430,19 @@ namespace Arcus.Tests
 
         public static IEnumerable<object[]> Parse_String_String_Test_Values()
         {
+            var seen = new HashSet<string>();
+
             foreach (var ipAddress in IPv4Addresses())
             {
                 for (var i = 0; i <= 32; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { subnet, subnet.Head.ToString(), subnet.Tail.ToString() };
+                    var low = subnet.Head.ToString();
+                    var high = subnet.Tail.ToString();
+                    if (seen.Add($"{low}|{high}"))
+                    {
+                        yield return new object[] { subnet, low, high };
+                    }
                 }
             }
 
@@ -1136,7 +1451,12 @@ namespace Arcus.Tests
                 for (var i = 0; i <= 128; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { subnet, subnet.Head.ToString(), subnet.Tail.ToString() };
+                    var low = subnet.Head.ToString();
+                    var high = subnet.Tail.ToString();
+                    if (seen.Add($"{low}|{high}"))
+                    {
+                        yield return new object[] { subnet, low, high };
+                    }
                 }
             }
 
@@ -1177,8 +1497,7 @@ namespace Arcus.Tests
         public void Parse_String_String_NullAddressString_Throws_ArgumentNullException_Test(string low, string high)
         {
             // Arrange
-            // Act
-            // Assert
+            // Act / Assert
             Assert.Throws<ArgumentNullException>(() => Subnet.Parse(low, high));
         }
 
@@ -1187,11 +1506,10 @@ namespace Arcus.Tests
         [InlineData("potato", "::")]
         [InlineData("192.168.1.1", "potato")]
         [InlineData("potato", "192.168.1.1")]
-        public void Parse_String_String_BadAddressFormat_Throws_ArgumentException_Test(string low, string high)
+        public void Parse_String_String_BadAddressFormat_Throws_FormatException_Test(string low, string high)
         {
             // Arrange
-            // Act
-            // Assert
+            // Act / Assert
             Assert.Throws<FormatException>(() => Subnet.Parse(low, high));
         }
 
@@ -1201,8 +1519,7 @@ namespace Arcus.Tests
         public void Parse_String_String_MisMatchAddressFamily_Throws_ArgumentException_Test(string low, string high)
         {
             // Arrange
-            // Act
-            // Assert
+            // Act / Assert
             Assert.Throws<ArgumentException>(() => Subnet.Parse(low, high));
         }
 
@@ -1212,12 +1529,11 @@ namespace Arcus.Tests
         public void Parse_String_String_InvalidRange_Throws_InvalidOperationException_Test(string low, string high)
         {
             // Arrange
-            // Act
-            // Assert
+            // Act / Assert
             Assert.Throws<InvalidOperationException>(() => Subnet.Parse(low, high));
         }
 
-        #endregion Parse(string, string)
+        #endregion // end: Parse(string, string)
 
         #region TryParse(string, string)
 
@@ -1231,12 +1547,19 @@ namespace Arcus.Tests
                 yield return new object[] { null, s, "2001:0db8:85a3:0042:1000:8a2e:0370:7334" };
             }
 
+            var seen = new HashSet<string>();
+
             foreach (var ipAddress in IPv4Addresses())
             {
                 for (var i = 0; i <= 32; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { subnet, subnet.Head.ToString(), subnet.Tail.ToString() };
+                    var low = subnet.Head.ToString();
+                    var high = subnet.Tail.ToString();
+                    if (seen.Add($"{low}|{high}"))
+                    {
+                        yield return new object[] { subnet, low, high };
+                    }
                 }
             }
 
@@ -1245,7 +1568,12 @@ namespace Arcus.Tests
                 for (var i = 0; i <= 128; i++)
                 {
                     var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { subnet, subnet.Head.ToString(), subnet.Tail.ToString() };
+                    var low = subnet.Head.ToString();
+                    var high = subnet.Tail.ToString();
+                    if (seen.Add($"{low}|{high}"))
+                    {
+                        yield return new object[] { subnet, low, high };
+                    }
                 }
             }
 
@@ -1361,7 +1689,7 @@ namespace Arcus.Tests
             Assert.Equal(expected <= long.MaxValue ? (long)expected : -1, length);
         }
 
-        #endregion // end: Length
+        #endregion // end: Length / TryGetLength
 
         #region Equals
 
@@ -1369,20 +1697,35 @@ namespace Arcus.Tests
 
         public static IEnumerable<object[]> Equals_Subnet_Test_Values()
         {
+            var seen = new HashSet<string>();
+
             foreach (var ipAddress in IPv4Addresses())
             {
                 for (var i = 0; i <= 32; i++)
                 {
-                    yield return new object[] { true, new Subnet(ipAddress, i), new Subnet(ipAddress, i) }; // equivalent
+                    var sA = new Subnet(ipAddress, i);
+                    var sB = new Subnet(ipAddress, (i + 2) % 32);
+                    var sv6A = new Subnet(IPAddress.IPv6Any, i);
+                    var sv6B = new Subnet(IPAddress.IPv6Loopback, i);
 
-                    yield return new object[] { false, new Subnet(ipAddress, i), new Subnet(ipAddress, (i + 2) % 32) }; // differing routes equivalent
-
-                    var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { true, subnet, subnet }; // same
-
-                    foreach (var ipv6Address in IPv6Addresses().Take(2))
+                    if (seen.Add($"T|{sA.ToString("f", null)}|{sA.ToString("f", null)}"))
                     {
-                        yield return new object[] { false, new Subnet(ipAddress, i), new Subnet(ipv6Address, i) }; // different families
+                        yield return new object[] { true, sA, sA }; // equivalent
+                    }
+
+                    if (seen.Add($"F|{sA.ToString("f", null)}|{sB.ToString("f", null)}"))
+                    {
+                        yield return new object[] { false, sA, sB }; // differing prefix
+                    }
+
+                    if (seen.Add($"F|{sA.ToString("f", null)}|{sv6A.ToString("f", null)}"))
+                    {
+                        yield return new object[] { false, sA, sv6A }; // different family
+                    }
+
+                    if (seen.Add($"F|{sA.ToString("f", null)}|{sv6B.ToString("f", null)}"))
+                    {
+                        yield return new object[] { false, sA, sv6B }; // different family
                     }
                 }
             }
@@ -1391,12 +1734,18 @@ namespace Arcus.Tests
             {
                 for (var i = 0; i <= 128; i++)
                 {
-                    yield return new object[] { true, new Subnet(ipAddress, i), new Subnet(ipAddress, i) }; // equivalent
+                    var sA = new Subnet(ipAddress, i);
+                    var sB = new Subnet(ipAddress, (i + 2) % 128);
 
-                    yield return new object[] { false, new Subnet(ipAddress, i), new Subnet(ipAddress, (i + 2) % 128) }; // differing routes equivalent
+                    if (seen.Add($"T|{sA.ToString("f", null)}|{sA.ToString("f", null)}"))
+                    {
+                        yield return new object[] { true, sA, sA }; // equivalent
+                    }
 
-                    var subnet = new Subnet(ipAddress, i);
-                    yield return new object[] { true, subnet, subnet }; // same
+                    if (seen.Add($"F|{sA.ToString("f", null)}|{sB.ToString("f", null)}"))
+                    {
+                        yield return new object[] { false, sA, sB }; // differing prefix
+                    }
                 }
             }
 
@@ -1427,7 +1776,19 @@ namespace Arcus.Tests
 
             // Assert
             Assert.Equal(expected, result);
-            Assert.Equal(result, expected);
+        }
+
+        [Fact]
+        public void Equals_Subnet_NullOther_ReturnsFalse_Test()
+        {
+            // Arrange
+            var subnet = Subnet.Parse("192.168.0.0/16");
+
+            // Act
+            var result = subnet.Equals((Subnet)null);
+
+            // Assert
+            Assert.False(result);
         }
 
         #endregion // end: Equals(Subnet)
@@ -1436,7 +1797,7 @@ namespace Arcus.Tests
 
         [Theory]
         [MemberData(nameof(Equals_Subnet_Test_Values))]
-        public void Equals_Object_Test(bool expected, Subnet subnetA, object subnetB)
+        public void Equals_Object_BoxedSubnet_Test(bool expected, Subnet subnetA, object subnetB)
         {
             // Arrange
 
@@ -1445,6 +1806,32 @@ namespace Arcus.Tests
 
             // Assert
             Assert.Equal(expected, result);
+        }
+
+        [Fact]
+        public void Equals_Object_NonSubnetType_ReturnsFalse_Test()
+        {
+            // Arrange
+            var subnet = Subnet.Parse("192.168.0.0/16");
+
+            // Act
+            var result = subnet.Equals("not a subnet");
+
+            // Assert
+            Assert.False(result);
+        }
+
+        [Fact]
+        public void Equals_Object_Null_ReturnsFalse_Test()
+        {
+            // Arrange
+            var subnet = Subnet.Parse("192.168.0.0/16");
+
+            // Act
+            var result = subnet.Equals((object)null);
+
+            // Assert
+            Assert.False(result);
         }
 
         #endregion // end: Equals(object)
@@ -1483,41 +1870,35 @@ namespace Arcus.Tests
         }
 
         [Fact]
-        public void FromNetMask_AddressNull_Throws_ArgumentNullException_Test()
+        public void FromNetMask_NullAddress_Throws_ArgumentNullException_Test()
         {
-            // Act
             // Arrange
-            // Assert
-
+            // Act / Assert
             Assert.Throws<ArgumentNullException>(() => Subnet.FromNetMask(null, IPAddress.Any));
         }
 
         [Fact]
-        public void FromNetMask_InvalidNetMask_Throws_ArgumentNullException_Test()
+        public void FromNetMask_NullNetMask_Throws_ArgumentNullException_Test()
         {
-            // Act
             // Arrange
-            // Assert
+            // Act / Assert
+            Assert.Throws<ArgumentNullException>(() => Subnet.FromNetMask(IPAddress.Any, null));
+        }
+
+        [Fact]
+        public void FromNetMask_InvalidNetMask_Throws_ArgumentException_Test()
+        {
+            // Arrange
+            // Act / Assert
             Assert.Throws<ArgumentException>(() => Subnet.FromNetMask(IPAddress.Any, IPAddress.IPv6Any));
         }
 
         [Fact]
-        public void FromNetMask_IPv6Address_Throws_ArgumentNullException_Test()
+        public void FromNetMask_IPv6Address_Throws_ArgumentException_Test()
         {
-            // Act
             // Arrange
-            // Assert
+            // Act / Assert
             Assert.Throws<ArgumentException>(() => Subnet.FromNetMask(IPAddress.IPv6Any, IPAddress.Any));
-        }
-
-        [Fact]
-        public void FromNetMaskNetMask_NullNetMask_Throws_ArgumentNullException_Test()
-        {
-            // Act
-            // Arrange
-            // Assert
-
-            Assert.Throws<ArgumentNullException>(() => Subnet.FromNetMask(IPAddress.Any, null));
         }
 
         public static IEnumerable<object[]> TryFromNetMask_Test_Values()
@@ -1555,7 +1936,7 @@ namespace Arcus.Tests
             Assert.Equal(expectedSubnet, subnet);
         }
 
-        #endregion
+        #endregion // end: FromNetMask
 
         #region Formatting
 
@@ -1652,13 +2033,25 @@ namespace Arcus.Tests
         }
 
         [Fact]
+        public void ToString_NullFormatProvider_UsesInvariantCulture_Test()
+        {
+            // Arrange
+            var subnet = new Subnet(IPAddress.Parse("192.168.1.0"), 24);
+
+            // Act
+            var result = subnet.ToString("G", null);
+
+            // Assert
+            Assert.Equal("192.168.1.0/24", result);
+        }
+
+        [Fact]
         public void ToString_UnknownFormat_Throws_FormatException_Test()
         {
             // Arrange
             var range = new Subnet(IPAddress.Parse("192.168.1.1"), 16);
 
-            // Act
-            // Assert
+            // Act / Assert
             Assert.Throws<FormatException>(() => range.ToString("potato", CultureInfo.CurrentCulture));
         }
 
@@ -1668,25 +2061,21 @@ namespace Arcus.Tests
 
         #region GetHashCode
 
-        public static IEnumerable<object[]> GetHashCode_Test_Values()
+        public static TheoryData<bool, Subnet, Subnet> GetHashCode_Test_Values()
         {
-            // equal
-            yield return new object[] { true, new Subnet(IPAddress.Any, 16), new Subnet(IPAddress.Any, 16) };
-            yield return new object[] { true, new Subnet(IPAddress.IPv6Any, 16), new Subnet(IPAddress.IPv6Any, 16) };
-
-            // reference equal
-            var ipv4Subnet = new Subnet(IPAddress.Any, 16);
-            yield return new object[] { true, ipv4Subnet, ipv4Subnet };
-
-            var ipv6Subnet = new Subnet(IPAddress.IPv6Any, 16);
-            yield return new object[] { true, ipv6Subnet, ipv6Subnet };
-
-            // expected different
-            yield return new object[] { false, ipv4Subnet, ipv6Subnet };
-            yield return new object[] { false, new Subnet(IPAddress.Any, 8), new Subnet(IPAddress.Any, 16) };
-            yield return new object[] { false, new Subnet(IPAddress.IPv6Any, 8), new Subnet(IPAddress.IPv6Any, 16) };
-            yield return new object[] { false, new Subnet(IPAddress.Any, 16), new Subnet(IPAddress.Broadcast, 16) };
-            yield return new object[] { false, new Subnet(IPAddress.Parse("::")), new Subnet(IPAddress.Parse("ab::"), 16) };
+            return new TheoryData<bool, Subnet, Subnet>
+            {
+                // value-equal IPv4
+                { true, new Subnet(IPAddress.Any, 16), new Subnet(IPAddress.Any, 16) },
+                // value-equal IPv6
+                { true, new Subnet(IPAddress.IPv6Any, 16), new Subnet(IPAddress.IPv6Any, 16) },
+                // expected different
+                { false, new Subnet(IPAddress.Any, 16), new Subnet(IPAddress.IPv6Any, 16) },
+                { false, new Subnet(IPAddress.Any, 8), new Subnet(IPAddress.Any, 16) },
+                { false, new Subnet(IPAddress.IPv6Any, 8), new Subnet(IPAddress.IPv6Any, 16) },
+                { false, new Subnet(IPAddress.Any, 16), new Subnet(IPAddress.Broadcast, 16) },
+                { false, new Subnet(IPAddress.Parse("::")), new Subnet(IPAddress.Parse("ab::"), 16) },
+            };
         }
 
         [Theory]
@@ -1708,11 +2097,17 @@ namespace Arcus.Tests
 
         public static IEnumerable<object[]> Deconstruct_Values()
         {
+            var seen = new HashSet<string>();
+
             foreach (var ipAddress in IPv4Addresses())
             {
                 for (var i = 0; i <= 32; i++)
                 {
-                    yield return new object[] { new Subnet(ipAddress, i) };
+                    var subnet = new Subnet(ipAddress, i);
+                    if (seen.Add(subnet.ToString("f", null)))
+                    {
+                        yield return new object[] { subnet };
+                    }
                 }
             }
 
@@ -1720,7 +2115,11 @@ namespace Arcus.Tests
             {
                 for (var i = 0; i <= 128; i++)
                 {
-                    yield return new object[] { new Subnet(ipAddress, i) };
+                    var subnet = new Subnet(ipAddress, i);
+                    if (seen.Add(subnet.ToString("f", null)))
+                    {
+                        yield return new object[] { subnet };
+                    }
                 }
             }
 

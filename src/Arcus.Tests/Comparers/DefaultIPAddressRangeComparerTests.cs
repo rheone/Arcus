@@ -8,9 +8,7 @@ using Xunit;
 
 namespace Arcus.Tests.Comparers
 {
-#if NET6_0_OR_GREATER
-#pragma warning disable IDE0062 // Make local function static (IDE0062); purposely allowing non-static functions that could be static for .net4.8 compatibility
-#endif
+#pragma warning disable CS0618 // Type or member is obsolete — intentionally testing the obsolete DefaultIPAddressRangeComparer
     public class DefaultIPAddressRangeComparerTests
     {
         [Fact]
@@ -42,60 +40,58 @@ namespace Arcus.Tests.Comparers
 
         #region Compare
 
-        public static IEnumerable<object[]> Compare_Test_Values()
+        /// <summary>
+        ///     Test data for <see cref="Compare_Test" />.
+        ///     Covers equal ranges, same-reference ranges, null operands, cross-family comparisons,
+        ///     and ordinal ordering by length within the same address family.
+        ///     <para>Parameters: expected comparison result (int), x (IIPAddressRange), y (IIPAddressRange).</para>
+        /// </summary>
+        public static TheoryData<int, IIPAddressRange, IIPAddressRange> Compare_Test_Data
         {
-            // equal ranges
-            yield return new object[] { 0, CreateIIPAddressRange("192.168.1.0", 0), CreateIIPAddressRange("192.168.1.0", 0) };
-            yield return new object[] { 0, CreateIIPAddressRange("a::", 0), CreateIIPAddressRange("a::", 0) };
-
-            // same range
-            var ipv4Same = CreateIIPAddressRange("192.168.1.0");
-            yield return new object[] { 0, ipv4Same, ipv4Same };
-
-            var ipv6Same = CreateIIPAddressRange("a::");
-            yield return new object[] { 0, ipv6Same, ipv6Same };
-
-            // null compare
-            yield return new object[] { 0, null, null };
-            yield return new object[] { -1, null, CreateIIPAddressRange("192.168.1.0") };
-            yield return new object[] { 1, CreateIIPAddressRange("192.168.1.0"), null };
-            yield return new object[] { -1, null, CreateIIPAddressRange("a::") };
-            yield return new object[] { 1, CreateIIPAddressRange("a::"), null };
-
-            // numerically equivalent, different address families
-            yield return new object[] { -1, CreateIIPAddressRange("0.0.0.0", 100), CreateIIPAddressRange("::", 100) };
-            yield return new object[] { 1, CreateIIPAddressRange("::", 100), CreateIIPAddressRange("0.0.0.0", 100) };
-
-            // satisfies ordinal ordering by length
-            yield return new object[] { -1, CreateIIPAddressRange("192.0.0.0", 100), CreateIIPAddressRange("192.0.0.0", 500) };
-            yield return new object[] { 1, CreateIIPAddressRange("192.0.0.0", 500), CreateIIPAddressRange("192.0.0.0", 100) };
-            yield return new object[] { -1, CreateIIPAddressRange("ab::", 100), CreateIIPAddressRange("ab::", 500) };
-            yield return new object[] { 1, CreateIIPAddressRange("ab::", 500), CreateIIPAddressRange("ab::", 100) };
-
-            IIPAddressRange CreateIIPAddressRange(string head, BigInteger? length = null)
+            get
             {
-                var substitute = Substitute.For<IIPAddressRange>();
+                var data = new TheoryData<int, IIPAddressRange, IIPAddressRange>();
 
-                substitute.Head.Returns(IPAddress.Parse(head));
+                // equal ranges
+                data.Add(0, CreateRangeFromHead("192.168.1.0", 0), CreateRangeFromHead("192.168.1.0", 0));
+                data.Add(0, CreateRangeFromHead("a::", 0), CreateRangeFromHead("a::", 0));
 
-                if (length != null)
-                {
-                    substitute.Length.Returns(length.Value);
-                }
+                // same range (reference equality)
+                var ipv4Same = CreateRangeFromHead("192.168.1.0");
+                data.Add(0, ipv4Same, ipv4Same);
 
-                return substitute;
+                var ipv6Same = CreateRangeFromHead("a::");
+                data.Add(0, ipv6Same, ipv6Same);
+
+                // null compare
+                data.Add(0, null, null);
+                data.Add(-1, null, CreateRangeFromHead("192.168.1.0"));
+                data.Add(1, CreateRangeFromHead("192.168.1.0"), null);
+                data.Add(-1, null, CreateRangeFromHead("a::"));
+                data.Add(1, CreateRangeFromHead("a::"), null);
+
+                // numerically equivalent, different address families
+                data.Add(-1, CreateRangeFromHead("0.0.0.0", 100), CreateRangeFromHead("::", 100));
+                data.Add(1, CreateRangeFromHead("::", 100), CreateRangeFromHead("0.0.0.0", 100));
+
+                // satisfies ordinal ordering by length
+                data.Add(-1, CreateRangeFromHead("192.0.0.0", 100), CreateRangeFromHead("192.0.0.0", 500));
+                data.Add(1, CreateRangeFromHead("192.0.0.0", 500), CreateRangeFromHead("192.0.0.0", 100));
+                data.Add(-1, CreateRangeFromHead("ab::", 100), CreateRangeFromHead("ab::", 500));
+                data.Add(1, CreateRangeFromHead("ab::", 500), CreateRangeFromHead("ab::", 100));
+
+                return data;
             }
         }
 
         [Theory]
-        [MemberData(nameof(Compare_Test_Values))]
+        [MemberData(nameof(Compare_Test_Data))]
         public void Compare_Test(int expected, IIPAddressRange x, IIPAddressRange y)
         {
             // Arrange
             var comparer = new DefaultIPAddressRangeComparer();
 
             // Act
-
             var result = comparer.Compare(x, y);
 
             // Assert
@@ -111,8 +107,8 @@ namespace Arcus.Tests.Comparers
             var xHead = IPAddress.Parse("0.0.0.0");
             var yHead = IPAddress.Parse("abc::");
 
-            var x = CreateIIPAddressRange(xHead);
-            var y = CreateIIPAddressRange(yHead);
+            var x = CreateRangeFromIPAddress(xHead);
+            var y = CreateRangeFromIPAddress(yHead);
 
             var substituteIPAddressComparer = Substitute.For<IComparer<IPAddress>>();
             substituteIPAddressComparer.Compare(xHead, yHead).Returns(expectedResult);
@@ -124,18 +120,29 @@ namespace Arcus.Tests.Comparers
 
             // Assert
             Assert.Equal(expectedResult, result);
-            substituteIPAddressComparer.Received(1).Compare(xHead, yHead); // Verify that Compare was called once
-
-            IIPAddressRange CreateIIPAddressRange(IPAddress head)
-            {
-                var substitute = Substitute.For<IIPAddressRange>();
-
-                substitute.Head.Returns(head);
-
-                return substitute;
-            }
+            substituteIPAddressComparer.Received(1).Compare(xHead, yHead);
         }
 
         #endregion // end: Compare
+
+        private static IIPAddressRange CreateRangeFromHead(string head, BigInteger? length = null)
+        {
+            var substitute = Substitute.For<IIPAddressRange>();
+            substitute.Head.Returns(IPAddress.Parse(head));
+            if (length != null)
+            {
+                substitute.Length.Returns(length.Value);
+            }
+
+            return substitute;
+        }
+
+        private static IIPAddressRange CreateRangeFromIPAddress(IPAddress head)
+        {
+            var substitute = Substitute.For<IIPAddressRange>();
+            substitute.Head.Returns(head);
+            return substitute;
+        }
     }
+#pragma warning restore CS0618
 }

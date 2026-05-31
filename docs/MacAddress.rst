@@ -81,7 +81,7 @@ Properties
 :``bool`` IsLocallyAdministered: returns ``true`` if, and only if, is locally administered.
 :``bool`` IsMulticast: returns ``true`` if, and only if, the MAC Address is multicast.
 :``bool`` IsUnicast: returns ``true`` if, and only if, the MAC Address is unicast.
-:``bool`` IsUnusable: returns ``true`` if, and only if, the MAC Address is "unusable" [#EUI-Usable]_, meaning all OUI bits of the MAC Address are unset.
+:``bool`` IsUnusable: returns ``true`` if, and only if, all three OUI bytes (the first three bytes of the address) are ``0x00``. **Note:** prior to the behavior-correction release, the implementation was logically inverted and returned ``true`` for almost every real MAC address. If you were depending on the old (incorrect) behavior, update your code accordingly.
 
 :``MacAddress`` DefaultMacAddress: Provides a ``MacAddress`` that represents the default or ``null`` case MAC address.
 

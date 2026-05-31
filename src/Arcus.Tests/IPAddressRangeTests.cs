@@ -109,79 +109,74 @@ namespace Arcus.Tests
 
         #region CompareTo / Operators
 
-        public static IEnumerable<object[]> Comparison_Values()
+        /// <summary>
+        ///     Test data for <see cref="CompareTo_Test" /> and operator tests.
+        ///     Covers equal ranges, null right operands, cross-family ordering, and length-based ordering within a family.
+        ///     <para>Parameters: expected comparison result (int), left (IPAddressRange), right (IPAddressRange).</para>
+        /// </summary>
+        public static TheoryData<int, IPAddressRange, IPAddressRange> Comparison_Values
         {
-            var ipv4Slash16 = Subnet.Parse("192.168.0.0/16");
-            var ipv6Slash64 = Subnet.Parse("ab:cd::/64");
-            var ipv4Slash20 = Subnet.Parse("192.168.0.0/20");
-            var ipv6Slash96 = Subnet.Parse("ab:cd::/96");
-            var ipv4All = Subnet.Parse("0.0.0.0/0");
-            var ipv6All = Subnet.Parse("::/0");
-            var ipv4Single = Subnet.Parse("0.0.0.0/32");
-            var ipv6Single = Subnet.Parse("::/128");
+            get
+            {
+                var ipv4Slash16 = Subnet.Parse("192.168.0.0/16");
+                var ipv6Slash64 = Subnet.Parse("ab:cd::/64");
+                var ipv4Slash20 = Subnet.Parse("192.168.0.0/20");
+                var ipv6Slash96 = Subnet.Parse("ab:cd::/96");
+                var ipv4All = Subnet.Parse("0.0.0.0/0");
+                var ipv6All = Subnet.Parse("::/0");
+                var ipv4Single = Subnet.Parse("0.0.0.0/32");
+                var ipv6Single = Subnet.Parse("::/128");
 
-            yield return new object[]
-            {
-                0,
-                new IPAddressRange(ipv4Slash16.Head, ipv4Slash16.Tail),
-                new IPAddressRange(ipv4Slash16.Head, ipv4Slash16.Tail),
-            };
-            yield return new object[]
-            {
-                0,
-                new IPAddressRange(ipv6Slash64.Head, ipv6Slash64.Tail),
-                new IPAddressRange(ipv6Slash64.Head, ipv6Slash64.Tail),
-            };
-            yield return new object[] { 1, new IPAddressRange(ipv4Slash16.Head, ipv4Slash16.Tail), null };
-            yield return new object[] { 1, new IPAddressRange(ipv6Slash64.Head, ipv6Slash64.Tail), null };
-            yield return new object[]
-            {
-                1,
-                new IPAddressRange(ipv4Slash16.Head, ipv4Slash16.Tail),
-                new IPAddressRange(ipv4Slash20.Head, ipv4Slash20.Tail),
-            };
-            yield return new object[]
-            {
-                -1,
-                new IPAddressRange(ipv4Slash20.Head, ipv4Slash20.Tail),
-                new IPAddressRange(ipv4Slash16.Head, ipv4Slash16.Tail),
-            };
-            yield return new object[]
-            {
-                1,
-                new IPAddressRange(ipv6Slash64.Head, ipv6Slash64.Tail),
-                new IPAddressRange(ipv6Slash96.Head, ipv6Slash96.Tail),
-            };
-            yield return new object[]
-            {
-                -1,
-                new IPAddressRange(ipv6Slash96.Head, ipv6Slash96.Tail),
-                new IPAddressRange(ipv6Slash64.Head, ipv6Slash64.Tail),
-            };
-            yield return new object[]
-            {
-                -1,
-                new IPAddressRange(ipv4All.Head, ipv4All.Tail),
-                new IPAddressRange(ipv6All.Head, ipv6All.Tail),
-            };
-            yield return new object[]
-            {
-                1,
-                new IPAddressRange(ipv6All.Head, ipv6All.Tail),
-                new IPAddressRange(ipv4All.Head, ipv4All.Tail),
-            };
-            yield return new object[]
-            {
-                -1,
-                new IPAddressRange(ipv4Single.Head, ipv4Single.Tail),
-                new IPAddressRange(ipv6Single.Head, ipv6Single.Tail),
-            };
-            yield return new object[]
-            {
-                1,
-                new IPAddressRange(ipv6Single.Head, ipv6Single.Tail),
-                new IPAddressRange(ipv4Single.Head, ipv4Single.Tail),
-            };
+                var data = new TheoryData<int, IPAddressRange, IPAddressRange>
+                {
+                    {
+                        0,
+                        new IPAddressRange(ipv4Slash16.Head, ipv4Slash16.Tail),
+                        new IPAddressRange(ipv4Slash16.Head, ipv4Slash16.Tail)
+                    },
+                    {
+                        0,
+                        new IPAddressRange(ipv6Slash64.Head, ipv6Slash64.Tail),
+                        new IPAddressRange(ipv6Slash64.Head, ipv6Slash64.Tail)
+                    },
+                    { 1, new IPAddressRange(ipv4Slash16.Head, ipv4Slash16.Tail), null },
+                    { 1, new IPAddressRange(ipv6Slash64.Head, ipv6Slash64.Tail), null },
+                    {
+                        1,
+                        new IPAddressRange(ipv4Slash16.Head, ipv4Slash16.Tail),
+                        new IPAddressRange(ipv4Slash20.Head, ipv4Slash20.Tail)
+                    },
+                    {
+                        -1,
+                        new IPAddressRange(ipv4Slash20.Head, ipv4Slash20.Tail),
+                        new IPAddressRange(ipv4Slash16.Head, ipv4Slash16.Tail)
+                    },
+                    {
+                        1,
+                        new IPAddressRange(ipv6Slash64.Head, ipv6Slash64.Tail),
+                        new IPAddressRange(ipv6Slash96.Head, ipv6Slash96.Tail)
+                    },
+                    {
+                        -1,
+                        new IPAddressRange(ipv6Slash96.Head, ipv6Slash96.Tail),
+                        new IPAddressRange(ipv6Slash64.Head, ipv6Slash64.Tail)
+                    },
+                    { -1, new IPAddressRange(ipv4All.Head, ipv4All.Tail), new IPAddressRange(ipv6All.Head, ipv6All.Tail) },
+                    { 1, new IPAddressRange(ipv6All.Head, ipv6All.Tail), new IPAddressRange(ipv4All.Head, ipv4All.Tail) },
+                    {
+                        -1,
+                        new IPAddressRange(ipv4Single.Head, ipv4Single.Tail),
+                        new IPAddressRange(ipv6Single.Head, ipv6Single.Tail)
+                    },
+                    {
+                        1,
+                        new IPAddressRange(ipv6Single.Head, ipv6Single.Tail),
+                        new IPAddressRange(ipv4Single.Head, ipv4Single.Tail)
+                    },
+                };
+
+                return data;
+            }
         }
 
         [Theory]
@@ -388,12 +383,13 @@ namespace Arcus.Tests
 
         #region ISerializable
 #if NET48   // maintained for .NET 4.8 compatibility
-        public static IEnumerable<object[]> CanSerializable_Test_Values()
-        {
-            yield return new object[] { new IPAddressRange(IPAddress.Parse("192.168.1.0")) };
-            yield return new object[] { new IPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")) };
-            yield return new object[] { new IPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::FFFF:4321")) };
-        }
+        public static TheoryData<IPAddressRange> CanSerializable_Test_Values =>
+            new TheoryData<IPAddressRange>
+            {
+                new IPAddressRange(IPAddress.Parse("192.168.1.0")),
+                new IPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
+                new IPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::FFFF:4321")),
+            };
 
         [Theory]
         [MemberData(nameof(CanSerializable_Test_Values))]
@@ -844,6 +840,86 @@ namespace Arcus.Tests
             Assert.Empty(results);
         }
 
+        [Fact]
+        public void TryExcludeAll_ExclusionTailAtIPv4Max_WithLeadingSegment_Test()
+        {
+            // Exclusion ends at 255.255.255.255; only the leading segment before the exclusion is retained.
+            var initialRange = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("200.0.0.0"));
+            var exclusion = new IPAddressRange(IPAddress.Parse("100.0.0.0"), IPAddress.Parse("255.255.255.255"));
+
+            var success = IPAddressRange.TryExcludeAll(initialRange, new[] { exclusion }, out var results);
+
+            Assert.True(success);
+            var list = results.ToList();
+            Assert.Single(list);
+            Assert.Equal(IPAddress.Parse("10.0.0.0"), list[0].Head);
+            Assert.Equal(IPAddress.Parse("99.255.255.255"), list[0].Tail);
+        }
+
+        [Fact]
+        public void TryExcludeAll_ExclusionTailAtIPv4Max_CoversAll_Test()
+        {
+            // Exclusion spans the entire address space; nothing remains.
+            var initialRange = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("200.0.0.0"));
+            var exclusion = new IPAddressRange(IPAddress.Parse("0.0.0.0"), IPAddress.Parse("255.255.255.255"));
+
+            var success = IPAddressRange.TryExcludeAll(initialRange, new[] { exclusion }, out var results);
+
+            Assert.True(success);
+            Assert.Empty(results);
+        }
+
+        [Fact]
+        public void TryExcludeAll_ExclusionHeadAtIPv4Min_WithTrailingSegment_Test()
+        {
+            // Exclusion starts at 0.0.0.0; only the trailing segment after the exclusion is retained.
+            var initialRange = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("200.0.0.0"));
+            var exclusion = new IPAddressRange(IPAddress.Parse("0.0.0.0"), IPAddress.Parse("50.0.0.0"));
+
+            var success = IPAddressRange.TryExcludeAll(initialRange, new[] { exclusion }, out var results);
+
+            Assert.True(success);
+            var list = results.ToList();
+            Assert.Single(list);
+            Assert.Equal(IPAddress.Parse("50.0.0.1"), list[0].Head);
+            Assert.Equal(IPAddress.Parse("200.0.0.0"), list[0].Tail);
+        }
+
+        [Fact]
+        public void TryExcludeAll_ExclusionTailAtIPv6Max_WithLeadingSegment_Test()
+        {
+            // IPv6: exclusion ends at the family maximum; only the leading segment is retained.
+            var initialRange = new IPAddressRange(IPAddress.Parse("::1"), IPAddress.Parse("f000::"));
+            var exclusion = new IPAddressRange(
+                IPAddress.Parse("8000::"),
+                IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+            );
+
+            var success = IPAddressRange.TryExcludeAll(initialRange, new[] { exclusion }, out var results);
+
+            Assert.True(success);
+            var list = results.ToList();
+            Assert.Single(list);
+            Assert.Equal(IPAddress.Parse("::1"), list[0].Head);
+            Assert.Equal(IPAddress.Parse("7fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"), list[0].Tail);
+        }
+
+        [Fact]
+        public void TryExcludeAll_ExclusionHeadAtIPv6Min_WithTrailingSegment_Test()
+        {
+            // IPv6: exclusion starts at the family minimum; only the trailing segment is retained.
+            var initialRange = new IPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("f000::"));
+            var exclusion = new IPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("8000::"));
+
+            var success = IPAddressRange.TryExcludeAll(initialRange, new[] { exclusion }, out var results);
+
+            Assert.True(success);
+            var list = results.ToList();
+            Assert.Single(list);
+            Assert.Equal(IPAddress.Parse("8000::1"), list[0].Head);
+            Assert.Equal(IPAddress.Parse("f000::"), list[0].Tail);
+        }
+
         #endregion // end: TryExcludeAll
 
         #region Formatting
@@ -872,36 +948,42 @@ namespace Arcus.Tests
 
         #region ToString(string, IFormatProvider)
 
-        public static IEnumerable<object[]> ToString_Format_Test_Values()
+        /// <summary>
+        ///     Gets test data for <see cref="ToString_Format_Test" />.
+        ///     Covers all general format specifiers (<see langword="null" />, empty, "g", "G") for both IPv4 and IPv6 ranges.
+        ///     <para>Parameters: expected (string), format (string), formatProvider (IFormatProvider), ipAddressRange (IPAddressRange).</para>
+        /// </summary>
+        public static TheoryData<string, string, IFormatProvider, IPAddressRange> ToString_Format_Test_Values
         {
-            // general formats
-            foreach (var format in new[] { null, string.Empty, "g", "G" })
+            get
             {
-                foreach (var ipAddressRange in Ipv4AddressRanges().Concat(Ipv6AddressRanges()))
+                var ipv4Range = new IPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.42"));
+                var ipv4Single = new IPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.1"));
+                var ipv6Range = new IPAddressRange(IPAddress.Parse("::beef"), IPAddress.Parse("0123::dead"));
+                var ipv6Single = new IPAddressRange(IPAddress.Parse("::beef"), IPAddress.Parse("::beef"));
+
+                var data = new TheoryData<string, string, IFormatProvider, IPAddressRange>();
+
+                foreach (var format in new[] { null, string.Empty, "g", "G" })
                 {
-                    yield return new object[]
+                    foreach (var range in new[] { ipv4Range, ipv4Single, ipv6Range, ipv6Single })
                     {
-                        $"{ipAddressRange.Head} - {ipAddressRange.Tail}",
-                        format,
-                        CultureInfo.CurrentCulture,
-                        ipAddressRange,
-                    };
+                        data.Add($"{range.Head} - {range.Tail}", format, CultureInfo.CurrentCulture, range);
+                    }
                 }
-            }
 
-            IEnumerable<IPAddressRange> Ipv4AddressRanges()
-            {
-                yield return new IPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.42"));
-                yield return new IPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.1"));
-            }
-
-            IEnumerable<IPAddressRange> Ipv6AddressRanges()
-            {
-                yield return new IPAddressRange(IPAddress.Parse("::beef"), IPAddress.Parse("0123::dead"));
-                yield return new IPAddressRange(IPAddress.Parse("::beef"), IPAddress.Parse("::beef"));
+                return data;
             }
         }
 
+        /// <summary>
+        ///     Verifies that <see cref="IPAddressRange.ToString(string, IFormatProvider)" /> returns the expected string
+        ///     for various format specifiers and address ranges.
+        /// </summary>
+        /// <param name="expected">the expected formatted string.</param>
+        /// <param name="format">the format specifier to use.</param>
+        /// <param name="formatProvider">the format provider to use.</param>
+        /// <param name="ipAddressRange">the IP address range to format.</param>
         [Theory]
         [MemberData(nameof(ToString_Format_Test_Values))]
         public void ToString_Format_Test(
