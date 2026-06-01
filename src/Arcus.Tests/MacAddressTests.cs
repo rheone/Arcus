@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.RegularExpressions;
-using Gulliver;
 using Xunit;
 #if NET48   // maintained for .NET 4.8 compatibility
 using System.IO;
@@ -50,7 +49,7 @@ namespace Arcus.Tests
 
             // Assert
             Assert.NotNull(defaultMacAddress);
-            Assert.Equal(0, ByteArrayUtils.CompareUnsignedBigEndian(expected, defaultMacAddress.GetAddressBytes()));
+            Assert.Equal(expected, defaultMacAddress.GetAddressBytes());
         }
 
         #endregion end: DefaultMacAddress
@@ -73,7 +72,7 @@ namespace Arcus.Tests
             Assert.NotNull(addressBytes);
             Assert.IsType<byte[]>(addressBytes);
             Assert.Equal(addressBytes.Length, addressBytes.Length);
-            Assert.Equal(0, ByteArrayUtils.CompareUnsignedBigEndian(bytes, addressBytes));
+            Assert.Equal(bytes, addressBytes);
         }
 
         #endregion end: GetAddressBytes
@@ -92,7 +91,7 @@ namespace Arcus.Tests
             var cidBytes = macAddress.GetCidBytes();
 
             // Assert
-            Assert.Equal(0, ByteArrayUtils.CompareUnsignedBigEndian(bytes.Skip(3).Take(3).ToArray(), cidBytes));
+            Assert.Equal(bytes.Skip(3).Take(3).ToArray(), cidBytes);
         }
 
         #endregion end: GetCidBytes
@@ -133,7 +132,7 @@ namespace Arcus.Tests
             var ouiBytes = macAddress.GetOuiBytes();
 
             // Assert
-            Assert.Equal(0, ByteArrayUtils.CompareUnsignedBigEndian(bytes.Take(3).ToArray(), ouiBytes));
+            Assert.Equal(bytes.Take(3).ToArray(), ouiBytes);
         }
 
         #endregion end: GetOuiBytes
@@ -492,7 +491,7 @@ namespace Arcus.Tests
 
             var bytes = new byte[] { 0x00, 0xCD, 0xEF, 0x01, 0x23, 0x45 };
 
-            var macAddresses = new[] { new MacAddress(bytes), new MacAddress(bytes.ReverseBytes()) };
+            var macAddresses = new[] { new MacAddress(bytes), new MacAddress(bytes.Reverse().ToArray()) };
 
             foreach (var macAddress in macAddresses)
             {
@@ -589,7 +588,7 @@ namespace Arcus.Tests
 
                 var bytes = new byte[] { 0x00, 0xCD, 0xEF, 0x01, 0x23, 0x45 };
 
-                var macAddresses = new[] { new MacAddress(bytes), new MacAddress(bytes.ReverseBytes()) };
+                var macAddresses = new[] { new MacAddress(bytes), new MacAddress(bytes.Reverse().ToArray()) };
 
                 foreach (var macAddress in macAddresses)
                 {

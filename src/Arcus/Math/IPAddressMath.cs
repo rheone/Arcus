@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Net;
 using Arcus.Utilities;
-using Gulliver;
 using static System.Net.Sockets.AddressFamily;
 
 namespace Arcus.Math
@@ -48,20 +47,15 @@ namespace Arcus.Math
                 return input;
             }
 
-            if (!ByteArrayUtils.TrySumBigEndian(input.GetAddressBytes(), delta, out var byteResult))
+            var wrapper = BigEndianBitWrapper.FromBytes(input.GetAddressBytes());
+            if (!wrapper.TryAdd(delta, out var result))
             {
-                throw new InvalidOperationException("could not increment address");
+                throw new InvalidOperationException(
+                    delta > 0 ? "increment would overflow maximum size of ip address" : "could not increment address"
+                );
             }
 
-            var addressByteWidth = input.IsIPv4() ? IPAddressUtilities.IPv4ByteCount : IPAddressUtilities.IPv6ByteCount;
-
-            if (byteResult.Length > addressByteWidth)
-            {
-                throw new InvalidOperationException("increment would overflow maximum size of ip address");
-            }
-
-            var paddedBytes = byteResult.PadBigEndianMostSignificantBytes(addressByteWidth);
-            return new IPAddress(paddedBytes);
+            return new IPAddress(result.ToBytes());
         }
 
         /// <summary>
@@ -125,7 +119,9 @@ namespace Arcus.Math
                 return false;
             }
 
-            return ByteArrayUtils.CompareUnsignedBigEndian(left.GetAddressBytes(), right.GetAddressBytes()) > 0;
+            return BigEndianBitWrapper
+                    .FromBytes(left.GetAddressBytes())
+                    .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) > 0;
         }
 
         /// <summary>
@@ -140,7 +136,9 @@ namespace Arcus.Math
                 || (!ReferenceEquals(left, null) && left.Equals(right))
                 || (
                     left?.AddressFamily == right?.AddressFamily
-                    && ByteArrayUtils.CompareUnsignedBigEndian(left?.GetAddressBytes(), right?.GetAddressBytes()) >= 0
+                    && BigEndianBitWrapper
+                        .FromBytes(left.GetAddressBytes())
+                        .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) >= 0
                 );
         }
 
@@ -158,7 +156,9 @@ namespace Arcus.Math
                 return false;
             }
 
-            return ByteArrayUtils.CompareUnsignedBigEndian(left.GetAddressBytes(), right.GetAddressBytes()) < 0;
+            return BigEndianBitWrapper
+                    .FromBytes(left.GetAddressBytes())
+                    .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) < 0;
         }
 
         /// <summary>
@@ -173,7 +173,9 @@ namespace Arcus.Math
                 || (!ReferenceEquals(left, null) && left.Equals(right))
                 || (
                     left?.AddressFamily == right?.AddressFamily
-                    && ByteArrayUtils.CompareUnsignedBigEndian(left?.GetAddressBytes(), right?.GetAddressBytes()) <= 0
+                    && BigEndianBitWrapper
+                        .FromBytes(left.GetAddressBytes())
+                        .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) <= 0
                 );
         }
 
@@ -215,7 +217,9 @@ namespace Arcus.Math
 
             var lowAddressBytes = low.GetAddressBytes();
             var highAddressBytes = high.GetAddressBytes();
-            if (ByteArrayUtils.CompareUnsignedBigEndian(lowAddressBytes, highAddressBytes) > 0)
+            var lowWrap = BigEndianBitWrapper.FromBytes(lowAddressBytes);
+            var highWrap = BigEndianBitWrapper.FromBytes(highAddressBytes);
+            if (lowWrap.CompareTo(highWrap) > 0)
             {
                 throw new InvalidOperationException($"{nameof(low)} must not be greater than {nameof(high)}");
             }
@@ -227,9 +231,8 @@ namespace Arcus.Math
                 return inclusive;
             }
 
-            var inputBytes = input.GetAddressBytes();
-            return ByteArrayUtils.CompareUnsignedBigEndian(inputBytes, lowAddressBytes) > 0
-                && ByteArrayUtils.CompareUnsignedBigEndian(inputBytes, highAddressBytes) < 0;
+            var inputWrap = BigEndianBitWrapper.FromBytes(input.GetAddressBytes());
+            return inputWrap.CompareTo(lowWrap) > 0 && inputWrap.CompareTo(highWrap) < 0;
         }
 
         /// <summary>

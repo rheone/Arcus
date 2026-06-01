@@ -7,7 +7,6 @@ using System.Numerics;
 using System.Text;
 using Arcus;
 using Arcus.Tests.XunitSerializers;
-using Gulliver;
 using Xunit;
 using Xunit.Sdk;
 #if NET48   // maintained for .NET 4.8 compatibility
@@ -1846,7 +1845,7 @@ namespace Arcus.Tests
 
             for (var i = 0; i <= 32; i++)
             {
-                var netmaskBytes = Enumerable.Repeat((byte)0xFF, 4).ToArray().ShiftBitsLeft(32 - i);
+                var netmaskBytes = BigEndianBitWrapper.CreateMask(4, i).ToBytes();
 
                 var netmask = new IPAddress(netmaskBytes);
 
@@ -1907,7 +1906,7 @@ namespace Arcus.Tests
 
             for (var i = 0; i <= 32; i++)
             {
-                var netmaskBytes = Enumerable.Repeat((byte)0xFF, 4).ToArray().ShiftBitsLeft(32 - i);
+                var netmaskBytes = BigEndianBitWrapper.CreateMask(4, i).ToBytes();
 
                 var netmask = new IPAddress(netmaskBytes);
 

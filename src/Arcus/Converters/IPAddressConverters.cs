@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using System.Text.RegularExpressions;
 using Arcus.Utilities;
-using Gulliver;
 
 namespace Arcus.Converters
 {
@@ -172,7 +170,7 @@ namespace Arcus.Converters
         /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
         public static string ToHexString(this IPAddress ipAddress)
         {
-            return ipAddress?.GetAddressBytes().ToString("HC", CultureInfo.InvariantCulture);
+            return ipAddress == null ? null : BigEndianBitWrapper.FromBytes(ipAddress.GetAddressBytes()).ToHexString();
         }
 
         /// <summary>
@@ -183,7 +181,7 @@ namespace Arcus.Converters
         /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
         public static string ToNumericString(this IPAddress ipAddress)
         {
-            return ipAddress?.GetAddressBytes().ToString("IBE", CultureInfo.InvariantCulture);
+            return ipAddress == null ? null : BigEndianBitWrapper.FromBytes(ipAddress.GetAddressBytes()).ToDecimalString();
         }
 
         /// <summary>

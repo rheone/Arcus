@@ -1,6 +1,7 @@
-﻿using System.Text;
+﻿using System;
+using System.Linq;
+using System.Text;
 using Arcus.Utilities;
-using Gulliver;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -51,7 +52,7 @@ namespace Arcus.DocExamples
                     .Append(',')
                     .Append(subnet.Netmask)
                     .Append(',')
-                    .Append(subnet.Netmask.GetAddressBytes().ToString("b"))
+                    .Append(string.Concat(subnet.Netmask.GetAddressBytes().Select(b => Convert.ToString(b, 2).PadLeft(8, '0'))))
                     .Append(',')
                     .Append(subnet.Length)
                     .Append(',')

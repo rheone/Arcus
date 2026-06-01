@@ -1,9 +1,9 @@
-﻿using System.Globalization;
+﻿using System;
+using System.Globalization;
 using System.Linq;
 using System.Net;
 using System.Text;
 using Arcus.Converters;
-using Gulliver;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -25,15 +25,8 @@ namespace Arcus.DocExamples
         [Fact]
         public void NetmaskToCidrRoutePrefix_Example()
         {
-            // equivalent byte value of 255.255.255.255 or 2^32
-            var maxIPv4Bytes = Enumerable.Repeat((byte)0xFF, 4).ToArray();
-
-            // build all valid net masks
-            var allNetMasks = Enumerable
-                .Range(7, 10)
-                .Select(i => maxIPv4Bytes.ShiftBitsLeft(32 - i)) // use Gulliver to shift bits of byte array
-                .Select(b => new IPAddress(b))
-                .ToArray();
+            // build all valid net masks by setting the top i bits of 4 bytes
+            var allNetMasks = Enumerable.Range(7, 10).Select(i => MakeNetmaskBytes(i)).Select(b => new IPAddress(b)).ToArray();
 
             var sb = new StringBuilder();
 
@@ -45,11 +38,22 @@ namespace Arcus.DocExamples
                     .Append('\t')
                     .AppendFormat(CultureInfo.InvariantCulture, "{0,-15}", netmask)
                     .Append('\t')
-                    .Append(netmask.GetAddressBytes().ToString("b")) // using Gulliver to print bytes as bits
+                    .Append(string.Concat(netmask.GetAddressBytes().Select(b => Convert.ToString(b, 2).PadLeft(8, '0'))))
                     .AppendLine();
             }
 
             this._output.WriteLine(sb.ToString());
+
+            static byte[] MakeNetmaskBytes(int prefixLength)
+            {
+                var result = new byte[4];
+                for (var i = 0; i < prefixLength && i < 32; i++)
+                {
+                    result[i / 8] |= (byte)(0x80 >> (i % 8));
+                }
+
+                return result;
+            }
         }
 
         [Fact]

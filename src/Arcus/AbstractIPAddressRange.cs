@@ -8,7 +8,6 @@ using System.Net.Sockets;
 using System.Numerics;
 using Arcus.Math;
 using Arcus.Utilities;
-using Gulliver;
 
 namespace Arcus
 {
@@ -187,17 +186,9 @@ namespace Arcus
 
             BigInteger CalculateLength()
             {
-                // convert big endian (network byte order) difference result to a 0x00 prefixed byte array for converting to an unsigned BigInteger
-                var differenceBytes = ByteArrayUtils.SubtractUnsignedBigEndian(tail.GetAddressBytes(), head.GetAddressBytes());
-                var differenceBytesLength = differenceBytes.Length;
-                var unsignedLittleEndianBytes = new byte[differenceBytesLength + 1]; // one greater so trailing byte is always 0x00
-
-                for (var i = 0; i < differenceBytesLength; i++)
-                {
-                    unsignedLittleEndianBytes[differenceBytesLength - 1 - i] = differenceBytes[i];
-                }
-
-                return new BigInteger(unsignedLittleEndianBytes) + 1; // a rare but valid use of BigInteger
+                var tailWrap = BigEndianBitWrapper.FromBytes(tail.GetAddressBytes());
+                var headWrap = BigEndianBitWrapper.FromBytes(head.GetAddressBytes());
+                return tailWrap.Subtract(headWrap).ToBigInteger() + 1;
             }
         }
 
@@ -252,42 +243,24 @@ namespace Arcus
         /// <inheritdoc />
         public IEnumerator<IPAddress> GetEnumerator()
         {
-            // determine maximum possible address for iteration
-            var addressLimit = IPAddressMath
-                .Min(this.Tail, this.IsIPv4 ? IPAddressUtilities.IPv4MaxAddress : IPAddressUtilities.IPv6MaxAddress)
-                .GetAddressBytes();
+            var limitWrap = BigEndianBitWrapper.FromBytes(
+                IPAddressMath
+                    .Min(this.Tail, this.IsIPv4 ? IPAddressUtilities.IPv4MaxAddress : IPAddressUtilities.IPv6MaxAddress)
+                    .GetAddressBytes()
+            );
 
-            // determine the width of the bye array for the address address
-            var addressByteWidth = this.IsIPv4 ? IPAddressUtilities.IPv4ByteCount : IPAddressUtilities.IPv6ByteCount;
+            var current = BigEndianBitWrapper.FromBytes(this.Head.GetAddressBytes());
 
-            var currentAddressBytes = this.Head.GetAddressBytes();
-
-            //  iterate appropriately as long as the current address isn't beyond the limit
-            while (ByteArrayUtils.CompareUnsignedBigEndian(currentAddressBytes, addressLimit) <= 0)
+            while (current.CompareTo(limitWrap) <= 0)
             {
-                yield return new IPAddress(currentAddressBytes);
+                yield return new IPAddress(current.ToBytes());
 
-                // determine next address
-                if (!ByteArrayUtils.TrySumBigEndian(currentAddressBytes, 1, out var nextAddressBytes))
+                if (!current.TryAdd(1, out var next))
                 {
                     break;
                 }
 
-                var nextAddressByteWidth = nextAddressBytes.Length;
-                if (nextAddressByteWidth > addressByteWidth)
-                {
-                    break;
-                }
-
-                // copy appropriate portion of next address with prefixed 0x00 bytes
-                currentAddressBytes = new byte[addressByteWidth];
-                Array.Copy(
-                    nextAddressBytes,
-                    0,
-                    currentAddressBytes,
-                    addressByteWidth - nextAddressByteWidth,
-                    nextAddressByteWidth
-                );
+                current = next;
             }
         }
 

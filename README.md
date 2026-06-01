@@ -13,6 +13,16 @@ Arcus is a C# manipulation library for calculating, parsing, formatting, convert
 
 ## ❗Breaking Changes
 
+### Gulliver dependency removed
+
+The [Gulliver](https://github.com/sandialabs/gulliver) NuGet package has been removed as a dependency. All byte-level manipulation previously delegated to Gulliver is now handled by the internal `BigEndianBitWrapper` type inside this library.
+
+**Impact on consumers:** If your project depended on Gulliver being available transitively through Arcus (e.g. you used `ByteArrayUtils`, `ShiftBitsLeft`, or the `byte[].ToString("HC"/"IBE"/"b")` format extensions without a direct reference to Gulliver), you must now add a direct `PackageReference` to Gulliver in your project, or replace those usages with equivalent implementations.
+
+**`BigEndianBitWrapper` (internal):** An internal `BigEndianBitWrapper` struct now handles all big-endian unsigned integer arithmetic, bitwise operations, comparison, and formatting for IP address and subnet calculations. It is not part of the public API.
+
+---
+
 ### `SubnetUtilities.PrivateIPAddressRangesList` and `LinkLocalIPAddressRangesList` are now `readonly`
 
 The two public static fields `SubnetUtilities.PrivateIPAddressRangesList` and `SubnetUtilities.LinkLocalIPAddressRangesList` are now declared `readonly`. Previously the field *reference* could be replaced by external code (e.g., `SubnetUtilities.PrivateIPAddressRangesList = myList`). That pattern will no longer compile. The `IReadOnlyList<Subnet>` type already prevented mutation of the list *contents*; `readonly` now also prevents replacement of the list itself.
@@ -174,7 +184,6 @@ This project was built with the aid of:
 
 - [CSharpier](https://csharpier.com/)
 - [dotnet-outdated](https://github.com/dotnet-outdated/dotnet-outdated)
-- [Gulliver](https://github.com/sandialabs/gulliver) - A self created library that helped us keep our bits and bytes in order
 - [Husky.Net](https://alirezanet.github.io/Husky.Net/)
 - [Roslynator](https://josefpihrt.github.io/docs/roslynator/)
 - [SonarAnalyzer](https://www.sonarsource.com/products/sonarlint/features/visual-studio/)

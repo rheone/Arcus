@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
-using Gulliver;
 
 namespace Arcus.Comparers
 {
@@ -63,7 +62,9 @@ namespace Arcus.Comparers
             var addressFamilyComparison = this._addressFamilyComparer.Compare(x.AddressFamily, y.AddressFamily);
 
             return addressFamilyComparison == 0
-                ? ByteArrayUtils.CompareUnsignedBigEndian(x.GetAddressBytes(), y.GetAddressBytes())
+                ? BigEndianBitWrapper
+                    .FromBytes(x.GetAddressBytes())
+                    .CompareTo(BigEndianBitWrapper.FromBytes(y.GetAddressBytes()))
                 : addressFamilyComparison;
         }
     }

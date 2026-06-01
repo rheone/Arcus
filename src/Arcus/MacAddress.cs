@@ -4,7 +4,6 @@ using System.Globalization;
 using System.Linq;
 using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
-using Gulliver;
 
 namespace Arcus
 {
@@ -165,7 +164,9 @@ namespace Arcus
         /// <inheritdoc />
         public int CompareTo(MacAddress other)
         {
-            return ReferenceEquals(null, other) ? 1 : ByteArrayUtils.CompareUnsignedBigEndian(this._address, other._address);
+            return ReferenceEquals(null, other)
+                ? 1
+                : BigEndianBitWrapper.FromBytes(this._address).CompareTo(BigEndianBitWrapper.FromBytes(other._address));
         }
 
         #endregion
@@ -176,9 +177,7 @@ namespace Arcus
         public bool Equals(MacAddress other)
         {
             return !ReferenceEquals(null, other)
-                && (
-                    ReferenceEquals(this, other) || ByteArrayUtils.CompareUnsignedBigEndian(this._address, other._address) == 0
-                );
+                && (ReferenceEquals(this, other) || this._address.SequenceEqual(other._address));
         }
 
         #endregion
@@ -252,7 +251,7 @@ namespace Arcus
                 case "s": // space delimited
                     return DelimitedBaseConverter(this._address, 16, " ").ToUpperInvariant();
                 case "i": // integer value
-                    return this._address.ToString("I", formatProvider);
+                    return BigEndianBitWrapper.FromBytes(this._address).ToDecimalString();
                 case "d": // dash delimited
                     return DelimitedBaseConverter(this._address, 16, "-").ToUpperInvariant();
                 default:

@@ -82,11 +82,6 @@
           "Microsoft.TestPlatform.ObjectModel": "17.13.0"
         }
       },
-      "Gulliver": {
-        "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "J232PI4ccScfLKt59UzyHBRZLcAJpyJ+N/at1fFF/XxBKwjl8idDVPkMU3FZkwaaU/e3Ert8/EnGLg5CxmQ8dQ=="
-      },
       "Microsoft.Bcl.HashCode": {
         "type": "Transitive",
         "resolved": "6.0.0",
@@ -166,7 +161,6 @@
       "arcus": {
         "type": "Project",
         "dependencies": {
-          "Gulliver": "[3.0.0, )",
           "Microsoft.Bcl.HashCode": "[6.0.0, )"
         }
       }
@@ -241,11 +235,6 @@
         "resolved": "3.1.5",
         "contentHash": "tKi7dSTwP4m5m9eXPM2Ime4Kn7xNf4x4zT9sdLO/G4hZVnQCRiMTWoSZqI/pYTVeI27oPPqHBKYI/DjJ9GsYgA=="
       },
-      "Gulliver": {
-        "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "J232PI4ccScfLKt59UzyHBRZLcAJpyJ+N/at1fFF/XxBKwjl8idDVPkMU3FZkwaaU/e3Ert8/EnGLg5CxmQ8dQ=="
-      },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
         "resolved": "18.5.1",
@@ -311,10 +300,7 @@
         }
       },
       "arcus": {
-        "type": "Project",
-        "dependencies": {
-          "Gulliver": "[3.0.0, )"
-        }
+        "type": "Project"
       }
     },
     "net8.0": {
@@ -387,11 +373,6 @@
         "resolved": "3.1.5",
         "contentHash": "tKi7dSTwP4m5m9eXPM2Ime4Kn7xNf4x4zT9sdLO/G4hZVnQCRiMTWoSZqI/pYTVeI27oPPqHBKYI/DjJ9GsYgA=="
       },
-      "Gulliver": {
-        "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "J232PI4ccScfLKt59UzyHBRZLcAJpyJ+N/at1fFF/XxBKwjl8idDVPkMU3FZkwaaU/e3Ert8/EnGLg5CxmQ8dQ=="
-      },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
         "resolved": "18.5.1",
@@ -457,10 +438,7 @@
         }
       },
       "arcus": {
-        "type": "Project",
-        "dependencies": {
-          "Gulliver": "[3.0.0, )"
-        }
+        "type": "Project"
       }
     },
     "net9.0": {
@@ -533,11 +511,6 @@
         "resolved": "3.1.5",
         "contentHash": "tKi7dSTwP4m5m9eXPM2Ime4Kn7xNf4x4zT9sdLO/G4hZVnQCRiMTWoSZqI/pYTVeI27oPPqHBKYI/DjJ9GsYgA=="
       },
-      "Gulliver": {
-        "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "J232PI4ccScfLKt59UzyHBRZLcAJpyJ+N/at1fFF/XxBKwjl8idDVPkMU3FZkwaaU/e3Ert8/EnGLg5CxmQ8dQ=="
-      },
       "Microsoft.CodeCoverage": {
         "type": "Transitive",
         "resolved": "18.5.1",
@@ -603,10 +576,7 @@
         }
       },
       "arcus": {
-        "type": "Project",
-        "dependencies": {
-          "Gulliver": "[3.0.0, )"
-        }
+        "type": "Project"
       }
     }
   }

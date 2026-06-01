@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using Arcus;
 using Arcus.Math;
 using Arcus.Utilities;
-using Gulliver;
 using Xunit;
 
 namespace Arcus.Tests.Utilities
@@ -250,7 +250,7 @@ namespace Arcus.Tests.Utilities
             // all valid netmask values
             for (var i = 0; i <= 32; i++)
             {
-                var netmaskBytes = Enumerable.Repeat((byte)0xFF, 4).ToArray().ShiftBitsLeft(32 - i);
+                var netmaskBytes = BigEndianBitWrapper.CreateMask(4, i).ToBytes();
                 data.Add(true, new IPAddress(netmaskBytes));
             }
 

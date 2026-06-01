@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
-using Gulliver;
 
 namespace Arcus.Utilities
 {
@@ -407,7 +406,7 @@ namespace Arcus.Utilities
                 );
             }
 
-            return new IPAddress(input.PadBigEndianMostSignificantBytes(expectedByteCount));
+            return new IPAddress(BigEndianBitWrapper.FromBytes(input, expectedByteCount).ToBytes());
         }
 
         /// <summary>

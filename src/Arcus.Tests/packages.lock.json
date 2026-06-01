@@ -101,11 +101,6 @@
         "resolved": "5.1.1",
         "contentHash": "rpYtIczkzGpf+EkZgDr9CClTdemhsrwA/W5hMoPjLkRFnXzH44zDLoovXeKtmxb1ykXK9aJVODSpiJml8CTw2g=="
       },
-      "Gulliver": {
-        "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "J232PI4ccScfLKt59UzyHBRZLcAJpyJ+N/at1fFF/XxBKwjl8idDVPkMU3FZkwaaU/e3Ert8/EnGLg5CxmQ8dQ=="
-      },
       "Microsoft.ApplicationInsights": {
         "type": "Transitive",
         "resolved": "2.23.0",
@@ -331,7 +326,6 @@
       "arcus": {
         "type": "Project",
         "dependencies": {
-          "Gulliver": "[3.0.0, )",
           "Microsoft.Bcl.HashCode": "[6.0.0, )"
         }
       }
@@ -427,11 +421,6 @@
           "System.Diagnostics.EventLog": "6.0.0"
         }
       },
-      "Gulliver": {
-        "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "J232PI4ccScfLKt59UzyHBRZLcAJpyJ+N/at1fFF/XxBKwjl8idDVPkMU3FZkwaaU/e3Ert8/EnGLg5CxmQ8dQ=="
-      },
       "Microsoft.ApplicationInsights": {
         "type": "Transitive",
         "resolved": "2.23.0",
@@ -574,10 +563,7 @@
         }
       },
       "arcus": {
-        "type": "Project",
-        "dependencies": {
-          "Gulliver": "[3.0.0, )"
-        }
+        "type": "Project"
       }
     },
     "net8.0": {
@@ -671,11 +657,6 @@
           "System.Diagnostics.EventLog": "6.0.0"
         }
       },
-      "Gulliver": {
-        "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "J232PI4ccScfLKt59UzyHBRZLcAJpyJ+N/at1fFF/XxBKwjl8idDVPkMU3FZkwaaU/e3Ert8/EnGLg5CxmQ8dQ=="
-      },
       "Microsoft.ApplicationInsights": {
         "type": "Transitive",
         "resolved": "2.23.0",
@@ -818,10 +799,7 @@
         }
       },
       "arcus": {
-        "type": "Project",
-        "dependencies": {
-          "Gulliver": "[3.0.0, )"
-        }
+        "type": "Project"
       }
     },
     "net9.0": {
@@ -915,11 +893,6 @@
           "System.Diagnostics.EventLog": "6.0.0"
         }
       },
-      "Gulliver": {
-        "type": "Transitive",
-        "resolved": "3.0.0",
-        "contentHash": "J232PI4ccScfLKt59UzyHBRZLcAJpyJ+N/at1fFF/XxBKwjl8idDVPkMU3FZkwaaU/e3Ert8/EnGLg5CxmQ8dQ=="
-      },
       "Microsoft.ApplicationInsights": {
         "type": "Transitive",
         "resolved": "2.23.0",
@@ -1062,10 +1035,7 @@
         }
       },
       "arcus": {
-        "type": "Project",
-        "dependencies": {
-          "Gulliver": "[3.0.0, )"
-        }
+        "type": "Project"
       }
     }
   }

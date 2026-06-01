@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Linq;
 using System.Net;
+using Arcus;
 using Arcus.Converters;
-using Gulliver;
 using Xunit;
 
 namespace Arcus.Tests.Converters
@@ -265,7 +264,7 @@ namespace Arcus.Tests.Converters
 
                 for (var i = 0; i <= 32; i++)
                 {
-                    var netmaskBytes = Enumerable.Repeat((byte)0xFF, 4).ToArray().ShiftBitsLeft(32 - i);
+                    var netmaskBytes = BigEndianBitWrapper.CreateMask(4, i).ToBytes();
                     data.Add(i, new IPAddress(netmaskBytes));
                 }
 

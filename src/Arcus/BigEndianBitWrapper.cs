@@ -71,9 +71,14 @@ namespace Arcus
             get
             {
                 if (ByteWidth >= 16)
+                {
                     return (ulong.MaxValue, ulong.MaxValue);
+                }
+
                 if (ByteWidth == 8)
+                {
                     return (0UL, ulong.MaxValue);
+                }
 
                 // ByteWidth in [1,7]: value fits entirely in lo
                 return (0UL, (1UL << (ByteWidth * 8)) - 1);
@@ -235,16 +240,23 @@ namespace Arcus
             if (len <= 8)
             {
                 foreach (var b in bytes)
+                {
                     lo = (lo << 8) | b;
+                }
             }
             else
             {
                 // Bytes [0, hiCount) fill hi MSB-first; the remaining 8 bytes fill lo.
                 var hiCount = len - 8;
                 for (var i = 0; i < hiCount; i++)
+                {
                     hi = (hi << 8) | bytes[i];
+                }
+
                 for (var i = hiCount; i < len; i++)
+                {
                     lo = (lo << 8) | bytes[i];
+                }
             }
 
             return new BigEndianBitWrapper(hi, lo, byteWidth);
@@ -276,7 +288,9 @@ namespace Arcus
             }
 
             if (hostBits == 0)
+            {
                 return new BigEndianBitWrapper(allHi, allLo, byteWidth);
+            }
 
             ulong maskHi,
                 maskLo;
@@ -563,7 +577,7 @@ namespace Arcus
         #region Formatting
 
         /// <summary>
-        ///     Returns an uppercase hex string with no separators or prefix (Gulliver "HC" equivalent).
+        ///     Returns an uppercase hex string with no separators or prefix.
         ///     Length is always <c>ByteWidth × 2</c> characters.
         /// </summary>
         /// <returns>Example: 192.168.1.1 → "C0A80101".</returns>
@@ -580,15 +594,13 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Returns the decimal string of the unsigned big-endian integer value
-        ///     (Gulliver "IBE" equivalent).
+        ///     Returns the decimal string of the unsigned big-endian integer value.
         /// </summary>
         /// <returns>Example: 192.168.1.1 → "3232235777".</returns>
         public string ToDecimalString() => ToBigInteger().ToString(CultureInfo.InvariantCulture);
 
         /// <summary>
-        ///     Returns a binary string of exactly <c>ByteWidth × 8</c> characters, MSB first
-        ///     (Gulliver "b" equivalent).
+        ///     Returns a binary string of exactly <c>ByteWidth × 8</c> characters, MSB first.
         /// </summary>
         /// <returns>Example: 0x0F (1 byte) → "00001111".</returns>
         public string ToBinaryString()
@@ -673,7 +685,10 @@ namespace Arcus
             return _value.CompareTo(other._value);
 #else
             if (_hi != other._hi)
+            {
                 return _hi.CompareTo(other._hi);
+            }
+
             return _lo.CompareTo(other._lo);
 #endif
         }

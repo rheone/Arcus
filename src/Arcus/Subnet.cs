@@ -11,7 +11,6 @@ using Arcus.Comparers;
 using Arcus.Converters;
 using Arcus.Math;
 using Arcus.Utilities;
-using Gulliver;
 
 namespace Arcus
 {
@@ -1173,19 +1172,13 @@ namespace Arcus
 
         private static AddressAndMaskTuple NormalizeAndCreateNetMask(IPAddress head, int routingPrefix)
         {
-            var headBytes = head.GetAddressBytes();
-            var addressByteLength = headBytes.Length;
-
-            var maskBytes = Enumerable
-                .Repeat((byte)0xFF, addressByteLength)
-                .ToArray()
-                .ShiftBitsLeft((addressByteLength * 8) - routingPrefix);
-
-            var newHead = new IPAddress(ByteArrayUtils.BitwiseAndBigEndian(headBytes, maskBytes));
-            var newTail = new IPAddress(ByteArrayUtils.BitwiseOrBigEndian(headBytes, ByteArrayUtils.BitwiseNot(maskBytes)));
-            var netmask = new IPAddress(maskBytes);
-
-            return new AddressAndMaskTuple(newHead, newTail, netmask);
+            var headWrap = BigEndianBitWrapper.FromBytes(head.GetAddressBytes());
+            var maskWrap = BigEndianBitWrapper.CreateMask(headWrap.ByteWidth, routingPrefix);
+            return new AddressAndMaskTuple(
+                new IPAddress((headWrap & maskWrap).ToBytes()),
+                new IPAddress((headWrap | ~maskWrap).ToBytes()),
+                new IPAddress(maskWrap.ToBytes())
+            );
         }
 
         #endregion // end: Static metods, may be appropriate for extracting
