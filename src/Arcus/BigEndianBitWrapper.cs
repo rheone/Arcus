@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Globalization;
 using System.Numerics;
+#if !NET8_0_OR_GREATER
 using System.Text;
+#endif
 
 namespace Arcus
 {
@@ -27,7 +29,7 @@ namespace Arcus
         public readonly int ByteWidth;
 
 #if NET8_0_OR_GREATER
-        private readonly UInt128 _value;
+        private readonly UInt128 _value; // unsigned 128-bit backing store; always bounded to [0, MaxValueForWidth]
 
         /// <summary>Initializes a new instance of the <see cref="BigEndianBitWrapper" /> struct.</summary>
         /// <param name="value">The unsigned 128-bit value, already bounded to the representable range for <paramref name="byteWidth" /> bytes.</param>
@@ -157,14 +159,9 @@ namespace Arcus
                 );
             }
 
-            if (bigEndianBytes.Length == targetWidth)
-            {
-                return FromBytesCore(bigEndianBytes, targetWidth);
-            }
-
-            var padded = new byte[targetWidth];
-            Array.Copy(bigEndianBytes, 0, padded, targetWidth - bigEndianBytes.Length, bigEndianBytes.Length);
-            return FromBytesCore(padded, targetWidth);
+            // Leading zero bytes don't affect the integer value, so shorter arrays can be
+            // passed directly; FromBytesCore sets ByteWidth = targetWidth regardless.
+            return FromBytesCore(bigEndianBytes, targetWidth);
         }
 
         /// <summary>
@@ -207,6 +204,8 @@ namespace Arcus
 
 #if NET8_0_OR_GREATER
             var allOnes = byteWidth >= 16 ? UInt128.MaxValue : (UInt128.One << totalBits) - 1;
+            // Shift right to drop the low hostBits, then shift back left to restore bit positions —
+            // this clears the trailing hostBits while keeping the leading prefixLength bits set.
             var mask = hostBits == 0 ? allOnes : (allOnes >> hostBits) << hostBits;
             return new BigEndianBitWrapper(mask, byteWidth);
 #else
@@ -219,9 +218,12 @@ namespace Arcus
         ///     setting <see cref="ByteWidth" /> to <paramref name="byteWidth" />. Callers are responsible
         ///     for all argument validation.
         /// </summary>
-        /// <param name="bytes">Big-endian byte array; length must equal <paramref name="byteWidth" />.</param>
+        /// <param name="bytes">
+        ///     Big-endian byte array whose length is at most <paramref name="byteWidth" />; bytes absent
+        ///     from the leading (most-significant) side are treated as implicit zeros.
+        /// </param>
         /// <param name="byteWidth">Byte width to assign to the returned wrapper; must be in [1, 16].</param>
-        /// <returns>A wrapper whose value and byte width match <paramref name="bytes" />.</returns>
+        /// <returns>A wrapper whose numeric value equals <paramref name="bytes" /> interpreted as an unsigned big-endian integer, with <see cref="ByteWidth" /> set to <paramref name="byteWidth" />.</returns>
         private static BigEndianBitWrapper FromBytesCore(byte[] bytes, int byteWidth)
         {
 #if NET8_0_OR_GREATER
@@ -297,24 +299,26 @@ namespace Arcus
 
             if (byteWidth <= 8)
             {
-                // Value fits in lo; clear the low hostBits of lo.
+                // All bits live in lo. For valid inputs (byteWidth ≤ 8, prefixLength > 0), hostBits < 64,
+                // so the >= 64 guard is defensive; the shift-right-then-left clears the low hostBits.
                 maskHi = 0UL;
                 maskLo = hostBits >= 64 ? 0UL : (allLo >> hostBits) << hostBits;
             }
             else if (hostBits < 64)
             {
-                // Only low bits of lo are host bits.
+                // Host bits fall entirely within lo; the full hi word is the network prefix.
                 maskHi = allHi;
-                maskLo = (ulong.MaxValue >> hostBits) << hostBits;
+                maskLo = (ulong.MaxValue >> hostBits) << hostBits; // clear the low hostBits of lo
             }
             else if (hostBits == 64)
             {
+                // Entire lo word is host bits; hi carries the full network prefix.
                 maskHi = allHi;
                 maskLo = 0UL;
             }
             else
             {
-                // Host bits spill into hi.
+                // Host bits spill into hi; clear hiHostBits low bits of hi and zero lo entirely.
                 var hiHostBits = hostBits - 64;
                 maskHi = hiHostBits >= 64 ? 0UL : (allHi >> hiHostBits) << hiHostBits;
                 maskLo = 0UL;
@@ -350,7 +354,10 @@ namespace Arcus
 
             if (delta > 0)
             {
+                // Route through ulong before widening to UInt128 to make unsigned intent explicit.
                 var ud = (UInt128)(ulong)delta;
+                // Compare against headroom (maxValue - _value) rather than checking _value + ud > maxValue
+                // directly: _value can be UInt128.MaxValue when ByteWidth == 16, making the sum overflow.
                 if (ud > maxValue - _value)
                 {
                     result = default;
@@ -377,8 +384,9 @@ namespace Arcus
             if (delta > 0)
             {
                 var ud = (ulong)delta;
-                // Overflow if ud > maxValue - _value.
-                // Compute remainder = maxValue - _value (safe since _value ≤ maxValue).
+                // Compute headroom = maxValue - _value (safe because _value ≤ maxValue).
+                // If remHi > 0, headroom ≥ 2^64 which exceeds any ulong addend, so overflow is
+                // impossible; only check remLo when headroom fits entirely in 64 bits.
                 var (remHi, remLo) = SubtractHiLo(maxHi, maxLo, _hi, _lo);
                 if (remHi == 0 && ud > remLo)
                 {
@@ -513,15 +521,41 @@ namespace Arcus
         public byte[] ToBytes()
         {
             var result = new byte[ByteWidth];
+#if NET8_0_OR_GREATER
+            ToBytes(result.AsSpan());
+#else
+            ToBytesCore(result);
+#endif
+            return result;
+        }
 
 #if NET8_0_OR_GREATER
+        /// <summary>
+        ///     Writes the value as a big-endian sequence of exactly <see cref="ByteWidth" /> bytes into
+        ///     <paramref name="destination" />, zero-padded on the most-significant side.
+        ///     Prefer this overload over <see cref="ToBytes()" /> when the caller can supply a
+        ///     <c>stackalloc</c> buffer to avoid a heap allocation.
+        /// </summary>
+        /// <param name="destination">A span of at least <see cref="ByteWidth" /> bytes to write into.</param>
+        public void ToBytes(Span<byte> destination)
+        {
             var v = _value;
             for (var i = ByteWidth - 1; i >= 0; i--)
             {
-                result[i] = (byte)(v & 0xFF);
+                destination[i] = (byte)(v & 0xFF);
                 v >>= 8;
             }
+        }
 #else
+        /// <summary>
+        ///     Writes the value as a big-endian sequence of exactly <see cref="ByteWidth" /> bytes into
+        ///     <paramref name="result" />, zero-padding the most-significant side as needed.
+        ///     This is the pre-.NET 8 equivalent of <see cref="ToBytes()" />, operating on the two-field
+        ///     <c>(_hi, _lo)</c> representation. All argument validation is the caller's responsibility.
+        /// </summary>
+        /// <param name="result">Pre-allocated byte array of length <see cref="ByteWidth" /> to write into.</param>
+        private void ToBytesCore(byte[] result)
+        {
             if (ByteWidth <= 8)
             {
                 var lo = _lo;
@@ -549,9 +583,8 @@ namespace Arcus
                     hi >>= 8;
                 }
             }
-#endif
-            return result;
         }
+#endif
 
         /// <summary>
         ///     Converts the value to a non-negative <see cref="BigInteger" /> using the unsigned
@@ -560,16 +593,23 @@ namespace Arcus
         /// <returns>A non-negative <see cref="BigInteger" /> equal to the unsigned integer value.</returns>
         public BigInteger ToBigInteger()
         {
+#if NET8_0_OR_GREATER
+            Span<byte> bytes = stackalloc byte[ByteWidth];
+            ToBytes(bytes);
+            return new BigInteger(bytes, isUnsigned: true, isBigEndian: true);
+#else
             var bytes = ToBytes();
-
-            // BigInteger(byte[]) expects little-endian; append 0x00 to guarantee a positive value.
+            // BigInteger(byte[]) expects little-endian with an optional sign byte.
+            // Allocate one extra byte (le[bytes.Length] stays 0) so the leading zero
+            // forces an unsigned (positive) interpretation regardless of the MSB.
             var le = new byte[bytes.Length + 1];
             for (var i = 0; i < bytes.Length; i++)
             {
-                le[i] = bytes[bytes.Length - 1 - i];
+                le[i] = bytes[bytes.Length - 1 - i]; // reverse byte order: big-endian → little-endian
             }
 
             return new BigInteger(le);
+#endif
         }
 
         #endregion // end: Conversion
@@ -583,6 +623,11 @@ namespace Arcus
         /// <returns>Example: 192.168.1.1 → "C0A80101".</returns>
         public string ToHexString()
         {
+#if NET8_0_OR_GREATER
+            Span<byte> bytes = stackalloc byte[ByteWidth];
+            ToBytes(bytes);
+            return Convert.ToHexString(bytes);
+#else
             var bytes = ToBytes();
             var sb = new StringBuilder(ByteWidth * 2);
             foreach (var b in bytes)
@@ -591,6 +636,7 @@ namespace Arcus
             }
 
             return sb.ToString();
+#endif
         }
 
         /// <summary>
@@ -605,17 +651,35 @@ namespace Arcus
         /// <returns>Example: 0x0F (1 byte) → "00001111".</returns>
         public string ToBinaryString()
         {
+#if NET8_0_OR_GREATER
+            Span<byte> bytes = stackalloc byte[ByteWidth];
+            ToBytes(bytes);
+            Span<char> chars = stackalloc char[ByteWidth * 8];
+            var pos = 0;
+            foreach (var b in bytes)
+            {
+                for (var bit = 7; bit >= 0; bit--)
+                {
+                    // Shift the target bit to position 0, mask to isolate it, then map 0→'0' and 1→'1'.
+                    chars[pos++] = (char)('0' + ((b >> bit) & 1));
+                }
+            }
+
+            return new string(chars);
+#else
             var bytes = ToBytes();
             var sb = new StringBuilder(ByteWidth * 8);
             foreach (var b in bytes)
             {
                 for (var bit = 7; bit >= 0; bit--)
                 {
+                    // Shift the target bit to position 0, mask to isolate it; Append(int) renders 0 or 1.
                     sb.Append((b >> bit) & 1);
                 }
             }
 
             return sb.ToString();
+#endif
         }
 
         /// <summary>
