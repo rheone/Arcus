@@ -1023,6 +1023,17 @@ namespace Arcus.Tests
             Assert.IsType<ArgumentException>(exception.InnerException);
         }
 
+        [Fact]
+        public void FromBytes_HighAddressLowerThanLowAddress_Throws_InvalidOperationException_Test()
+        {
+            // Arrange
+            var lowBytes = IPAddress.Parse("192.168.2.0").GetAddressBytes();
+            var highBytes = IPAddress.Parse("192.168.1.0").GetAddressBytes();
+
+            // Act / Assert
+            Assert.Throws<InvalidOperationException>(() => Subnet.FromBytes(lowBytes, highBytes));
+        }
+
         #endregion // end: FromBytes
 
         #region TryFromBytes

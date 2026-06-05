@@ -122,8 +122,11 @@ namespace Arcus.Tests
         #region IsSingleIP
 
         /// <summary>
-        ///     Parameters: expected (bool), ipAddressRange (AbstractIPAddressRange)
+        ///     Gets parameters: expected (bool), ipAddressRange (AbstractIPAddressRange)
         /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), ipAddressRange (AbstractIPAddressRange)
+        /// </value>
         public static TheoryData<bool, AbstractIPAddressRange> IsSingleIP_Test_Data
         {
             get
@@ -156,13 +159,16 @@ namespace Arcus.Tests
         #region Length / TryGetLength
 
         /// <summary>
-        ///     Parameters: expected (BigInteger), ipAddressRange (AbstractIPAddressRange)
+        ///     Gets parameters: expected (BigInteger), ipAddressRange (AbstractIPAddressRange)
         /// </summary>
+        /// <value>
+        ///     Parameters: expected (BigInteger), ipAddressRange (AbstractIPAddressRange)
+        /// </value>
         public static TheoryData<BigInteger, AbstractIPAddressRange> Length_Test_Data
         {
             get
             {
-                var data = new TheoryData<BigInteger, AbstractIPAddressRange>
+                return new TheoryData<BigInteger, AbstractIPAddressRange>
                 {
                     // single address
                     { new BigInteger(1), CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Any) },
@@ -204,7 +210,6 @@ namespace Arcus.Tests
                         CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::").Increment(long.MaxValue))
                     },
                 };
-                return data;
             }
         }
 
@@ -653,8 +658,11 @@ namespace Arcus.Tests
         #region Contains IIPAddressRange
 
         /// <summary>
-        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        ///     Gets parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
         /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </value>
         public static TheoryData<bool, IIPAddressRange, IIPAddressRange> Contains_IIPAddressRange_Test_Data
         {
             get
@@ -770,8 +778,11 @@ namespace Arcus.Tests
         #region Contains IPAddress
 
         /// <summary>
-        ///     Parameters: expected (bool), range (IIPAddressRange), address (IPAddress)
+        ///     Gets parameters: expected (bool), range (IIPAddressRange), address (IPAddress)
         /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), range (IIPAddressRange), address (IPAddress)
+        /// </value>
         public static TheoryData<bool, IIPAddressRange, IPAddress> Contains_Test_Data
         {
             get
@@ -862,8 +873,11 @@ namespace Arcus.Tests
         #region HeadOverlappedBy
 
         /// <summary>
-        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        ///     Gets parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
         /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </value>
         public static TheoryData<bool, IIPAddressRange, IIPAddressRange> HeadOverlappedBy_Test_Data
         {
             get
@@ -979,8 +993,11 @@ namespace Arcus.Tests
         #region TailOverlappedBy
 
         /// <summary>
-        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        ///     Gets parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
         /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </value>
         public static TheoryData<bool, IIPAddressRange, IIPAddressRange> TailOverlappedBy_Test_Data
         {
             get
@@ -1096,8 +1113,11 @@ namespace Arcus.Tests
         #region Overlaps
 
         /// <summary>
-        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        ///     Gets parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
         /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </value>
         public static TheoryData<bool, IIPAddressRange, IIPAddressRange> Overlaps_Test_Data
         {
             get
@@ -1234,8 +1254,11 @@ namespace Arcus.Tests
         #region Touches
 
         /// <summary>
-        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        ///     Gets parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
         /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </value>
         public static TheoryData<bool, IIPAddressRange, IIPAddressRange> Touches_Test_Data
         {
             get
@@ -1381,8 +1404,11 @@ namespace Arcus.Tests
         #region Contains Any/All Public/Private Addresses
 
         /// <summary>
-        ///     Parameters: expectedHasPublic (bool), expectedHasPrivate (bool), range (IIPAddressRange)
+        ///     Gets parameters: expectedHasPublic (bool), expectedHasPrivate (bool), range (IIPAddressRange)
         /// </summary>
+        /// <value>
+        ///     Parameters: expectedHasPublic (bool), expectedHasPrivate (bool), range (IIPAddressRange)
+        /// </value>
         public static TheoryData<bool, bool, IIPAddressRange> ContainsPublicPrivate_Data
         {
             get

@@ -74,10 +74,10 @@ namespace Arcus.Tests.Comparers
         ///     <para>Parameters: expected comparison result (int), x (IIPAddressRange), y (IIPAddressRange).</para>
         /// </summary>
         /// <value>
-        /// <placeholder>Test data for <see cref="Compare_Ranges_ReturnsExpectedOrdering_Test" />.
+        /// Test data for <see cref="Compare_Ranges_ReturnsExpectedOrdering_Test" />.
         ///     Covers equal ranges, same-reference ranges, null operands, cross-family comparisons,
         ///     and ordinal ordering by length within the same address family.
-        ///     <para>Parameters: expected comparison result (int), x (IIPAddressRange), y (IIPAddressRange).</para></placeholder>
+        ///     <para>Parameters: expected comparison result (int), x (IIPAddressRange), y (IIPAddressRange).</para>
         /// </value>
         public static TheoryData<int, IIPAddressRange, IIPAddressRange> Compare_Ranges_ReturnsExpectedOrdering_Test_Data
         {

@@ -115,9 +115,9 @@ namespace Arcus.Tests
         ///     <para>Parameters: expected comparison result (int), left (IPAddressRange), right (IPAddressRange).</para>
         /// </summary>
         /// <value>
-        /// <placeholder>Test data for <see cref="CompareTo_Test" /> and operator tests.
+        ///     Test data for <see cref="CompareTo_Test" /> and operator tests.
         ///     Covers equal ranges, null right operands, cross-family ordering, and length-based ordering within a family.
-        ///     <para>Parameters: expected comparison result (int), left (IPAddressRange), right (IPAddressRange).</para></placeholder>
+        ///     <para>Parameters: expected comparison result (int), left (IPAddressRange), right (IPAddressRange).</para>
         /// </value>
         public static TheoryData<int, IPAddressRange, IPAddressRange> Comparison_Values
         {
@@ -954,9 +954,9 @@ namespace Arcus.Tests
         ///     <para>Parameters: expected (string), format (string), formatProvider (IFormatProvider), ipAddressRange (IPAddressRange).</para>
         /// </summary>
         /// <value>
-        /// <placeholder>Test data for <see cref="ToString_Format_Test" />.
+        ///     Test data for <see cref="ToString_Format_Test" />.
         ///     Covers all general format specifiers (<see langword="null" />, empty, "g", "G") for both IPv4 and IPv6 ranges.
-        ///     <para>Parameters: expected (string), format (string), formatProvider (IFormatProvider), ipAddressRange (IPAddressRange).</para></placeholder>
+        ///     <para>Parameters: expected (string), format (string), formatProvider (IFormatProvider), ipAddressRange (IPAddressRange).</para>
         /// </value>
         public static TheoryData<string, string, IFormatProvider, IPAddressRange> ToString_Format_Test_Values
         {
@@ -982,7 +982,7 @@ namespace Arcus.Tests
         }
 
         /// <summary>
-        ///     Verifies that <see cref="IPAddressRange.ToString(string, IFormatProvider)" /> returns the expected string
+        ///     Verifies that <see cref="AbstractIPAddressRange.ToString(string, IFormatProvider)" /> returns the expected string
         ///     for various format specifiers and address ranges.
         /// </summary>
         /// <param name="expected">the expected formatted string.</param>

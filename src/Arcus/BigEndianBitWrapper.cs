@@ -15,7 +15,7 @@ namespace Arcus
     /// </summary>
     /// <remarks>
     ///     <para>
-    ///         On .NET 8+ the backing store is a <see cref="UInt128" />; on earlier targets two
+    ///         On .NET 8+ the backing store is a <c>UInt128</c>; on earlier targets two
     ///         <see cref="ulong" /> fields (high / low) provide equivalent 128-bit arithmetic. All arithmetic
     ///         is bounded by <see cref="ByteWidth" />, not by the full 128-bit range.
     ///     </para>
@@ -194,11 +194,13 @@ namespace Arcus
             }
 
             if (prefixLength == 0)
+            {
 #if NET8_0_OR_GREATER
                 return new BigEndianBitWrapper(UInt128.Zero, byteWidth);
 #else
                 return new BigEndianBitWrapper(0UL, 0UL, byteWidth);
 #endif
+            }
 
             var hostBits = totalBits - prefixLength;
 
@@ -268,7 +270,7 @@ namespace Arcus
 #if !NET8_0_OR_GREATER
         /// <summary>
         ///     Builds a subnet mask for the pre-.NET 8 two-field (hi/lo) representation.
-        ///     Called from <see cref="CreateMask" /> on targets that lack <see cref="UInt128" />.
+        ///     Called from <see cref="CreateMask" /> on targets that lack <c>UInt128</c>.
         /// </summary>
         /// <param name="byteWidth">Byte width of the address family; must be in [1, 16].</param>
         /// <param name="hostBits">Number of low bits to clear; equals total bits minus prefix length. Must be &gt; 0.</param>
@@ -710,18 +712,15 @@ namespace Arcus
         /// <exception cref="FormatException">An unrecognised format specifier was supplied.</exception>
         public string ToString(string format, IFormatProvider formatProvider)
         {
-            if (string.IsNullOrEmpty(format) || format == "G")
-            {
-                return ToHexString();
-            }
-
-            return format switch
-            {
-                "HC" => ToHexString(),
-                "IBE" => ToDecimalString(),
-                "b" => ToBinaryString(),
-                _ => throw new FormatException($"Unknown format specifier '{format}' for {nameof(BigEndianBitWrapper)}."),
-            };
+            return string.IsNullOrEmpty(format) || format == "G"
+                ? ToHexString()
+                : format switch
+                {
+                    "HC" => ToHexString(),
+                    "IBE" => ToDecimalString(),
+                    "b" => ToBinaryString(),
+                    _ => throw new FormatException($"Unknown format specifier '{format}' for {nameof(BigEndianBitWrapper)}."),
+                };
         }
 
         /// <summary>Returns the hex compact representation (same as <see cref="ToHexString" />).</summary>
@@ -796,6 +795,30 @@ namespace Arcus
         /// <param name="right">The right operand.</param>
         /// <returns><see langword="true" /> if the operands are not equal; otherwise <see langword="false" />.</returns>
         public static bool operator !=(BigEndianBitWrapper left, BigEndianBitWrapper right) => !left.Equals(right);
+
+        /// <summary>Returns <see langword="true" /> if <paramref name="left" /> is less than <paramref name="right" />.</summary>
+        /// <param name="left">The left operand.</param>
+        /// <param name="right">The right operand.</param>
+        /// <returns><see langword="true" /> if <paramref name="left" /> is less than <paramref name="right" />; otherwise <see langword="false" />.</returns>
+        public static bool operator <(BigEndianBitWrapper left, BigEndianBitWrapper right) => left.CompareTo(right) < 0;
+
+        /// <summary>Returns <see langword="true" /> if <paramref name="left" /> is greater than <paramref name="right" />.</summary>
+        /// <param name="left">The left operand.</param>
+        /// <param name="right">The right operand.</param>
+        /// <returns><see langword="true" /> if <paramref name="left" /> is greater than <paramref name="right" />; otherwise <see langword="false" />.</returns>
+        public static bool operator >(BigEndianBitWrapper left, BigEndianBitWrapper right) => left.CompareTo(right) > 0;
+
+        /// <summary>Returns <see langword="true" /> if <paramref name="left" /> is less than or equal to <paramref name="right" />.</summary>
+        /// <param name="left">The left operand.</param>
+        /// <param name="right">The right operand.</param>
+        /// <returns><see langword="true" /> if <paramref name="left" /> is less than or equal to <paramref name="right" />; otherwise <see langword="false" />.</returns>
+        public static bool operator <=(BigEndianBitWrapper left, BigEndianBitWrapper right) => left.CompareTo(right) <= 0;
+
+        /// <summary>Returns <see langword="true" /> if <paramref name="left" /> is greater than or equal to <paramref name="right" />.</summary>
+        /// <param name="left">The left operand.</param>
+        /// <param name="right">The right operand.</param>
+        /// <returns><see langword="true" /> if <paramref name="left" /> is greater than or equal to <paramref name="right" />; otherwise <see langword="false" />.</returns>
+        public static bool operator >=(BigEndianBitWrapper left, BigEndianBitWrapper right) => left.CompareTo(right) >= 0;
 
         #endregion // end: Equality
     }

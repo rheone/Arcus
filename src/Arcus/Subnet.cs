@@ -36,6 +36,8 @@ namespace Arcus
 #endif
             IEquatable<Subnet>, IComparable<Subnet>, IComparable
     {
+        private const string CouldNotInstantiateSubnetMessage = "could not instantiate subnet";
+
         /// <summary>
         ///     Pattern that passes on valid IPv4 octet partials
         /// </summary>
@@ -452,7 +454,7 @@ namespace Arcus
             }
             catch (Exception e)
             {
-                throw new Exception("could not instantiate subnet", e);
+                throw new InvalidOperationException(CouldNotInstantiateSubnetMessage, e);
             }
         }
 
@@ -533,7 +535,7 @@ namespace Arcus
             }
             catch (Exception e)
             {
-                throw new Exception("could not instantiate subnet", e);
+                throw new InvalidOperationException(CouldNotInstantiateSubnetMessage, e);
             }
         }
 
@@ -634,7 +636,7 @@ namespace Arcus
             }
             catch (Exception e)
             {
-                throw new Exception("could not instantiate subnet", e);
+                throw new FormatException(CouldNotInstantiateSubnetMessage, e);
             }
         }
 
@@ -724,7 +726,7 @@ namespace Arcus
             }
             catch (Exception e)
             {
-                throw new Exception("could not instantiate subnet", e);
+                throw new FormatException(CouldNotInstantiateSubnetMessage, e);
             }
         }
 
@@ -818,7 +820,7 @@ namespace Arcus
             }
             catch (Exception e)
             {
-                throw new Exception("could not instantiate subnet", e);
+                throw new FormatException(CouldNotInstantiateSubnetMessage, e);
             }
         }
 
@@ -1060,7 +1062,7 @@ namespace Arcus
 
         /// <inheritdoc />
         /// <exception cref="ArgumentNullException"><paramref name="info" /> is <see langword="null" /></exception>
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info is null)
             {
@@ -1222,29 +1224,22 @@ namespace Arcus
             }
         }
 
-        private readonly struct AddressAndMaskTuple
+        private readonly struct AddressAndMaskTuple(IPAddress head, IPAddress tail, IPAddress mask)
         {
-            public AddressAndMaskTuple(IPAddress head, IPAddress tail, IPAddress mask)
-            {
-                this.Head = head ?? throw new ArgumentNullException(nameof(head));
-                this.Tail = tail ?? throw new ArgumentNullException(nameof(tail));
-                this.Mask = mask ?? throw new ArgumentNullException(nameof(mask));
-            }
-
             /// <summary>
             ///     Gets head
             /// </summary>
-            public IPAddress Head { get; }
+            public IPAddress Head { get; } = head ?? throw new ArgumentNullException(nameof(head));
 
             /// <summary>
             ///     Gets tail
             /// </summary>
-            public IPAddress Tail { get; }
+            public IPAddress Tail { get; } = tail ?? throw new ArgumentNullException(nameof(tail));
 
             /// <summary>
             ///     Gets mask
             /// </summary>
-            public IPAddress Mask { get; }
+            public IPAddress Mask { get; } = mask ?? throw new ArgumentNullException(nameof(mask));
         }
 
         private static AddressAndMaskTuple NormalizeAndCreateNetMask(IPAddress head, int routingPrefix)

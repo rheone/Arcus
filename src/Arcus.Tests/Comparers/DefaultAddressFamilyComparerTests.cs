@@ -26,12 +26,18 @@ namespace Arcus.Tests.Comparers
         #region Compare
 
         /// <summary>
-        ///     Test data for <see cref="Compare_AddressFamilies_ReturnsExpectedOrdering_Test" />.
+        ///     Gets test data for <see cref="Compare_AddressFamilies_ReturnsExpectedOrdering_Test" />.
         ///     Covers all combinations of <see cref="AddressFamily.InterNetwork" /> and
         ///     <see cref="AddressFamily.InterNetworkV6" /> to verify ordinal ordering matches
         ///     <see cref="System.Enum.CompareTo" />.
         ///     <para>Parameters: expected comparison result (int), x (AddressFamily), y (AddressFamily).</para>
         /// </summary>
+        /// <value>
+        ///     Covers all combinations of <see cref="AddressFamily.InterNetwork" /> and
+        ///     <see cref="AddressFamily.InterNetworkV6" /> to verify ordinal ordering matches
+        ///     <see cref="System.Enum.CompareTo" />.
+        ///     <para>Parameters: expected comparison result (int), x (AddressFamily), y (AddressFamily).</para>
+        /// </value>
         public static TheoryData<int, AddressFamily, AddressFamily> Compare_AddressFamilies_ReturnsExpectedOrdering_Test_Data
         {
             get

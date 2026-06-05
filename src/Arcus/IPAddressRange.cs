@@ -35,7 +35,7 @@ namespace Arcus
 
         /// <inheritdoc />
         /// <exception cref="ArgumentNullException"><paramref name="info" /> is <see langword="null" /></exception>
-        public void GetObjectData(SerializationInfo info, StreamingContext context)
+        public virtual void GetObjectData(SerializationInfo info, StreamingContext context)
         {
             if (info is null)
             {

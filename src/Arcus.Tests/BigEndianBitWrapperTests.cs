@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Net;
-using Arcus;
 using Xunit;
 
 namespace Arcus.Tests
@@ -337,7 +336,7 @@ namespace Arcus.Tests
 
             // Assert
             Assert.False(success);
-            Assert.Equal(default(BigEndianBitWrapper), result);
+            Assert.Equal(default, result);
         }
 
         [Fact]
@@ -351,7 +350,7 @@ namespace Arcus.Tests
 
             // Assert
             Assert.False(success);
-            Assert.Equal(default(BigEndianBitWrapper), result);
+            Assert.Equal(default, result);
         }
 
         [Fact]
@@ -861,7 +860,7 @@ namespace Arcus.Tests
             var result = WrapIPv4("192.168.1.1").ToBinaryString();
 
             // Assert
-            Assert.All(result, c => Assert.True(c == '0' || c == '1'));
+            Assert.All(result, c => Assert.True(c is '0' or '1'));
         }
 
         [Fact]
@@ -934,6 +933,58 @@ namespace Arcus.Tests
         }
 
         #endregion // end: CompareTo
+
+        #region Operators: < > <= >=
+
+        [Theory]
+        [MemberData(nameof(CompareTo_Test_Data))]
+        public void LessThan_Operator_ReturnsExpected_Test(string leftStr, string rightStr, int expectedSign)
+        {
+            // Arrange
+            var left = WrapIPv4(leftStr);
+            var right = WrapIPv4(rightStr);
+
+            // Act / Assert
+            Assert.Equal(expectedSign < 0, left < right);
+        }
+
+        [Theory]
+        [MemberData(nameof(CompareTo_Test_Data))]
+        public void GreaterThan_Operator_ReturnsExpected_Test(string leftStr, string rightStr, int expectedSign)
+        {
+            // Arrange
+            var left = WrapIPv4(leftStr);
+            var right = WrapIPv4(rightStr);
+
+            // Act / Assert
+            Assert.Equal(expectedSign > 0, left > right);
+        }
+
+        [Theory]
+        [MemberData(nameof(CompareTo_Test_Data))]
+        public void LessThanOrEqual_Operator_ReturnsExpected_Test(string leftStr, string rightStr, int expectedSign)
+        {
+            // Arrange
+            var left = WrapIPv4(leftStr);
+            var right = WrapIPv4(rightStr);
+
+            // Act / Assert
+            Assert.Equal(expectedSign <= 0, left <= right);
+        }
+
+        [Theory]
+        [MemberData(nameof(CompareTo_Test_Data))]
+        public void GreaterThanOrEqual_Operator_ReturnsExpected_Test(string leftStr, string rightStr, int expectedSign)
+        {
+            // Arrange
+            var left = WrapIPv4(leftStr);
+            var right = WrapIPv4(rightStr);
+
+            // Act / Assert
+            Assert.Equal(expectedSign >= 0, left >= right);
+        }
+
+        #endregion // end: Operators: < > <= >=
 
         #region Equals / == / !=
 

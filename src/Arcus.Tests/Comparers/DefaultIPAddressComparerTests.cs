@@ -70,10 +70,10 @@ namespace Arcus.Tests.Comparers
         ///     <para>Parameters: expected comparison result (int), x (IPAddress), y (IPAddress).</para>
         /// </summary>
         /// <value>
-        /// <placeholder>Test data for <see cref="Compare_IPAddresses_ReturnsExpectedOrdering_Test" />.
+        ///     Test data for <see cref="Compare_IPAddresses_ReturnsExpectedOrdering_Test" />.
         ///     Covers equal addresses (by value and by reference), null operands, cross-family comparisons,
         ///     and ordinal ordering within the same address family to partition the comparison logic.
-        ///     <para>Parameters: expected comparison result (int), x (IPAddress), y (IPAddress).</para></placeholder>
+        ///     <para>Parameters: expected comparison result (int), x (IPAddress), y (IPAddress).</para>
         /// </value>
         public static TheoryData<int, IPAddress, IPAddress> Compare_IPAddresses_ReturnsExpectedOrdering_Test_Data
         {
