@@ -80,7 +80,7 @@
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
-    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.26.0.140279">
+    <PackageReference Include="SonarAnalyzer.CSharp" Version="10.27.0.140913">
       <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
@@ -97,11 +97,6 @@
   </ItemGroup>
   <Target Name="Husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0">
     <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
-    <Exec
-      Command="dotnet husky install"
-      StandardOutputImportance="Low"
-      StandardErrorImportance="High"
-      WorkingDirectory="..\.."
-    />
+    <Exec Command="dotnet husky install" StandardOutputImportance="Low" StandardErrorImportance="High" WorkingDirectory="..\.." />
   </Target>
 </Project>
