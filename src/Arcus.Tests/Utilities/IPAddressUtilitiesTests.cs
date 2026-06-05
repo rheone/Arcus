@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
+using System.Text.RegularExpressions;
 using Arcus;
 using Arcus.Math;
 using Arcus.Utilities;
@@ -604,6 +605,120 @@ namespace Arcus.Tests.Utilities
         }
 
         #endregion // end: ParseIgnoreOctalInIPv4 / TryParseIgnoreOctalInIPv4
+
+        #region HexLikePattern
+
+        public static TheoryData<bool, string> HexLikePattern_Test_Data =>
+            new()
+            {
+                // matching — lowercase hex digits
+                { true, "0123456789abcdef" },
+                // matching — uppercase hex digits (IgnoreCase)
+                { true, "0123456789ABCDEF" },
+                // matching — mixed case
+                { true, "DeAdBeEf" },
+                // matching — digits only
+                { true, "0000" },
+                // matching — empty string (pattern uses '*', allows zero chars)
+                { true, string.Empty },
+                // non-matching — 'g' and beyond are not hex
+                { false, "abcdefg" },
+                { false, "xyz" },
+                // non-matching — '0x' prefix contains 'x'
+                { false, "0x1A" },
+                // non-matching — space or punctuation
+                { false, "12 34" },
+                { false, "!" },
+            };
+
+        [Theory]
+        [MemberData(nameof(HexLikePattern_Test_Data))]
+        public void HexLikePattern_IsMatch_ReturnsExpected_Test(bool expected, string input)
+        {
+            // Arrange
+            var regex = new Regex(IPAddressUtilities.HexLikePattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+
+            // Act
+            var result = regex.IsMatch(input);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        #endregion // end: HexLikePattern
+
+        #region DottedQuadRegularExpressionPattern
+
+        public static TheoryData<bool, string> DottedQuadRegularExpressionPattern_Test_Data =>
+            new()
+            {
+                // matching — well-formed dotted quads (pattern checks format, not address validity)
+                { true, "192.168.1.1" },
+                { true, "0.0.0.0" },
+                { true, "255.255.255.255" },
+                // matching — out-of-range values pass (pattern is format-only)
+                { true, "999.999.999.999" },
+                // non-matching — too few groups
+                { false, "192.168.1" },
+                { false, "192.168" },
+                { false, "192" },
+                // non-matching — too many groups
+                { false, "192.168.1.1.5" },
+                // non-matching — empty or non-numeric
+                { false, string.Empty },
+                { false, "::" },
+                { false, "potato" },
+                // non-matching — 4-digit group exceeds {1,3}
+                { false, "1234.1.1.1" },
+            };
+
+        [Theory]
+        [MemberData(nameof(DottedQuadRegularExpressionPattern_Test_Data))]
+        public void DottedQuadRegularExpressionPattern_IsMatch_ReturnsExpected_Test(bool expected, string input)
+        {
+            // Arrange
+            var regex = new Regex(IPAddressUtilities.DottedQuadRegularExpressionPattern, RegexOptions.CultureInvariant);
+
+            // Act
+            var result = regex.IsMatch(input);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        #endregion // end: DottedQuadRegularExpressionPattern
+
+        #region DottedQuadLeadingZerosPattern
+
+        public static TheoryData<string, string> DottedQuadLeadingZerosPattern_Replace_Test_Data =>
+            new()
+            {
+                // leading zeros stripped from each octet
+                { "7.7.7.0", "007.007.7.0" },
+                { "1.2.3.4", "001.002.003.004" },
+                // lone-zero octets preserved (lookahead prevents stripping the only '0')
+                { "0.0.0.0", "000.000.000.000" },
+                { "0.0.0.0", "0.0.0.0" },
+                // no leading zeros — no change
+                { "192.168.1.0", "192.168.1.0" },
+                { "0.1.0.1", "0.1.0.1" },
+            };
+
+        [Theory]
+        [MemberData(nameof(DottedQuadLeadingZerosPattern_Replace_Test_Data))]
+        public void DottedQuadLeadingZerosPattern_Replace_ReturnsExpected_Test(string expected, string input)
+        {
+            // Arrange
+            var regex = new Regex(IPAddressUtilities.DottedQuadLeadingZerosPattern, RegexOptions.CultureInvariant);
+
+            // Act
+            var result = regex.Replace(input, string.Empty);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        #endregion // end: DottedQuadLeadingZerosPattern
 
         #region Parse(byte[]) / TryParse(byte[])
 

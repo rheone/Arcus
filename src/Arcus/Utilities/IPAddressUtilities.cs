@@ -18,12 +18,29 @@ namespace Arcus.Utilities
     ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
     ///     </para>
     /// </remarks>
-    public static class IPAddressUtilities
+    public static partial class IPAddressUtilities
     {
         private const int BitsPerByte = 8;
-        private const string DottedQuadLeadingZerosPattern = @"(?<=^|\.)0+(?!\.|$)";
-        private const string DottedQuadRegularExpressionPattern = @"^[0-9]{1,3}(\.[0-9]{1,3}){3}$"; // checks dotted quad format (does not verify validity of address)
-        private const string HexLikePattern = "^[0-9a-f]*$";
+
+        /// <summary>
+        ///     Regex pattern matching leading zeros in each dotted-quad octet.
+        ///     Lookbehind <c>(?&lt;=^|\.)</c> anchors to start-of-string or a dot; lookahead <c>(?!\.|$)</c> preserves lone-zero octets.
+        ///     Applied with <see cref="RegexOptions.CultureInvariant"/>.
+        /// </summary>
+        public const string DottedQuadLeadingZerosPattern = @"(?<=^|\.)0+(?!\.|$)";
+
+        /// <summary>
+        ///     Regex pattern checking dotted-quad format: four groups of 1–3 digits separated by dots.
+        ///     Does not verify address validity (octet value range).
+        ///     Applied with <see cref="RegexOptions.CultureInvariant"/>.
+        /// </summary>
+        public const string DottedQuadRegularExpressionPattern = @"^[0-9]{1,3}(\.[0-9]{1,3}){3}$";
+
+        /// <summary>
+        ///     Regex pattern matching strings composed entirely of hexadecimal digits (0–9, a–f; allows empty string).
+        ///     Applied with <see cref="RegexOptions.IgnoreCase"/> and <see cref="RegexOptions.CultureInvariant"/>.
+        /// </summary>
+        public const string HexLikePattern = "^[0-9a-f]*$";
 
         /// <summary>
         ///     number of bits in an IPv4 address
@@ -61,18 +78,41 @@ namespace Arcus.Utilities
         /// </remarks>
         public const int IPv6HextetCount = 8;
 
+#if NETSTANDARD2_0
         private static readonly Regex HexLikeRegularExpression = new(
             HexLikePattern,
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
         );
+#else
+        private static Regex HexLikeRegularExpression => GetHexLikeRegularExpression();
+
+        [GeneratedRegex(HexLikePattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex GetHexLikeRegularExpression();
+#endif
+
+#if NETSTANDARD2_0
         private static readonly Regex DottedQuadLeadingZerosRegularExpression = new(
             DottedQuadLeadingZerosPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant
         );
+#else
+        private static Regex DottedQuadLeadingZerosRegularExpression => GetDottedQuadLeadingZerosRegularExpression();
+
+        [GeneratedRegex(DottedQuadLeadingZerosPattern, RegexOptions.CultureInvariant)]
+        private static partial Regex GetDottedQuadLeadingZerosRegularExpression();
+#endif
+
+#if NETSTANDARD2_0
         private static readonly Regex DottedQuadStringRegularExpression = new(
             DottedQuadRegularExpressionPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant
         );
+#else
+        private static Regex DottedQuadStringRegularExpression => GetDottedQuadStringRegularExpression();
+
+        [GeneratedRegex(DottedQuadRegularExpressionPattern, RegexOptions.CultureInvariant)]
+        private static partial Regex GetDottedQuadStringRegularExpression();
+#endif
 
         /// <summary>
         ///     Maximum IPv4 Address value (255.255.255.255)

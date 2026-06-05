@@ -30,7 +30,7 @@ namespace Arcus
     ///     </para>
     /// </remarks>
     [Serializable]
-    public class Subnet : AbstractIPAddressRange,
+    public partial class Subnet : AbstractIPAddressRange,
 #if NETSTANDARD2_0
             ISerializable,
 #endif
@@ -39,31 +39,41 @@ namespace Arcus
         private const string CouldNotInstantiateSubnetMessage = "could not instantiate subnet";
 
         /// <summary>
-        ///     Pattern that passes on valid IPv4 octet partials
+        ///     Regex pattern that matches valid partial IPv4 octet strings (1–4 dot-separated octets, each 0–255).
+        ///     Applied with <see cref="RegexOptions.CultureInvariant"/>.
         /// </summary>
-        private const string Ipv4OctetPartialPattern =
+        public const string Ipv4OctetPartialPattern =
             @"^(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)){0,2}(\.(25[0-5]|2[0-4][0-9]|[01]?[0-9][0-9]?)?)?$";
 
         /// <summary>
-        ///     Pattern for rough shape of a subnet string
+        ///     Regex pattern matching the rough shape of a subnet string: an address part followed by an optional slash-prefixed integer.
+        ///     Applied with <see cref="RegexOptions.CultureInvariant"/> and <see cref="RegexOptions.IgnoreCase"/>.
         /// </summary>
-        private const string RoughSubnetStringPattern = @"^([\da-fA-F:.]+)(?:/([\d]+))?$";
+        public const string RoughSubnetStringPattern = @"^([\da-fA-F:.]+)(?:/([\d]+))?$";
 
-        /// <summary>
-        ///     Regex that passes on valid IPv4 octet partials
-        /// </summary>
+#if NETSTANDARD2_0
         private static readonly Regex IPv4OctetPartialRegex = new(
             Ipv4OctetPartialPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant
         );
+#else
+        private static Regex IPv4OctetPartialRegex => GetIPv4OctetPartialRegex();
 
-        /// <summary>
-        ///     Regex for rough shape of a subnet string
-        /// </summary>
+        [GeneratedRegex(Ipv4OctetPartialPattern, RegexOptions.CultureInvariant)]
+        private static partial Regex GetIPv4OctetPartialRegex();
+#endif
+
+#if NETSTANDARD2_0
         private static readonly Regex RoughSubnetRegex = new(
             RoughSubnetStringPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
         );
+#else
+        private static Regex RoughSubnetRegex => GetRoughSubnetRegex();
+
+        [GeneratedRegex(RoughSubnetStringPattern, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
+        private static partial Regex GetRoughSubnetRegex();
+#endif
 
         /// <summary>
         ///     Gets the number of usable addresses in the subnet (ignores Broadcast and Network addresses)
