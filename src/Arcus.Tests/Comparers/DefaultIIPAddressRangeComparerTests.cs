@@ -68,20 +68,27 @@ namespace Arcus.Tests.Comparers
         #region Compare
 
         /// <summary>
-        ///     Test data for <see cref="Compare_Ranges_ReturnsExpectedOrdering_Test" />.
+        ///     Gets test data for <see cref="Compare_Ranges_ReturnsExpectedOrdering_Test" />.
         ///     Covers equal ranges, same-reference ranges, null operands, cross-family comparisons,
         ///     and ordinal ordering by length within the same address family.
         ///     <para>Parameters: expected comparison result (int), x (IIPAddressRange), y (IIPAddressRange).</para>
         /// </summary>
+        /// <value>
+        /// <placeholder>Test data for <see cref="Compare_Ranges_ReturnsExpectedOrdering_Test" />.
+        ///     Covers equal ranges, same-reference ranges, null operands, cross-family comparisons,
+        ///     and ordinal ordering by length within the same address family.
+        ///     <para>Parameters: expected comparison result (int), x (IIPAddressRange), y (IIPAddressRange).</para></placeholder>
+        /// </value>
         public static TheoryData<int, IIPAddressRange, IIPAddressRange> Compare_Ranges_ReturnsExpectedOrdering_Test_Data
         {
             get
             {
-                var data = new TheoryData<int, IIPAddressRange, IIPAddressRange>();
-
-                // equal ranges
-                data.Add(0, CreateRangeFromHead("192.168.1.0", 0), CreateRangeFromHead("192.168.1.0", 0));
-                data.Add(0, CreateRangeFromHead("a::", 0), CreateRangeFromHead("a::", 0));
+                var data = new TheoryData<int, IIPAddressRange, IIPAddressRange>
+                {
+                    // equal ranges
+                    { 0, CreateRangeFromHead("192.168.1.0", 0), CreateRangeFromHead("192.168.1.0", 0) },
+                    { 0, CreateRangeFromHead("a::", 0), CreateRangeFromHead("a::", 0) },
+                };
 
                 // same range (reference equality)
                 var ipv4Same = CreateRangeFromHead("192.168.1.0");

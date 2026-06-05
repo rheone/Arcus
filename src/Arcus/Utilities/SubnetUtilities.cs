@@ -17,8 +17,10 @@ namespace Arcus.Utilities
         /// <remarks>
         ///     <para>
         ///         Contains the four RFC-defined private/ULA address blocks:
-        ///         <c>10.0.0.0/8</c> (RFC 1918), <c>172.16.0.0/12</c> (RFC 1918),
-        ///         <c>192.168.0.0/16</c> (RFC 1918), and <c>fd00::/8</c> (RFC 4193 ULA).
+        ///         <c>10.0.0.0/8</c>, <c>172.16.0.0/12</c>, and <c>192.168.0.0/16</c> per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc1918#section-3">RFC 1918 §3</see>;
+        ///         and <c>fd00::/8</c> (IPv6 Unique Local Addresses) per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4193#section-8">RFC 4193 §8</see>.
         ///     </para>
         ///     <para>
         ///         <b>Breaking change (readonly):</b> This field is now <see langword="readonly" />.
@@ -44,8 +46,10 @@ namespace Arcus.Utilities
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         Contains <c>169.254.0.0/16</c> (RFC 3927 IPv4 link-local) and
-        ///         <c>fe80::/10</c> (RFC 4291 IPv6 link-local).
+        ///         Contains <c>169.254.0.0/16</c> (IPv4 link-local) per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc3927#section-2.1">RFC 3927 §2.1</see>
+        ///         and <c>fe80::/10</c> (IPv6 link-local) per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.4">RFC 4291 §2.4</see>.
         ///     </para>
         ///     <para>
         ///         <b>Breaking change (readonly):</b> This field is now <see langword="readonly" />.
@@ -65,6 +69,12 @@ namespace Arcus.Utilities
         /// <summary>
         ///     Get The fewest consecutive subnets that would fill the range between the given addresses (inclusive)
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Uses CIDR block sizing (each increment of prefix length halves the block: 2<sup>max−n</sup> addresses) per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///     </para>
+        /// </remarks>
         /// <param name="left">lowest order IP Address</param>
         /// <param name="right">highest order IP Address</param>
         /// <returns>an enumerable of Subnet</returns>
@@ -117,10 +127,8 @@ namespace Arcus.Utilities
             // recursive function call
             // Works by verifying that passed subnet isn't bounded by head, tail IP Addresses
             // if not breaks subnet in half and recursively tests, building in essence a binary tree of testable subnet paths
-#if NET6_0_OR_GREATER
-            static
-#endif
-            IEnumerable<Subnet> FilledSubnets(IPAddress head, IPAddress tail, Subnet subnet)
+
+            static IEnumerable<Subnet> FilledSubnets(IPAddress head, IPAddress tail, Subnet subnet)
             {
                 var networkPrefixAddress = subnet.NetworkPrefixAddress;
                 var broadcastAddress = subnet.BroadcastAddress;
@@ -128,7 +136,7 @@ namespace Arcus.Utilities
                 // the given subnet is the perfect size for the head/tail (not papa bear, not mama bear, but just right with baby bear)
                 if (networkPrefixAddress.IsGreaterThanOrEqualTo(head) && broadcastAddress.IsLessThanOrEqualTo(tail))
                 {
-                    return new[] { subnet };
+                    return [subnet];
                 }
 
                 // increasing the route prefix by 1 creates a subnet of half the initial size (due 2^(max-n) route prefix sizing)
@@ -140,7 +148,7 @@ namespace Arcus.Utilities
                     || (subnet.IsIPv4 && nextSmallestRoutePrefix > IPAddressUtilities.IPv4BitCount)
                 )
                 {
-                    return Enumerable.Empty<Subnet>(); // no subnets to be found here, stop investigating branch of tree
+                    return []; // no subnets to be found here, stop investigating branch of tree
                 }
 
                 // build head subnet
@@ -164,6 +172,13 @@ namespace Arcus.Utilities
         ///     if more than one "largest" return is not predictable beyond that one will be returned
         ///     Consider usage of DefaultSubnetComparer
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         A smaller routing prefix means a larger address block per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>
+        ///         (block size = 2<sup>max−prefix</sup>).
+        ///     </para>
+        /// </remarks>
         /// <param name="subnets">the subnets to search</param>
         /// <returns>
         ///     The first largest subnet by routing prefix, or <see langword="null" /> if no <paramref name="subnets" /> to
@@ -171,7 +186,7 @@ namespace Arcus.Utilities
         /// </returns>
         public static Subnet LargestSubnet(IEnumerable<Subnet> subnets)
         {
-            var enumerable = (subnets ?? Enumerable.Empty<Subnet>()).ToList();
+            var enumerable = (subnets ?? []).ToList();
 
             return !enumerable.Any()
                 ? null
@@ -183,11 +198,18 @@ namespace Arcus.Utilities
         ///     if more than one "smallest" return is not predictable beyond that one will be returned
         ///     Consider usage of DefaultSubnetComparer
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         A larger routing prefix means a smaller address block per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>
+        ///         (block size = 2<sup>max−prefix</sup>).
+        ///     </para>
+        /// </remarks>
         /// <param name="subnets">the list of subnets</param>
         /// <returns>The first smallest subnet by routing prefix, or null if no subnets to choose from</returns>
         public static Subnet SmallestSubnet(IEnumerable<Subnet> subnets)
         {
-            var enumerable = (subnets ?? Enumerable.Empty<Subnet>()).ToList();
+            var enumerable = (subnets ?? []).ToList();
 
             return !enumerable.Any()
                 ? null

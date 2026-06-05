@@ -64,20 +64,27 @@ namespace Arcus.Tests.Comparers
         #region Compare
 
         /// <summary>
-        ///     Test data for <see cref="Compare_IPAddresses_ReturnsExpectedOrdering_Test" />.
+        ///     Gets test data for <see cref="Compare_IPAddresses_ReturnsExpectedOrdering_Test" />.
         ///     Covers equal addresses (by value and by reference), null operands, cross-family comparisons,
         ///     and ordinal ordering within the same address family to partition the comparison logic.
         ///     <para>Parameters: expected comparison result (int), x (IPAddress), y (IPAddress).</para>
         /// </summary>
+        /// <value>
+        /// <placeholder>Test data for <see cref="Compare_IPAddresses_ReturnsExpectedOrdering_Test" />.
+        ///     Covers equal addresses (by value and by reference), null operands, cross-family comparisons,
+        ///     and ordinal ordering within the same address family to partition the comparison logic.
+        ///     <para>Parameters: expected comparison result (int), x (IPAddress), y (IPAddress).</para></placeholder>
+        /// </value>
         public static TheoryData<int, IPAddress, IPAddress> Compare_IPAddresses_ReturnsExpectedOrdering_Test_Data
         {
             get
             {
-                var data = new TheoryData<int, IPAddress, IPAddress>();
-
-                // equal addresses (value equality — distinct IPAddress instances with same value)
-                data.Add(0, IPAddress.Parse("10.0.0.1"), IPAddress.Parse("10.0.0.1"));
-                data.Add(0, IPAddress.Parse("dead::beef"), IPAddress.Parse("dead::beef"));
+                var data = new TheoryData<int, IPAddress, IPAddress>
+                {
+                    // equal addresses (value equality — distinct IPAddress instances with same value)
+                    { 0, IPAddress.Parse("10.0.0.1"), IPAddress.Parse("10.0.0.1") },
+                    { 0, IPAddress.Parse("dead::beef"), IPAddress.Parse("dead::beef") },
+                };
 
                 // same address (reference equality — identical object)
                 var ipv4Same = IPAddress.Parse("192.168.1.1");

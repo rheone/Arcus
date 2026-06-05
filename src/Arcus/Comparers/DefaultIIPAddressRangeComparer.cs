@@ -8,12 +8,14 @@ namespace Arcus.Comparers
     ///     Default <see cref="IIPAddressRange" /> <see cref="Comparer{T}" />
     ///     Compares by <see cref="IIPAddressRange.Head" /> and then by range length ordinal
     /// </summary>
+#pragma warning disable S101 // Types should be named in PascalCase
     public class DefaultIIPAddressRangeComparer : Comparer<IIPAddressRange>
+#pragma warning restore S101 // Types should be named in PascalCase
     {
         /// <summary>
         ///     Default instance of <see cref="DefaultIIPAddressRangeComparer"/> using <see cref="DefaultIPAddressComparer.Instance"/>
         /// </summary>
-        public static readonly DefaultIIPAddressRangeComparer Instance = new DefaultIIPAddressRangeComparer();
+        public static readonly DefaultIIPAddressRangeComparer Instance = new();
 
         private readonly IComparer<IPAddress> _ipAddressComparer;
 

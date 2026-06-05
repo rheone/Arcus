@@ -146,7 +146,7 @@ namespace Arcus
                 throw new ArgumentNullException(nameof(bigEndianBytes));
             }
 
-            if (targetWidth < 1 || targetWidth > 16)
+            if (targetWidth is < 1 or > 16)
             {
                 throw new ArgumentOutOfRangeException(nameof(targetWidth), "Target width must be between 1 and 16.");
             }
@@ -178,7 +178,7 @@ namespace Arcus
         /// </exception>
         public static BigEndianBitWrapper CreateMask(int byteWidth, int prefixLength)
         {
-            if (byteWidth < 1 || byteWidth > 16)
+            if (byteWidth is < 1 or > 16)
             {
                 throw new ArgumentOutOfRangeException(nameof(byteWidth), "Byte width must be between 1 and 16.");
             }
@@ -715,17 +715,13 @@ namespace Arcus
                 return ToHexString();
             }
 
-            switch (format)
+            return format switch
             {
-                case "HC":
-                    return ToHexString();
-                case "IBE":
-                    return ToDecimalString();
-                case "b":
-                    return ToBinaryString();
-                default:
-                    throw new FormatException($"Unknown format specifier '{format}' for {nameof(BigEndianBitWrapper)}.");
-            }
+                "HC" => ToHexString(),
+                "IBE" => ToDecimalString(),
+                "b" => ToBinaryString(),
+                _ => throw new FormatException($"Unknown format specifier '{format}' for {nameof(BigEndianBitWrapper)}."),
+            };
         }
 
         /// <summary>Returns the hex compact representation (same as <see cref="ToHexString" />).</summary>

@@ -10,6 +10,14 @@ namespace Arcus.Utilities
     /// <summary>
     ///     Static utility class containing miscellaneous operations for <see cref="IPAddress" /> objects
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         IPv4 constants are derived from the 32-bit address definition in
+    ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
+    ///         IPv6 constants are derived from the 128-bit address definition in
+    ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
+    ///     </para>
+    /// </remarks>
     public static class IPAddressUtilities
     {
         private const int BitsPerByte = 8;
@@ -45,17 +53,23 @@ namespace Arcus.Utilities
         /// <summary>
         ///     number of hextets in an IPv6 address
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         IPv6 colon-hex notation groups 128 bits into 8 16-bit hextets per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.2">RFC 4291 §2.2</see>.
+        ///     </para>
+        /// </remarks>
         public const int IPv6HextetCount = 8;
 
-        private static readonly Regex HexLikeRegularExpression = new Regex(
+        private static readonly Regex HexLikeRegularExpression = new(
             HexLikePattern,
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
         );
-        private static readonly Regex DottedQuadLeadingZerosRegularExpression = new Regex(
+        private static readonly Regex DottedQuadLeadingZerosRegularExpression = new(
             DottedQuadLeadingZerosPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant
         );
-        private static readonly Regex DottedQuadStringRegularExpression = new Regex(
+        private static readonly Regex DottedQuadStringRegularExpression = new(
             DottedQuadRegularExpressionPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant
         );
@@ -63,18 +77,18 @@ namespace Arcus.Utilities
         /// <summary>
         ///     Maximum IPv4 Address value (255.255.255.255)
         /// </summary>
-        public static readonly IPAddress IPv4MaxAddress = new IPAddress(uint.MaxValue);
+        public static readonly IPAddress IPv4MaxAddress = new(uint.MaxValue);
 
         /// <summary>
         ///     Minimum IPv4 Address value (0.0.0.0)
         /// </summary>
-        public static readonly IPAddress IPv4MinAddress = new IPAddress(0);
+        public static readonly IPAddress IPv4MinAddress = new(0);
 
         /// <summary>
         ///     Maximum IPv6 value (ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff)
         /// </summary>
-        public static readonly IPAddress IPv6MaxAddress = new IPAddress(
-            new byte[] { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff },
+        public static readonly IPAddress IPv6MaxAddress = new(
+            [0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff],
             0L
         );
 
@@ -90,7 +104,7 @@ namespace Arcus.Utilities
         /// <summary>
         ///     Minimum IPv6 value (::)
         /// </summary>
-        public static readonly IPAddress IPv6MinAddress = new IPAddress(new byte[IPv6ByteCount], 0L);
+        public static readonly IPAddress IPv6MinAddress = new(new byte[IPv6ByteCount], 0L);
 
         #region Address Max / Minimum
 
@@ -162,8 +176,14 @@ namespace Arcus.Utilities
 
         /// <summary>
         ///     Check if address is IPv4 mapped to IPv6
-        ///     in accordance to rfc 4291 (https://tools.ietf.org/html/rfc4291) - 2.5.5.2.  IPv4-Mapped IPv6 Address
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         IPv4-Mapped IPv6 Address format per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.5.5.2">RFC 4291 §2.5.5.2</see>:
+        ///         80 zero bits, 16 one-bits (<c>0xFFFF</c>), followed by the 32-bit IPv4 address.
+        ///     </para>
+        /// </remarks>
         /// <param name="ipAddress">the IPAddress to test</param>
         /// <returns>true if is an IPv4 address mapped to IPv6</returns>
         /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
@@ -182,6 +202,13 @@ namespace Arcus.Utilities
         /// <summary>
         ///     Determine if the given <see cref="IPAddress" /> is a valid net mask
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         A valid subnet mask is a contiguous sequence of leading 1-bits followed by 0-bits per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc950#section-2">RFC 950 §2</see>.
+        ///         IPv4 only; returns <see langword="false" /> for IPv6 addresses.
+        ///     </para>
+        /// </remarks>
         /// <param name="netmask">the netmask to test</param>
         /// <returns>true if the given input is a valid netmask</returns>
         public static bool IsValidNetMask(this IPAddress netmask)
@@ -311,6 +338,13 @@ namespace Arcus.Utilities
         ///     Converts an IP address string to an <see cref="System.Net.IPAddress" /> instance ignoring leading zeros (octal
         ///     notation) of dotted quad format.
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         IPv4 dotted-quad notation uses four decimal octets per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
+        ///         Leading zeros in an octet are stripped before parsing to avoid unintended octal interpretation.
+        ///     </para>
+        /// </remarks>
         /// <param name="input">
         ///     A string that contains an IP address in dotted-quad notation for IPv4 and in colon-hexadecimal
         ///     notation for IPv6
@@ -439,6 +473,12 @@ namespace Arcus.Utilities
         /// <summary>
         ///     Determines if an <see cref="IPAddress"/> is a private address.
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Private address blocks (<c>10.0.0.0/8</c>, <c>172.16.0.0/12</c>, <c>192.168.0.0/16</c>, <c>fd00::/8</c>)
+        ///         are defined in <see href="https://www.rfc-editor.org/rfc/rfc1918#section-3">RFC 1918 §3</see>.
+        ///     </para>
+        /// </remarks>
         /// <param name="address">the input address</param>
         /// <returns><see langword="true"/> if, and only if, the <paramref name="address"/> is private.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="address"/> is <see langword="null"/></exception>

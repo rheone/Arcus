@@ -15,7 +15,7 @@ namespace Arcus.Comparers
         /// <summary>
         ///     Default instance of <see cref="DefaultIPAddressComparer"/> using <see cref="DefaultAddressFamilyComparer.Instance"/>
         /// </summary>
-        public static readonly DefaultIPAddressComparer Instance = new DefaultIPAddressComparer();
+        public static readonly DefaultIPAddressComparer Instance = new();
 
         private readonly IComparer<AddressFamily> _addressFamilyComparer;
 

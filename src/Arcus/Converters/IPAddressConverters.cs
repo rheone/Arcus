@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
-using System.Text.RegularExpressions;
 using Arcus.Utilities;
 
 namespace Arcus.Converters
@@ -21,6 +19,14 @@ namespace Arcus.Converters
         ///     Convert a valid netmask (encoded as <see cref="IPAddress" />) into a CIDR route prefix
         ///     Only valid for IPv4 netmasks
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         The netmask must be a contiguous sequence of leading 1-bits per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc950#section-2">RFC 950 §2</see>.
+        ///         The resulting integer is the CIDR prefix length per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///     </para>
+        /// </remarks>
         /// <param name="netmask">the netmask to convert</param>
         /// <returns>the route prefix</returns>
         /// <exception cref="InvalidOperationException"><paramref name="netmask" /> is <see langword="null" />.</exception>
@@ -66,48 +72,78 @@ namespace Arcus.Converters
 
         /// <summary>
         ///     IPv6 to Base85 (will return empty string for non ipv6 addresses) AKA Ascii85
-        ///     from RFC 1924 ( http://tools.ietf.org/html/rfc1924 )
-        ///     <remarks>
-        ///         <para>The RFC is an April Fools Day Joke, but we implemented it anyhow</para>
-        ///     </remarks>
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Encoding defined in <see href="https://www.rfc-editor.org/rfc/rfc1924">RFC 1924</see>
+        ///         (an April Fools Day joke, but implemented here regardless).
+        ///     </para>
+        /// </remarks>
         /// <param name="ipAddress">the ip address to convert</param>
         /// <returns>Ascii85/Base85 representation of IPv6 Address, or an empty string on failure</returns>
         public static string ToBase85String(this IPAddress ipAddress)
         {
-            if (ipAddress == null || !ipAddress.IsIPv6())
+            if (ipAddress?.IsIPv6() != true)
             {
                 return null;
             }
 
-            return string.Concat(GetBase85Chars(ipAddress).Reverse()).PadLeft(20, '0');
+            const string alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~";
+            var chars = new char[20];
+            var addressBytes = ipAddress.GetAddressBytes();
 
-#if NET6_0_OR_GREATER
-            static
-#endif
-            IEnumerable<char> GetBase85Chars(IPAddress input)
+#if NET8_0_OR_GREATER
+            ulong high = 0;
+            ulong low = 0;
+            for (var i = 0; i < 8; i++)
             {
-                const string alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~";
-
-                // get little endian unsigned byte value
-                var addressBytes = input.GetAddressBytes().Reverse().ToList();
-
-                addressBytes.Add(0x00);
-
-                // either rely on BigInteger, or implement byte based modulus and division
-                var bigInteger = new BigInteger(addressBytes.ToArray());
-
-                do
-                {
-                    bigInteger = BigInteger.DivRem(bigInteger, 85, out var charIndex);
-                    yield return alphabet[(int)charIndex];
-                } while (bigInteger > 0);
+                high = (high << 8) | addressBytes[i];
             }
+
+            for (var i = 8; i < 16; i++)
+            {
+                low = (low << 8) | addressBytes[i];
+            }
+
+            var value128 = new UInt128(high, low);
+            for (var i = 19; i >= 0; i--)
+            {
+                (value128, var remainder) = UInt128.DivRem(value128, 85);
+                chars[i] = alphabet[(int)remainder];
+            }
+#else
+            var leBytes = new byte[17]; // zero-initialized; index 16 stays 0 (sign byte)
+            for (var i = 0; i < 16; i++)
+            {
+                leBytes[i] = addressBytes[15 - i];
+            }
+
+            var value = new BigInteger(leBytes);
+            for (var i = 19; i >= 0; i--)
+            {
+                value = BigInteger.DivRem(value, 85, out var remainder);
+                chars[i] = alphabet[(int)remainder];
+            }
+#endif
+
+            return new string(chars);
         }
 
         /// <summary>
         ///     Represent address as dotted quad (if not ipv6 simply return stringified version of input)
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         IPv4 dotted-quad notation (four decimal octets separated by dots) per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
+        ///     </para>
+        ///     <para>
+        ///         For IPv6 addresses the first 96 bits (6 hextets) are rendered in compressed IPv6 notation —
+        ///         the longest consecutive run of zero-valued hextets is collapsed to <c>::</c> per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc5952#section-4">RFC 5952 §4</see> — followed
+        ///         by the trailing 32 bits as an IPv4 dotted-quad suffix.
+        ///     </para>
+        /// </remarks>
         /// <param name="ipAddress">the ip address to convert</param>
         /// <returns>dotted quad version of the given address</returns>
         /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
@@ -123,43 +159,124 @@ namespace Arcus.Converters
                 return ipAddress.ToString();
             }
 
-            // TODO candidate for clean up / simplification
-            var bytes = ipAddress.GetAddressBytes(); // get the bytes of the ip address
+#if NET8_0_OR_GREATER
+            Span<byte> bytes = stackalloc byte[16];
+            ipAddress.TryWriteBytes(bytes, out _);
+            Span<ushort> hextets = stackalloc ushort[6];
+#else
+            var bytes = ipAddress.GetAddressBytes();
+            var hextets = new ushort[6];
+#endif
 
-            var leadingBytes = bytes.Take(12).ToArray(); // capture the non ipv4 bytes
-
-            var hextets = Enumerable
-                .Range(0, 6)
-                .Select(i =>
-                {
-                    var index = i * 2;
-                    return new byte[] { leadingBytes[index + 1], leadingBytes[index], 0x0, 0x0 };
-                }) // get bytes in pairs with leading 0's to force unsigned form
-                .Select(bs => BitConverter.ToInt32(bs, 0)) // convert byte pairs to 16 bit integers
-                .Select(i => $"{i:x}"); // combine bytes to a hex string
-
-            var hextetString = string.Join(":", hextets); // join the hextets on a colon
-
-            var longestMatch = new Regex(@"((:|\b)0\b)+") // find 0's surrounded by colons or word breaks
-                .Matches(hextetString) // match across the hextet string
-                .Cast<Match>()
-                .Select(match => match.Value) // get the match value
-                .OrderByDescending(s =>
-                    s?.StartsWith("0", StringComparison.OrdinalIgnoreCase) == true ? s.Length + 1 : s.Length
-                ) // order by length accounting for matches at beginning of string
-                .FirstOrDefault(); // find the longest span of 0 valued hextets, or null if one does not exist
-
-            if (longestMatch != null)
+            for (var i = 0; i < 6; i++)
             {
-                // get the first index of the longest match
-                var index = hextetString.IndexOf(longestMatch, StringComparison.Ordinal);
-                hextetString = hextetString.Remove(index, longestMatch.Length).Insert(index, ":"); // replace first occurrence with a ":" char
+                hextets[i] = (ushort)((bytes[i * 2] << 8) | bytes[(i * 2) + 1]);
             }
 
-            var followingBytes = bytes.Skip(12).ToArray(); // capture IPv4 bytes (last 4)
-            var ipv4Address = new IPAddress(followingBytes).ToString();
+            // Find the longest consecutive run of zero hextets for :: compression
+            var bestStart = -1;
+            var bestLen = 0;
+            var runStart = -1;
+            var runLen = 0;
 
-            return hextetString + ":" + ipv4Address;
+            for (var i = 0; i < 6; i++)
+            {
+                if (hextets[i] == 0)
+                {
+                    if (runStart < 0)
+                    {
+                        runStart = i;
+                    }
+
+                    runLen++;
+                    if (runLen > bestLen)
+                    {
+                        bestStart = runStart;
+                        bestLen = runLen;
+                    }
+                }
+                else
+                {
+                    runStart = -1;
+                    runLen = 0;
+                }
+            }
+
+            var sb = new System.Text.StringBuilder(45);
+
+#if NET8_0_OR_GREATER
+            Span<char> hexBuf = stackalloc char[4];
+#endif
+
+            if (bestLen >= 1)
+            {
+                for (var i = 0; i < bestStart; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(':');
+                    }
+
+#if NET8_0_OR_GREATER
+                    hextets[i].TryFormat(hexBuf, out var hexLen, "x");
+                    sb.Append(hexBuf[..hexLen]);
+#else
+                    sb.Append(hextets[i].ToString("x"));
+#endif
+                }
+
+                sb.Append("::");
+
+                var afterStart = bestStart + bestLen;
+                for (var i = afterStart; i < 6; i++)
+                {
+                    if (i > afterStart)
+                    {
+                        sb.Append(':');
+                    }
+
+#if NET8_0_OR_GREATER
+                    hextets[i].TryFormat(hexBuf, out var hexLen, "x");
+                    sb.Append(hexBuf[..hexLen]);
+#else
+                    sb.Append(hextets[i].ToString("x"));
+#endif
+                }
+
+                if (afterStart < 6)
+                {
+                    sb.Append(':');
+                }
+            }
+            else
+            {
+                for (var i = 0; i < 6; i++)
+                {
+                    if (i > 0)
+                    {
+                        sb.Append(':');
+                    }
+
+#if NET8_0_OR_GREATER
+                    hextets[i].TryFormat(hexBuf, out var hexLen, "x");
+                    sb.Append(hexBuf[..hexLen]);
+#else
+                    sb.Append(hextets[i].ToString("x"));
+#endif
+                }
+
+                sb.Append(':');
+            }
+
+            sb.Append(bytes[12]);
+            sb.Append('.');
+            sb.Append(bytes[13]);
+            sb.Append('.');
+            sb.Append(bytes[14]);
+            sb.Append('.');
+            sb.Append(bytes[15]);
+
+            return sb.ToString();
         }
 
         /// <summary>
@@ -187,6 +304,15 @@ namespace Arcus.Converters
         /// <summary>
         ///     Convert to uncompressed IPv4/IPv6, adding zeros or expanding '::' where appropriate
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         For IPv6, produces the fully-expanded form (no <c>::</c> compression, all hextets zero-padded to 4 digits),
+        ///         which is the inverse of the compressed form defined in
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc5952#section-4">RFC 5952 §4</see>.
+        ///         For IPv4, produces three-digit zero-padded dotted-quad per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
+        ///     </para>
+        /// </remarks>
         /// <param name="ipAddress">the address to expand</param>
         /// <returns>the expanded for of IPv4/IPv6, or ToString() otherwise</returns>
         /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>

@@ -13,6 +13,17 @@ Arcus is a C# manipulation library for calculating, parsing, formatting, convert
 
 ## ❗Breaking Changes
 
+### Removed types and members
+
+The following types and members have been permanently removed. They were previously marked `[Obsolete]`.
+
+| Removed | Namespace / Location | Migration |
+| --- | --- | --- |
+| `MacAddress` (entire type) | `Arcus` | No direct replacement in this library |
+| `DefaultIPAddressRangeComparer` (entire type) | `Arcus.Comparers` | Use `DefaultIIPAddressRangeComparer` |
+
+---
+
 ### Gulliver dependency removed
 
 The [Gulliver](https://github.com/sandialabs/gulliver) NuGet package has been removed as a dependency. All byte-level manipulation previously delegated to Gulliver is now handled by the internal `BigEndianBitWrapper` type inside this library.
@@ -41,7 +52,6 @@ The following bugs have been fixed. If your code was intentionally relying on th
 | `AbstractIPAddressRange.ContainsAnyPrivateAddresses()` | Checked only endpoints; missed ranges that span a private block with public endpoints | Uses range-overlap detection across `PrivateIPAddressRangesList` |
 | `AbstractIPAddressRange.ContainsAllPublicAddresses()` | Checked only endpoints; returned `true` for ranges whose endpoints are public but whose interior spans a private block | Uses range-overlap detection |
 | `IPAddressRange.TryExcludeAll` | Threw `InvalidOperationException` when an exclusion ended at the family maximum address | Returns `(true, leading segment)` or `(true, [])` as appropriate |
-| `MacAddress.IsUnusable` | Returned `true` for almost every real MAC address (implementation was logically inverted relative to its documentation) | Returns `true` only when all three OUI bytes are `0x00` |
 
 ---
 
@@ -98,7 +108,7 @@ The _Comparers_ package contains useful Comparer objects for comparing propertie
 
 - `DefaultAddressFamilyComparer` - A comparer that compares address families. Most frequently `Internetwork` (IPv4) and `InternetworkV6` (IPv6)
 - `DefaultIPAddressComparer` - A comparer for `IPAddress` objects
-- `DefaultIPAddressRangeComparer` - A comparer for `IIPAddressRange`. Compares such that lower order ranges are less that higher order ranges accounting for size at matching range starts
+- `DefaultIIPAddressRangeComparer` - A comparer for `IIPAddressRange`. Compares such that lower order ranges are less that higher order ranges accounting for size at matching range starts
 
 #### Converters
 

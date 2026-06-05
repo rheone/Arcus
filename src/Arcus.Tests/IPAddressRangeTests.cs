@@ -110,10 +110,15 @@ namespace Arcus.Tests
         #region CompareTo / Operators
 
         /// <summary>
-        ///     Test data for <see cref="CompareTo_Test" /> and operator tests.
+        ///     Gets test data for <see cref="CompareTo_Test" /> and operator tests.
         ///     Covers equal ranges, null right operands, cross-family ordering, and length-based ordering within a family.
         ///     <para>Parameters: expected comparison result (int), left (IPAddressRange), right (IPAddressRange).</para>
         /// </summary>
+        /// <value>
+        /// <placeholder>Test data for <see cref="CompareTo_Test" /> and operator tests.
+        ///     Covers equal ranges, null right operands, cross-family ordering, and length-based ordering within a family.
+        ///     <para>Parameters: expected comparison result (int), left (IPAddressRange), right (IPAddressRange).</para></placeholder>
+        /// </value>
         public static TheoryData<int, IPAddressRange, IPAddressRange> Comparison_Values
         {
             get
@@ -384,12 +389,11 @@ namespace Arcus.Tests
         #region ISerializable
 #if NET48   // maintained for .NET 4.8 compatibility
         public static TheoryData<IPAddressRange> CanSerializable_Test_Values =>
-            new TheoryData<IPAddressRange>
-            {
+            [
                 new IPAddressRange(IPAddress.Parse("192.168.1.0")),
                 new IPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
                 new IPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::FFFF:4321")),
-            };
+            ];
 
         [Theory]
         [MemberData(nameof(CanSerializable_Test_Values))]
@@ -399,21 +403,19 @@ namespace Arcus.Tests
             var formatter = new BinaryFormatter();
 
             // Act
-            using (var writeStream = new MemoryStream())
-            {
-                // Serialize the object to the stream
-                formatter.Serialize(writeStream, ipAddressRange);
-                writeStream.Seek(0, SeekOrigin.Begin);
+            using var writeStream = new MemoryStream();
+            // Serialize the object to the stream
+            formatter.Serialize(writeStream, ipAddressRange);
+            writeStream.Seek(0, SeekOrigin.Begin);
 
-                // Deserialize the object from the stream
-                var result = formatter.Deserialize(writeStream);
+            // Deserialize the object from the stream
+            var result = formatter.Deserialize(writeStream);
 
-                // Assert
-                var actual = Assert.IsType<IPAddressRange>(result);
+            // Assert
+            var actual = Assert.IsType<IPAddressRange>(result);
 
-                // using explicit EqualityComparer to avoid comparing elements of enumerable
-                Assert.Equal(ipAddressRange, actual, IPAddressRangeEqualityComparer.Instance);
-            }
+            // using explicit EqualityComparer to avoid comparing elements of enumerable
+            Assert.Equal(ipAddressRange, actual, IPAddressRangeEqualityComparer.Instance);
         }
 #endif
         #endregion end: ISerializable
@@ -572,7 +574,7 @@ namespace Arcus.Tests
         public void TryCollapseAll_EmptyInput_Test()
         {
             // Act
-            var success = IPAddressRange.TryCollapseAll(Enumerable.Empty<IPAddressRange>(), out var results);
+            var success = IPAddressRange.TryCollapseAll([], out var results);
 
             // Assert
             Assert.True(success);
@@ -669,7 +671,7 @@ namespace Arcus.Tests
             Assert.NotNull(results);
             var enumerable = results.ToList();
             Assert.Equal(3, enumerable.Count);
-            Assert.Equal(enumerable, ranges.ToList());
+            Assert.Equal(enumerable, [.. ranges]);
         }
 
         #endregion // end: TryCollapseAll
@@ -700,11 +702,10 @@ namespace Arcus.Tests
 
             Assert.Equal(
                 enumerable,
-                new[]
-                {
+                [
                     new IPAddressRange(IPAddress.Parse("192.168.1.11"), IPAddress.Parse("192.168.1.49")),
                     new IPAddressRange(IPAddress.Parse("192.168.1.101"), IPAddress.Parse("192.168.1.149")),
-                }.ToList()
+                ]
             );
         }
 
@@ -731,11 +732,10 @@ namespace Arcus.Tests
 
             Assert.Equal(
                 enumerable,
-                new[]
-                {
+                [
                     new IPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.0")),
                     new IPAddressRange(IPAddress.Parse("192.168.1.200"), IPAddress.Parse("192.168.1.200")),
-                }.ToList()
+                ]
             );
         }
 
@@ -813,7 +813,7 @@ namespace Arcus.Tests
             var initialRange = new IPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.200"));
 
             // Act
-            var success = IPAddressRange.TryExcludeAll(initialRange, Enumerable.Empty<IPAddressRange>(), out var results);
+            var success = IPAddressRange.TryExcludeAll(initialRange, [], out var results);
 
             // Assert
             Assert.True(success);
@@ -847,7 +847,7 @@ namespace Arcus.Tests
             var initialRange = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("200.0.0.0"));
             var exclusion = new IPAddressRange(IPAddress.Parse("100.0.0.0"), IPAddress.Parse("255.255.255.255"));
 
-            var success = IPAddressRange.TryExcludeAll(initialRange, new[] { exclusion }, out var results);
+            var success = IPAddressRange.TryExcludeAll(initialRange, [exclusion], out var results);
 
             Assert.True(success);
             var list = results.ToList();
@@ -863,7 +863,7 @@ namespace Arcus.Tests
             var initialRange = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("200.0.0.0"));
             var exclusion = new IPAddressRange(IPAddress.Parse("0.0.0.0"), IPAddress.Parse("255.255.255.255"));
 
-            var success = IPAddressRange.TryExcludeAll(initialRange, new[] { exclusion }, out var results);
+            var success = IPAddressRange.TryExcludeAll(initialRange, [exclusion], out var results);
 
             Assert.True(success);
             Assert.Empty(results);
@@ -876,7 +876,7 @@ namespace Arcus.Tests
             var initialRange = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("200.0.0.0"));
             var exclusion = new IPAddressRange(IPAddress.Parse("0.0.0.0"), IPAddress.Parse("50.0.0.0"));
 
-            var success = IPAddressRange.TryExcludeAll(initialRange, new[] { exclusion }, out var results);
+            var success = IPAddressRange.TryExcludeAll(initialRange, [exclusion], out var results);
 
             Assert.True(success);
             var list = results.ToList();
@@ -895,7 +895,7 @@ namespace Arcus.Tests
                 IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
             );
 
-            var success = IPAddressRange.TryExcludeAll(initialRange, new[] { exclusion }, out var results);
+            var success = IPAddressRange.TryExcludeAll(initialRange, [exclusion], out var results);
 
             Assert.True(success);
             var list = results.ToList();
@@ -911,7 +911,7 @@ namespace Arcus.Tests
             var initialRange = new IPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("f000::"));
             var exclusion = new IPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("8000::"));
 
-            var success = IPAddressRange.TryExcludeAll(initialRange, new[] { exclusion }, out var results);
+            var success = IPAddressRange.TryExcludeAll(initialRange, [exclusion], out var results);
 
             Assert.True(success);
             var list = results.ToList();
@@ -953,6 +953,11 @@ namespace Arcus.Tests
         ///     Covers all general format specifiers (<see langword="null" />, empty, "g", "G") for both IPv4 and IPv6 ranges.
         ///     <para>Parameters: expected (string), format (string), formatProvider (IFormatProvider), ipAddressRange (IPAddressRange).</para>
         /// </summary>
+        /// <value>
+        /// <placeholder>Test data for <see cref="ToString_Format_Test" />.
+        ///     Covers all general format specifiers (<see langword="null" />, empty, "g", "G") for both IPv4 and IPv6 ranges.
+        ///     <para>Parameters: expected (string), format (string), formatProvider (IFormatProvider), ipAddressRange (IPAddressRange).</para></placeholder>
+        /// </value>
         public static TheoryData<string, string, IFormatProvider, IPAddressRange> ToString_Format_Test_Values
         {
             get
@@ -1018,7 +1023,7 @@ namespace Arcus.Tests
 
         internal class IPAddressRangeEqualityComparer : IEqualityComparer<IPAddressRange>
         {
-            public static readonly IPAddressRangeEqualityComparer Instance = new IPAddressRangeEqualityComparer();
+            public static readonly IPAddressRangeEqualityComparer Instance = new();
 
             public bool Equals(IPAddressRange x, IPAddressRange y)
             {

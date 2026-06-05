@@ -11,7 +11,7 @@ namespace Arcus.Tests.Converters
         #region ToUncompressedString
 
         public static TheoryData<string, string> ToUncompressedString_ValidInput_ReturnsUncompressed_Test_Values =>
-            new TheoryData<string, string>
+            new()
             {
                 { "192.168.001.001", "192.168.1.1" },
                 { "192.168.009.001", "192.168.9.1" },
@@ -60,7 +60,7 @@ namespace Arcus.Tests.Converters
         #region ToBase85String
 
         public static TheoryData<string, string> ToBase85String_ValidIPv6Input_ReturnsBase85_Test_Values =>
-            new TheoryData<string, string>
+            new()
             {
                 { "$@bLmTEHhx*HIpup2~ix", "dead:beef::" },
                 { "=r54lj&NUUO~Hi%c2ym0", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff" },
@@ -114,7 +114,7 @@ namespace Arcus.Tests.Converters
         #region ToDottedQuadString
 
         public static TheoryData<string, string> ToDottedQuadString_ValidInput_ReturnsDottedQuad_Test_Values =>
-            new TheoryData<string, string>
+            new()
             {
                 { "1:2:3:a:b:ffff:255.255.255.255", "1:2:3:a:b:ffff:ffff:ffff" },
                 { "ffff:ffff:ffff:ffff:ffff:ffff:1.2.3.4", "ffff:ffff:ffff:ffff:ffff:ffff:0102:0304" },
@@ -131,6 +131,11 @@ namespace Arcus.Tests.Converters
                 { "ffff::ffff:ffff:ffff:ffff:255.255.255.255", "ffff::ffff:ffff:ffff:ffff:ffff:ffff" },
                 { "::0.0.0.0", "::" },
                 { "192.168.1.1", "192.168.1.1" },
+                { "::0.0.0.1", "::1" },
+                { "::ffff:192.168.1.1", "::ffff:192.168.1.1" },
+                { "::1:0:0:1:255.255.255.255", "0:0:1:0:0:1:ffff:ffff" },
+                { "fe80::0.0.0.1", "fe80::1" },
+                { "1::1:1:0.0.0.0", "1:0:0:0:1:1:0:0" },
             };
 
         [Theory]
@@ -165,7 +170,7 @@ namespace Arcus.Tests.Converters
         #region ToHexString
 
         public static TheoryData<string, string> ToHexString_ValidInput_ReturnsHex_Test_Values =>
-            new TheoryData<string, string>
+            new()
             {
                 { "00000000000000000000000000000000", "::" },
                 { "FFFFFFFFFFFFFFFFFFFFFFFFFFFFFFFF", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff" },
@@ -211,7 +216,7 @@ namespace Arcus.Tests.Converters
         #region ToNumericString
 
         public static TheoryData<string, string> ToNumericString_ValidInput_ReturnsNumeric_Test_Values =>
-            new TheoryData<string, string>
+            new()
             {
                 { "0", "::" },
                 { "340282366920938463463374607431768211455", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff" },
@@ -287,7 +292,7 @@ namespace Arcus.Tests.Converters
         }
 
         public static TheoryData<string> NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsInvalidOperationException_Test_Values =>
-            new TheoryData<string>
+            new()
             {
                 { "::" },
                 { "192.168.1.1" },

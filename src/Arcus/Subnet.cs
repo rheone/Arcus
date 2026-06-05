@@ -17,6 +17,18 @@ namespace Arcus
     /// <summary>
     ///     An IPv4 or IPv6 subnetwork representation - the work horse and original intention of the Arcus library
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         IPv4 addresses are 32-bit unsigned integers per
+    ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see> (routing prefix bounded [0, 32]).
+    ///         IPv6 addresses are 128-bit unsigned integers per
+    ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see> (routing prefix bounded [0, 128]).
+    ///         Subnet mask semantics are defined in
+    ///         <see href="https://www.rfc-editor.org/rfc/rfc950#section-2">RFC 950 §2</see>.
+    ///         CIDR prefix notation (<c>address/prefix-length</c>) is defined in
+    ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+    ///     </para>
+    /// </remarks>
     [Serializable]
     public class Subnet : AbstractIPAddressRange,
 #if NETSTANDARD2_0
@@ -38,7 +50,7 @@ namespace Arcus
         /// <summary>
         ///     Regex that passes on valid IPv4 octet partials
         /// </summary>
-        private static readonly Regex IPv4OctetPartialRegex = new Regex(
+        private static readonly Regex IPv4OctetPartialRegex = new(
             Ipv4OctetPartialPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant
         );
@@ -46,7 +58,7 @@ namespace Arcus
         /// <summary>
         ///     Regex for rough shape of a subnet string
         /// </summary>
-        private static readonly Regex RoughSubnetRegex = new Regex(
+        private static readonly Regex RoughSubnetRegex = new(
             RoughSubnetStringPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
         );
@@ -57,6 +69,12 @@ namespace Arcus
         /// <value>
         /// the number of usable addresses in the subnet (ignores Broadcast and Network addresses)
         /// </value>
+        /// <remarks>
+        ///     <para>
+        ///         Excludes the network address and broadcast address as defined in
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc950#section-2">RFC 950 §2</see>.
+        ///     </para>
+        /// </remarks>
         public BigInteger UsableHostAddressCount => Length >= 2 ? Length - 2 : 0;
 
         /// <summary>
@@ -65,6 +83,12 @@ namespace Arcus
         /// <value>
         /// the broadcast of the subnet (highest order ip address)
         /// </value>
+        /// <remarks>
+        ///     <para>
+        ///         The highest address in the subnet (all host bits set) per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc950#section-2">RFC 950 §2</see>.
+        ///     </para>
+        /// </remarks>
         public IPAddress BroadcastAddress => Tail;
 
         /// <summary>
@@ -75,6 +99,13 @@ namespace Arcus
         /// the calculated Netmask of the subnet, only valid for IPv4 based subnets will be <see langword="null" /> on IPv6
         ///     subnets
         /// </value>
+        /// <remarks>
+        ///     <para>
+        ///         A valid subnet mask is a contiguous sequence of leading 1-bits followed by 0-bits per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc950#section-2">RFC 950 §2</see>.
+        ///         IPv4 only; <see langword="null" /> for IPv6 subnets.
+        ///     </para>
+        /// </remarks>
         public IPAddress Netmask { get; }
 
         /// <summary>
@@ -83,6 +114,12 @@ namespace Arcus
         /// <value>
         /// the network prefix of the subnet (lowest order IP address)
         /// </value>
+        /// <remarks>
+        ///     <para>
+        ///         The network address derived by AND-ing the IP address with the subnet mask per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///     </para>
+        /// </remarks>
         public IPAddress NetworkPrefixAddress => Head;
 
         /// <summary>
@@ -91,6 +128,13 @@ namespace Arcus
         /// <value>
         /// the routing prefix used to specify the ip address
         /// </value>
+        /// <remarks>
+        ///     <para>
+        ///         The prefix length in CIDR notation per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///         Valid range is [0, 32] for IPv4 and [0, 128] for IPv6.
+        ///     </para>
+        /// </remarks>
         public int RoutingPrefix { get; }
 
         #region From Interface IComparable
@@ -131,38 +175,27 @@ namespace Arcus
         #region Formatting
 
         /// <inheritdoc />
+        /// <remarks>
+        ///     <para>
+        ///         The <c>g</c>/<c>G</c> (and default) format produces canonical CIDR notation (<c>address/prefix-length</c>)
+        ///         per <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///     </para>
+        /// </remarks>
         public override string ToString(string format, IFormatProvider formatProvider)
         {
-            if (formatProvider is null)
-            {
-                formatProvider = CultureInfo.InvariantCulture;
-            }
+            formatProvider ??= CultureInfo.InvariantCulture;
 
-            switch (format?.Trim())
+            return format?.Trim() switch
             {
                 // unspecified
-                case null:
-                case "":
-
-                // general formats
-                case "g":
-                case "G":
-                    return $"{this.NetworkPrefixAddress}/{this.RoutingPrefix}";
-
+                null or { Length: 0 } or "g" or "G" => $"{this.NetworkPrefixAddress}/{this.RoutingPrefix}",
                 // "friendly" formats
-                case "f":
-                case "F":
-                    return IsSingleIP ? $"{this.NetworkPrefixAddress}" : $"{this.NetworkPrefixAddress}/{this.RoutingPrefix}";
-
+                "f" or "F" => IsSingleIP ? $"{this.NetworkPrefixAddress}" : $"{this.NetworkPrefixAddress}/{this.RoutingPrefix}",
                 // range formats
-                case "r":
-                case "R":
-                    return $"{this.NetworkPrefixAddress} - {this.BroadcastAddress}";
-
+                "r" or "R" => $"{this.NetworkPrefixAddress} - {this.BroadcastAddress}",
                 // delegate to base
-                default:
-                    return base.ToString(format, formatProvider);
-            }
+                _ => base.ToString(format, formatProvider),
+            };
         }
 
         #endregion // end: Formatting
@@ -200,6 +233,12 @@ namespace Arcus
         ///     (lower and higher bounds) but this is not necessary.
         ///     Addresses *MUST* be the same address family (either Internetwork or InternetworkV6)
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Constructs the smallest subnet (largest routing prefix) that contains both addresses per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///     </para>
+        /// </remarks>
         /// <param name="lowAddress">a address to be contained within the subnet</param>
         /// <param name="highAddress">another address to be contained within the subnet</param>
         public Subnet(IPAddress lowAddress, IPAddress highAddress)
@@ -261,6 +300,13 @@ namespace Arcus
         /// <summary>
         ///     Initializes a new instance of the <see cref="Subnet" /> class.
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Constructs a subnet from an address and CIDR prefix length per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///         The network prefix address is derived by AND-ing <paramref name="address"/> with the prefix mask.
+        ///     </para>
+        /// </remarks>
         /// <param name="address">the ip address</param>
         /// <param name="routingPrefix">the routing prefix</param>
         /// <exception cref="ArgumentException">IP Address must be IPv4 or IPv6</exception>
@@ -315,6 +361,14 @@ namespace Arcus
         ///     Initializes a new instance of the <see cref="Subnet" /> class.
         ///     contains only a single ip address
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Creates a host route: /32 for IPv4 per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>,
+        ///         or /128 for IPv6 per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
+        ///     </para>
+        /// </remarks>
         /// <param name="address">the ip address</param>
         public Subnet(IPAddress address)
             : base(address, address)
@@ -356,6 +410,13 @@ namespace Arcus
         /// <summary>
         ///     Create a subnet from an IP Address and netmask
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         The netmask must be a valid IPv4 subnet mask (contiguous leading 1-bits) per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc950#section-2">RFC 950 §2</see>.
+        ///         IPv4 only; use <see cref="Subnet(IPAddress, int)"/> for IPv6.
+        ///     </para>
+        /// </remarks>
         /// <param name="address">the ip address</param>
         /// <param name="netmask">the net mask</param>
         /// <returns>The created subnet</returns>
@@ -506,6 +567,12 @@ namespace Arcus
         /// <summary>
         ///     Unsafe parsing of a string into a subnet
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Accepts CIDR notation (<c>a.b.c.d/n</c> or <c>addr::x/n</c>) as defined in
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///     </para>
+        /// </remarks>
         /// <param name="subnetString">the string to parse a subnet from</param>
         /// <returns>the parsed subnet</returns>
         /// <exception cref="ArgumentException">could not parse input</exception>
@@ -598,6 +665,12 @@ namespace Arcus
         /// <summary>
         ///     Unsafe parsing of a string address and routing prefix into a subnet
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Parses a subnet from an address string and a separate CIDR prefix integer per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///     </para>
+        /// </remarks>
         /// <param name="addressString">the address string</param>
         /// <param name="routingPrefix">the subnet routing prefix</param>
         /// <exception cref="ArgumentException">
@@ -778,6 +851,13 @@ namespace Arcus
         /// <summary>
         ///     Try to convert a partial IPv4 address into a subnet based on found provided partial octets
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         IPv4 dotted-quad structure (4 octets × 8 bits = 32 bits total) per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
+        ///         Each supplied octet contributes 8 bits to the routing prefix.
+        ///     </para>
+        /// </remarks>
         /// <param name="input">the partial IP address to parse</param>
         /// <param name="subnet">the subnet created</param>
         /// <returns>true on success</returns>
@@ -809,6 +889,12 @@ namespace Arcus
         ///     Given a IPv6 cidr-like or IPv6 like string build a collection of all possible valid subnets that could be intended
         ///     by the input
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         IPv6 colon-hex notation with <c>::</c> zero-group collapse per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.2">RFC 4291 §2.2</see>.
+        ///     </para>
+        /// </remarks>
         /// <param name="input">the partial ipv6 cidr or address</param>
         /// <param name="subnets">a collection of all possible matching subnets on success, or an empty collection on failure</param>
         /// <returns><see langword="true" /> on success</returns>
@@ -824,14 +910,14 @@ namespace Arcus
                 || input.Equals(":", StringComparison.OrdinalIgnoreCase)
                 || input.Contains(":::")
                 || DoubleColonsAppearsMultipleTimes(input)
-                || (hextetCount = input.Split(new[] { ':' }, StringSplitOptions.RemoveEmptyEntries).Length)
+                || (hextetCount = input.Split([':'], StringSplitOptions.RemoveEmptyEntries).Length)
                     > IPAddressUtilities.IPv6HextetCount
                 || (
                     hextetCount >= IPAddressUtilities.IPv6HextetCount && input.EndsWith(":", StringComparison.OrdinalIgnoreCase)
                 )
             ) // too many hextets
             {
-                subnets = Enumerable.Empty<Subnet>();
+                subnets = [];
                 return false;
             }
 
@@ -843,7 +929,7 @@ namespace Arcus
                 && subnet.IsIPv6
             )
             {
-                subnets = new[] { subnet };
+                subnets = [subnet];
                 return true;
             }
 
@@ -862,7 +948,7 @@ namespace Arcus
 
                 // break up entry on hextets, an empty hextet implies a collapse
                 var hextets = trimmedPartial
-                    .Split(new[] { ':' }, StringSplitOptions.None) // DO NOT remove empty splits
+                    .Split([':'], StringSplitOptions.None) // DO NOT remove empty splits
                     .ToList();
 
                 // should contain an empty, pump the first with appropriate values
@@ -875,7 +961,7 @@ namespace Arcus
                 int collapseIndex;
                 if (collapse is null && hextets.Count == 8) // no collapse - fully fledged address, all 8 hextets present
                 {
-                    subnets = new[] { Parse(input, IPAddressUtilities.IPv6BitCount) };
+                    subnets = [Parse(input, IPAddressUtilities.IPv6BitCount)];
                     return true;
                 }
 
@@ -907,7 +993,7 @@ namespace Arcus
                         && !IPAddress.TryParse(addressString, out subnetAddress)
                     )
                     {
-                        subnets = Enumerable.Empty<Subnet>();
+                        subnets = [];
                         return false;
                     }
 
@@ -920,22 +1006,16 @@ namespace Arcus
             }
 
             // fail; could not parse anything useful from the input
-            subnets = Enumerable.Empty<Subnet>();
+            subnets = [];
             return false;
 
             // checks input for multiple occurrences of discrete "::" substrings
-#if NET6_0_OR_GREATER
-            static
-#endif
-            bool DoubleColonsAppearsMultipleTimes(string @in)
+
+            static bool DoubleColonsAppearsMultipleTimes(string @in)
             {
                 const string colons = "::";
-                int firstIndex;
-
-                return @in.Length >= 4
-                    && (firstIndex = @in.IndexOf(colons, StringComparison.Ordinal)) != -1
-                    && @in.Substring(firstIndex + 2, @in.Length - firstIndex - 2).IndexOf(colons, StringComparison.Ordinal)
-                        != -1;
+                var firstIndex = @in.IndexOf(colons, StringComparison.Ordinal);
+                return firstIndex >= 0 && @in.IndexOf(colons, firstIndex + colons.Length, StringComparison.Ordinal) >= 0;
             }
         }
 
@@ -1035,7 +1115,7 @@ namespace Arcus
         {
             if (left is null)
             {
-                return !(right is null); // null is less than any non-null instance
+                return right is not null; // null is less than any non-null instance
             }
 
             return left.CompareTo(right) < 0;
@@ -1123,10 +1203,7 @@ namespace Arcus
             var result = NormalizeAndCreateNetMask(head, routingPrefix);
             return new AddressMaskAndPrefixTuple(result.Head, result.Tail, result.Mask, routingPrefix);
 
-#if NET6_0_OR_GREATER
-            static
-#endif
-            int CalculateRoutingPrefix(byte[] hb, byte[] tb)
+            static int CalculateRoutingPrefix(byte[] hb, byte[] tb)
             {
                 var bitCount = hb.Length * 8; // 8 bits per byte
 

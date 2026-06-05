@@ -18,7 +18,7 @@ namespace Arcus.Tests
         #region FromBytes
 
         public static TheoryData<byte[]> FromBytes_ValidInput_RoundTrips_Test_Data =>
-            new TheoryData<byte[]>
+            new()
             {
                 // IPv4
                 { new byte[] { 0, 0, 0, 0 } },
@@ -98,7 +98,7 @@ namespace Arcus.Tests
         public void FromBytes_EmptyArray_ThrowsArgumentException_Test()
         {
             // Act / Assert
-            Assert.Throws<ArgumentException>(() => BigEndianBitWrapper.FromBytes(Array.Empty<byte>()));
+            Assert.Throws<ArgumentException>(() => BigEndianBitWrapper.FromBytes([]));
         }
 
         [Fact]
@@ -124,7 +124,7 @@ namespace Arcus.Tests
         [InlineData(-1)]
         public void FromBytesWithTarget_InvalidTargetWidth_ThrowsArgumentOutOfRangeException_Test(int targetWidth)
         {
-            Assert.Throws<ArgumentOutOfRangeException>(() => BigEndianBitWrapper.FromBytes(new byte[] { 0x01 }, targetWidth));
+            Assert.Throws<ArgumentOutOfRangeException>(() => BigEndianBitWrapper.FromBytes([0x01], targetWidth));
         }
 
         [Fact]
@@ -169,7 +169,7 @@ namespace Arcus.Tests
         public void FromBytesWithTarget_EmptyBytes_ProducesAllZeros_Test()
         {
             // Act
-            var wrapper = BigEndianBitWrapper.FromBytes(Array.Empty<byte>(), 4);
+            var wrapper = BigEndianBitWrapper.FromBytes([], 4);
 
             // Assert
             Assert.Equal(new byte[] { 0, 0, 0, 0 }, wrapper.ToBytes());
@@ -180,7 +180,7 @@ namespace Arcus.Tests
         #region CreateMask
 
         public static TheoryData<int, int, byte[]> CreateMask_IPv4_Test_Data =>
-            new TheoryData<int, int, byte[]>
+            new()
             {
                 { 4, 0, new byte[] { 0x00, 0x00, 0x00, 0x00 } },
                 { 4, 8, new byte[] { 0xFF, 0x00, 0x00, 0x00 } },
@@ -204,7 +204,7 @@ namespace Arcus.Tests
         }
 
         public static TheoryData<int, int, byte[]> CreateMask_IPv6_Test_Data =>
-            new TheoryData<int, int, byte[]>
+            new()
             {
                 { 16, 0, new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 } },
                 { 16, 64, new byte[] { 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0xFF, 0, 0, 0, 0, 0, 0, 0, 0 } },
@@ -646,7 +646,7 @@ namespace Arcus.Tests
         #region ToBigInteger
 
         public static TheoryData<byte[], long> ToBigInteger_KnownValues_Test_Data =>
-            new TheoryData<byte[], long>
+            new()
             {
                 { new byte[] { 0, 0, 0, 0 }, 0L },
                 { new byte[] { 0, 0, 0, 1 }, 1L },
@@ -698,7 +698,7 @@ namespace Arcus.Tests
         #region ToHexString / ToString("HC")
 
         public static TheoryData<byte[], string> ToHexString_KnownValues_Test_Data =>
-            new TheoryData<byte[], string>
+            new()
             {
                 { new byte[] { 0, 0, 0, 0 }, "00000000" },
                 { new byte[] { 255, 255, 255, 255 }, "FFFFFFFF" },
@@ -776,7 +776,7 @@ namespace Arcus.Tests
         #region ToDecimalString / ToString("IBE")
 
         public static TheoryData<byte[], string> ToDecimalString_KnownValues_Test_Data =>
-            new TheoryData<byte[], string>
+            new()
             {
                 { new byte[] { 0, 0, 0, 0 }, "0" },
                 { new byte[] { 0, 0, 0, 1 }, "1" },
@@ -893,7 +893,7 @@ namespace Arcus.Tests
         #region CompareTo
 
         public static TheoryData<string, string, int> CompareTo_Test_Data =>
-            new TheoryData<string, string, int>
+            new()
             {
                 // IPv4
                 { "10.0.0.1", "10.0.0.1", 0 },
@@ -967,8 +967,8 @@ namespace Arcus.Tests
         public void Equals_DifferentByteWidth_ReturnsFalse_Test()
         {
             // Arrange: same numeric value 1, but different byte widths
-            var ipv4 = BigEndianBitWrapper.FromBytes(new byte[] { 0, 0, 0, 1 });
-            var ipv6 = BigEndianBitWrapper.FromBytes(new byte[] { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1 });
+            var ipv4 = BigEndianBitWrapper.FromBytes([0, 0, 0, 1]);
+            var ipv6 = BigEndianBitWrapper.FromBytes([0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1]);
 
             // Act / Assert
             Assert.False(ipv4.Equals(ipv6));

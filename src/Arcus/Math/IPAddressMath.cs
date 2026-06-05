@@ -9,6 +9,16 @@ namespace Arcus.Math
     /// <summary>
     ///     Static utility class containing mathematical methods on <see cref="IPAddress" /> objects
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         IPv4 address arithmetic operates within the 32-bit unsigned address space per
+    ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
+    ///         IPv6 address arithmetic operates within the 128-bit unsigned address space per
+    ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
+    ///         Overflow or underflow beyond the respective address space boundaries throws
+    ///         <see cref="InvalidOperationException"/>.
+    ///     </para>
+    /// </remarks>
     public static class IPAddressMath
     {
         #region basic arithmetic operations
@@ -16,6 +26,16 @@ namespace Arcus.Math
         /// <summary>
         ///     Increment IPv4 or IPv6 value
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         For IPv4, overflow beyond <c>255.255.255.255</c> (upper bound per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>) throws
+        ///         <see cref="InvalidOperationException"/>.
+        ///         For IPv6, overflow beyond <c>ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff</c> (upper bound per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>) throws
+        ///         <see cref="InvalidOperationException"/>.
+        ///     </para>
+        /// </remarks>
         /// <param name="input">the ip address to affect</param>
         /// <param name="delta">the increment value, may be negative</param>
         /// <returns>the incremented ip address</returns>
@@ -308,6 +328,14 @@ namespace Arcus.Math
         /// <summary>
         ///     determine if IP address is at maximum value
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         IPv4 maximum is <c>255.255.255.255</c> per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
+        ///         IPv6 maximum is <c>ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff</c> per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
+        ///     </para>
+        /// </remarks>
         /// <param name="address">the IP Address to test</param>
         /// <returns>true if the address is the maximum value</returns>
         /// <exception cref="InvalidOperationException">Address families must be InterNetwork or InternetworkV6</exception>
@@ -337,6 +365,14 @@ namespace Arcus.Math
         /// <summary>
         ///     determine if IP address is at minimum value
         /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         IPv4 minimum is <c>0.0.0.0</c> per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
+        ///         IPv6 minimum is <c>::</c> per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
+        ///     </para>
+        /// </remarks>
         /// <param name="address">the IP Address to test</param>
         /// <returns>true if the address is the minimum value</returns>
         /// <exception cref="InvalidOperationException">Address families must be InterNetwork or InternetworkV6</exception>

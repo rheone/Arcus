@@ -9,9 +9,17 @@ using Arcus.Math;
 namespace Arcus
 {
     /// <summary>
-    ///     A basic implementation of a IIPAddressRange us to represent an inclusive range of arbitrary IP Addresses of the
+    ///     A basic implementation of a IIPAddressRange used to represent an inclusive range of arbitrary IP Addresses of the
     ///     same address family
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Represents an arbitrary inclusive range of addresses within the IPv4 32-bit address space
+    ///         (<see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>) or the IPv6 128-bit address
+    ///         space (<see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>). Unlike
+    ///         <see cref="Subnet"/>, ranges are not constrained to power-of-two boundaries or valid network addresses.
+    ///     </para>
+    /// </remarks>
     [Serializable]
     public class IPAddressRange
         : AbstractIPAddressRange,
@@ -151,7 +159,7 @@ namespace Arcus
         {
             if (left is null)
             {
-                return !(right is null); // null is less than any non-null instance
+                return right is not null; // null is less than any non-null instance
             }
 
             return left.CompareTo(right) < 0;
@@ -239,31 +247,31 @@ namespace Arcus
         /// <returns>true on success</returns>
         public static bool TryCollapseAll(IEnumerable<IPAddressRange> ranges, out IEnumerable<IPAddressRange> result)
         {
-            var rangeList = (ranges ?? Enumerable.Empty<IPAddressRange>()).ToList();
+            var rangeList = (ranges ?? []).ToList();
 
             // item null check
             if (rangeList.Contains(null))
             {
-                result = Enumerable.Empty<IPAddressRange>();
+                result = [];
                 return false;
             }
 
             // no ranges provided
             if (!rangeList.Any()) // no ranges
             {
-                result = Enumerable.Empty<IPAddressRange>();
+                result = [];
                 return true; // assume success
             }
 
             // all families don't match match
             if (rangeList.Any(r => r.AddressFamily != rangeList[0].AddressFamily))
             {
-                result = Enumerable.Empty<IPAddressRange>();
+                result = [];
                 return false;
             }
 
             // sort range list, has to be done post validation check, as invalid cannot be sorted
-            rangeList = rangeList.OrderBy(r => r).ToList();
+            rangeList = [.. rangeList.OrderBy(r => r)];
 
             var resultList = new List<IPAddressRange>
             {
@@ -332,35 +340,35 @@ namespace Arcus
         {
             if (initialRange is null || excludedRanges is null)
             {
-                result = Enumerable.Empty<IPAddressRange>();
+                result = [];
                 return false;
             }
 
-            var excludedRangesList = excludedRanges as IList<IPAddressRange> ?? excludedRanges.ToList();
+            var excludedRangesList = excludedRanges as IList<IPAddressRange> ?? [.. excludedRanges];
 
             // item null check
             if (excludedRangesList.Any(r => r is null))
             {
-                result = Enumerable.Empty<IPAddressRange>();
+                result = [];
                 return false;
             }
 
             // no ranges to exclude; return copy of original
             if (!excludedRangesList.Any())
             {
-                result = new List<IPAddressRange> { new IPAddressRange(initialRange.Head, initialRange.Tail) };
+                result = [new(initialRange.Head, initialRange.Tail)];
                 return true;
             }
 
             // all families must match
             if (excludedRangesList.Any(r => r.AddressFamily != initialRange.AddressFamily))
             {
-                result = Enumerable.Empty<IPAddressRange>();
+                result = [];
                 return false;
             }
 
             // results is initialized with a *copy* of initialRange
-            var resultList = new List<IPAddressRange> { new IPAddressRange(initialRange.Head, initialRange.Tail) };
+            var resultList = new List<IPAddressRange> { new(initialRange.Head, initialRange.Tail) };
 
             foreach (var exclusion in excludedRangesList)
             {

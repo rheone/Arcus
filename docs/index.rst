@@ -24,7 +24,6 @@ Arcus provides extension and helper methods for the pre-existing ``System.Net.IP
 
 .. hint:: Chances are you're primarily here looking for the :doc:`Subnet <Subnet>` object.
 
-Arcus heavily relies upon one of our other libraries `Gulliver <https://github.com/sandialabs/gulliver>`_, if you're interested in byte manipulation it is worth checking out.
 
 .. warning::
 
@@ -58,12 +57,6 @@ Arcus heavily relies upon one of our other libraries `Gulliver <https://github.c
    IPAddress-Utilities
    IPAddress-Comparers
    AddressFamily-Comparers
-
-.. toctree::
-   :maxdepth: 2
-   :caption: Additional Tools
-
-   MacAddress
 
 .. toctree::
    :maxdepth: 1

@@ -568,7 +568,7 @@ namespace Arcus.Tests.Utilities
             IPAddress,
             IPAddress
         > FewestConsecutiveSubnetsFor_MismatchedAddressFamilies_ThrowsInvalidOperationException_Test_Data =>
-            new TheoryData<IPAddress, IPAddress> { { IPAddress.Any, IPAddress.IPv6Any }, { IPAddress.IPv6Any, IPAddress.Any } };
+            new() { { IPAddress.Any, IPAddress.IPv6Any }, { IPAddress.IPv6Any, IPAddress.Any } };
 
         [Theory]
         [MemberData(nameof(FewestConsecutiveSubnetsFor_MismatchedAddressFamilies_ThrowsInvalidOperationException_Test_Data))]
@@ -587,7 +587,7 @@ namespace Arcus.Tests.Utilities
             IPAddress,
             IPAddress
         > FewestConsecutiveSubnetsFor_NullArgument_ThrowsArgumentNullException_Test_Data =>
-            new TheoryData<IPAddress, IPAddress>
+            new()
             {
                 { null, null },
                 { IPAddress.Any, null },

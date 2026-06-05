@@ -631,7 +631,7 @@ namespace Arcus.Tests
                 var subnets = new List<Subnet>();
                 for (var i = 8 - hextetCount; i >= 0; i--)
                 {
-                    var enumerable = hextets.Take(hextetCount).Select(s => new string(s.SkipWhile(c => c == '0').ToArray()));
+                    var enumerable = hextets.Take(hextetCount).Select(s => new string([.. s.SkipWhile(c => c == '0')]));
                     var trimmedLeadingZero = string.Join(":", enumerable);
                     var subnet =
                         hextetCount < 8
@@ -2175,7 +2175,7 @@ namespace Arcus.Tests
 
         internal class SubnetEqualityComparer : IEqualityComparer<Subnet>
         {
-            public static readonly SubnetEqualityComparer Instance = new SubnetEqualityComparer();
+            public static readonly SubnetEqualityComparer Instance = new();
 
             public bool Equals(Subnet x, Subnet y)
             {

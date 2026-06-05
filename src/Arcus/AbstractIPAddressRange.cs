@@ -14,6 +14,15 @@ namespace Arcus
     /// <summary>
     ///     An <see langword="abstract" /> implementation of <see cref="IIPAddressRange" /> built to work with IPv4 and IPv6
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         IPv4 addresses are represented as 32-bit unsigned integers per
+    ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
+    ///         IPv6 addresses are represented as 128-bit unsigned integers per
+    ///         <see href="https://www.rfc-editor.org/info/rfc4291/#section-2">RFC 4291 §2</see>;
+    ///         <see cref="System.Numerics.BigInteger"/> is used throughout because IPv6 ranges can exceed <see cref="long.MaxValue"/>.
+    ///     </para>
+    /// </remarks>
     public abstract class AbstractIPAddressRange : IIPAddressRange
     {
         /// <summary>
@@ -378,11 +387,15 @@ namespace Arcus
 
         /// <inheritdoc/>
         /// <remarks>
-        ///     Uses range-overlap detection: returns <see langword="true" /> if the interval
-        ///     <c>[Head, Tail]</c> intersects the interval <c>[subnet.Head, subnet.Tail]</c> for
-        ///     any entry in <see cref="SubnetUtilities.PrivateIPAddressRangesList" />.
-        ///     This correctly handles ranges whose endpoints are both outside a private block but
-        ///     whose interior spans it (e.g., <c>11.0.0.0 – 173.0.0.0</c> spans <c>172.16.0.0/12</c>).
+        ///     <para>
+        ///         Private address blocks are defined in
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc1918#section-3">RFC 1918 §3</see>.
+        ///         Uses range-overlap detection: returns <see langword="true" /> if the interval
+        ///         <c>[Head, Tail]</c> intersects the interval <c>[subnet.Head, subnet.Tail]</c> for
+        ///         any entry in <see cref="SubnetUtilities.PrivateIPAddressRangesList" />.
+        ///         This correctly handles ranges whose endpoints are both outside a private block but
+        ///         whose interior spans it (e.g., <c>11.0.0.0 – 173.0.0.0</c> spans <c>172.16.0.0/12</c>).
+        ///     </para>
         /// </remarks>
         public bool ContainsAnyPrivateAddresses()
         {
@@ -393,10 +406,14 @@ namespace Arcus
 
         /// <inheritdoc/>
         /// <remarks>
-        ///     Returns <see langword="true" /> if the entire interval <c>[Head, Tail]</c> is
-        ///     contained within a single entry in <see cref="SubnetUtilities.PrivateIPAddressRangesList" />.
-        ///     Because private subnets are disjoint, a range that spans two private blocks necessarily
-        ///     includes a public gap and therefore returns <see langword="false" />.
+        ///     <para>
+        ///         Private address blocks are defined in
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc1918#section-3">RFC 1918 §3</see>.
+        ///         Returns <see langword="true" /> if the entire interval <c>[Head, Tail]</c> is
+        ///         contained within a single entry in <see cref="SubnetUtilities.PrivateIPAddressRangesList" />.
+        ///         Because private subnets are disjoint, a range that spans two private blocks necessarily
+        ///         includes a public gap and therefore returns <see langword="false" />.
+        ///     </para>
         /// </remarks>
         public bool ContainsAllPrivateAddresses()
         {
@@ -407,10 +424,14 @@ namespace Arcus
 
         /// <inheritdoc/>
         /// <remarks>
-        ///     Returns <see langword="true" /> if the interval <c>[Head, Tail]</c> is not entirely
-        ///     contained within any single entry in <see cref="SubnetUtilities.PrivateIPAddressRangesList" />.
-        ///     Because private subnets are disjoint, any range spanning two private blocks includes a
-        ///     public gap, so this method returns <see langword="true" /> in that case.
+        ///     <para>
+        ///         Public addresses are those not defined as private in
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc1918#section-3">RFC 1918 §3</see>.
+        ///         Returns <see langword="true" /> if the interval <c>[Head, Tail]</c> is not entirely
+        ///         contained within any single entry in <see cref="SubnetUtilities.PrivateIPAddressRangesList" />.
+        ///         Because private subnets are disjoint, any range spanning two private blocks includes a
+        ///         public gap, so this method returns <see langword="true" /> in that case.
+        ///     </para>
         /// </remarks>
         public bool ContainsAnyPublicAddresses()
         {
@@ -421,11 +442,15 @@ namespace Arcus
 
         /// <inheritdoc/>
         /// <remarks>
-        ///     Uses range-overlap detection: returns <see langword="true" /> if the interval
-        ///     <c>[Head, Tail]</c> does not intersect any entry in
-        ///     <see cref="SubnetUtilities.PrivateIPAddressRangesList" />.
-        ///     This correctly handles ranges whose endpoints are both public but whose interior spans
-        ///     a private block — such a range returns <see langword="false" />.
+        ///     <para>
+        ///         Public addresses are those not defined as private in
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc1918#section-3">RFC 1918 §3</see>.
+        ///         Uses range-overlap detection: returns <see langword="true" /> if the interval
+        ///         <c>[Head, Tail]</c> does not intersect any entry in
+        ///         <see cref="SubnetUtilities.PrivateIPAddressRangesList" />.
+        ///         This correctly handles ranges whose endpoints are both public but whose interior spans
+        ///         a private block — such a range returns <see langword="false" />.
+        ///     </para>
         /// </remarks>
         public bool ContainsAllPublicAddresses()
         {

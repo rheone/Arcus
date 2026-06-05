@@ -1,4 +1,4 @@
-# .NET project .editorconfig as of 2025-02-03
+﻿# .NET project .editorconfig as of 2025-02-03
 
 root = false
 
@@ -481,6 +481,7 @@ dotnet_diagnostic.IDE0009.severity = None
 
 # AnalyzerId= StyleCop.Analyzers  RuleNamespace= StyleCop.Analyzers
 dotnet_diagnostic.SA1000.severity = None
+dotnet_diagnostic.SA1010.severity = None
 dotnet_diagnostic.SA1003.severity = None
 dotnet_diagnostic.SA1005.severity = None
 dotnet_diagnostic.SA1008.severity = None

@@ -11,6 +11,15 @@ namespace Arcus
     ///     A range must contain a head (the first address) and a tail (the last address) inclusive
     ///     The tail should NEVER appear numerically previous to a head
     /// </summary>
+    /// <remarks>
+    ///     <para>
+    ///         Covers both the IPv4 32-bit address space per
+    ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see> and the IPv6 128-bit address
+    ///         space per <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
+    ///         <see cref="Length"/> uses <see cref="System.Numerics.BigInteger"/> because the IPv6 space (2<sup>128</sup>
+    ///         addresses) exceeds <see cref="long.MaxValue"/>.
+    ///     </para>
+    /// </remarks>
     public interface IIPAddressRange : IFormattable, IEnumerable<IPAddress>
     {
         // TODO future versions of IIPAddressRange should not directly implement IEnumerable<IPAddress> and instead a spawn an IEnumerable on demand
@@ -31,6 +40,13 @@ namespace Arcus
         /// <value>
         /// The length of a <see cref="IIPAddressRange" />
         /// </value>
+        /// <remarks>
+        ///     <para>
+        ///         Typed as <see cref="System.Numerics.BigInteger"/> because the IPv6 address space contains 2<sup>128</sup>
+        ///         addresses per <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>,
+        ///         which exceeds <see cref="long.MaxValue"/>.
+        ///     </para>
+        /// </remarks>
         BigInteger Length { get; }
 
         /// <summary>
