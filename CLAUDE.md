@@ -1,10 +1,10 @@
-# CLAUDE.md
+﻿# CLAUDE.md
 
 This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## About
 
-Arcus is a C# library for calculating, parsing, formatting, converting, and comparing IPv4 and IPv6 addresses and subnets. It uses `BigInteger` throughout to handle 128-bit IPv6 math on 32-bit platforms. The key dependency is [Gulliver](https://github.com/sandialabs/gulliver) for low-level byte manipulation.
+Arcus is a C# library for calculating, parsing, formatting, converting, and comparing IPv4 and IPv6 addresses and subnets. It uses `BigInteger` throughout to handle 128-bit IPv6 math on 32-bit platforms. Low-level byte manipulation is handled by the internal `BigEndianBitWrapper` struct; there are no external runtime dependencies beyond the BCL.
 
 ## Commands
 
@@ -40,6 +40,21 @@ A Husky.Net pre-commit hook automatically runs `dotnet format style`, `dotnet fo
 
 Tests must be run across all targets before a change is considered complete.
 
+Use C# preprocessor directives `#If`, `#ELSE`, `#ENDIF` to target `NETSTANDARD2_0`, `NET8_0` ,`NET9_0`, `NET10_0` to make code compatible to all targets when features may be unavailable
+
+## Code Intelligence
+
+Prefer LSP over Grep for code navigation - it's faster, precise, and avoids reading entire files:
+
+- `workspaceSymbol` to find where something is defined
+- `findReferences` to see all usages across the codebase
+- `goToDefinition` / `goToImplementation` to jump to source
+- `hover` for type info without reading the file
+
+Use Grep only when LSP isn't available or for text/pattern searches (comments, strings, config).
+
+After writing or editing code, check LSP diagnostics and fix errors before proceeding.
+
 ## Architecture
 
 The type hierarchy flows: `IIPAddressRange` → `AbstractIPAddressRange` → `Subnet` / `IPAddressRange`.
@@ -47,12 +62,11 @@ The type hierarchy flows: `IIPAddressRange` → `AbstractIPAddressRange` → `Su
 - **`Subnet`** — the primary type and main reason the library exists. Represents an IPv4/IPv6 subnetwork, constrained to power-of-two size with a valid network address. Constructors accept two `IPAddress` bounds (builds the smallest containing subnet) or an `IPAddress` + routing prefix integer. Also has `Parse`/`TryParse` for strings like `"192.168.1.0/24"`.
 - **`IPAddressRange`** — arbitrary inclusive range of same-family IP addresses; not constrained to power-of-two size or valid broadcast boundaries.
 - **`AbstractIPAddressRange`** — shared implementation of `IIPAddressRange`; provides `Head`, `Tail`, `Length` (`BigInteger`), set operations (Contains, Overlaps, Touches), and enumeration.
-- **`Comparers/`** — `DefaultAddressFamilyComparer`, `DefaultIPAddressComparer`, `DefaultIPAddressRangeComparer`, `DefaultIIPAddressRangeComparer`.
+- **`Comparers/`** — `DefaultAddressFamilyComparer`, `DefaultIPAddressComparer`, `DefaultIIPAddressRangeComparer`.
 - **`Converters/IPAddressConverters`** — static conversion utilities for `IPAddress`.
 - **`Math/IPAddressMath`** — extension methods for `IPAddress`: `Increment`, `Decrement`, and comparison operators (`IsGreaterThan`, `IsLessThan`, etc.). Overflow/underflow throws `InvalidOperationException`.
 - **`Utilities/IPAddressUtilities`** — parsing from hex/octal/`BigInteger`, address family detection (`IsIPv4`, `IsIPv6`).
 - **`Utilities/SubnetUtilities`** — `FewestConsecutiveSubnetsFor(IPAddress, IPAddress)` returns the minimal set of subnets covering an arbitrary inclusive IP range.
-- **`MacAddress`** — 48-bit MAC address (EUI-48/MAC-48). Marked `[Obsolete]` — candidate for removal in a future major version.
 
 ## Testing
 
