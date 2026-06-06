@@ -5,12 +5,14 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
-using System.Runtime.Serialization;
 using System.Text.RegularExpressions;
 using Arcus.Comparers;
 using Arcus.Converters;
 using Arcus.Math;
 using Arcus.Utilities;
+#if NETSTANDARD2_0
+using System.Runtime.Serialization;
+#endif
 
 namespace Arcus
 {
@@ -311,6 +313,7 @@ namespace Arcus
             this.Netmask = new IPAddress(netmaskBytes);
         }
 
+#if NETSTANDARD2_0
         /// <summary>Initializes a new instance of the <see cref="Subnet"/> class.</summary>
         /// <param name="info">serialization info</param>
         /// <param name="context">serialization context</param>
@@ -326,6 +329,7 @@ namespace Arcus
                 ),
                 (int)info.GetValue(nameof(RoutingPrefix), typeof(int))
             ) { }
+#endif
 
         private static AddressTuple CtorFactory(IPAddress lowAddress, IPAddress highAddress)
         {
@@ -922,12 +926,14 @@ namespace Arcus
             }
 
             // parseable as a well defined IPv6 subnet already
-            if (
-                input.Contains('/')
-                && !input.EndsWith("/", StringComparison.Ordinal)
-                && TryParse(input, out var subnet)
-                && subnet.IsIPv6
-            )
+            if (input.Contains('/')
+#if NETSTANDARD2_0
+                && !input.EndsWith("/")
+#else
+                && !input.EndsWith('/')
+#endif
+
+                && TryParse(input, out var subnet) && subnet.IsIPv6)
             {
                 subnets = [subnet];
                 return true;

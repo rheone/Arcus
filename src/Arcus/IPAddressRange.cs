@@ -1,5 +1,7 @@
 ﻿using System.Net;
+#if NETSTANDARD2_0
 using System.Runtime.Serialization;
+#endif
 
 namespace Arcus
 {
