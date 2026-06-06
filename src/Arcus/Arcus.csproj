@@ -135,6 +135,18 @@
     <Compile Update="AbstractIPAddressRange.IFormattable.cs">
       <DependentUpon>AbstractIPAddressRange.cs</DependentUpon>
     </Compile>
+    <Compile Update="Subnet.IComparable.cs">
+      <DependentUpon>Subnet.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Subnet.IEquatable.cs">
+      <DependentUpon>Subnet.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Subnet.ISerializable.cs">
+      <DependentUpon>Subnet.cs</DependentUpon>
+    </Compile>
+    <Compile Update="Subnet.Operators.cs">
+      <DependentUpon>Subnet.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
   <Target Name="Husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0">
     <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />

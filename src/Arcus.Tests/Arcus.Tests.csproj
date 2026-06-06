@@ -105,5 +105,20 @@
     <Compile Update="AbstractIPAddressRangeTests.IFormattable.cs">
       <DependentUpon>AbstractIPAddressRangeTests.cs</DependentUpon>
     </Compile>
+    <Compile Update="SubnetTests.IComparable.cs">
+      <DependentUpon>SubnetTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SubnetTests.IEquatable.cs">
+      <DependentUpon>SubnetTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SubnetTests.ISerializable.cs">
+      <DependentUpon>SubnetTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SubnetTests.Operators.cs">
+      <DependentUpon>SubnetTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="SubnetTests.Factory.cs">
+      <DependentUpon>SubnetTests.cs</DependentUpon>
+    </Compile>
   </ItemGroup>
 </Project>

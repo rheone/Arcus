@@ -11,16 +11,11 @@ using Xunit.Sdk;
 
 namespace Arcus.Tests
 {
-    public partial class AbstractIPAddressRangeTests
+    public partial class AbstractIPAddressRangeTests(ITestOutputHelper testOutputHelper)
     {
         #region Setup / Teardown
 
-        public AbstractIPAddressRangeTests(ITestOutputHelper testOutputHelper)
-        {
-            this._testOutputHelper = testOutputHelper;
-        }
-
-        private readonly ITestOutputHelper _testOutputHelper;
+        private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
 
         #endregion // end: Setup / Teardown
 
