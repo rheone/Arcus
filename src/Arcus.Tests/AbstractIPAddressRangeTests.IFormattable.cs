@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Globalization;
 using System.Net;
-using Xunit;
 
 namespace Arcus.Tests
 {

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Net;
 using Arcus.Comparers;
 using Arcus.Utilities;
-using Xunit;
 
 namespace Arcus.Tests.Utilities
 {

@@ -1,10 +1,7 @@
 ﻿using System.Net;
 using System.Numerics;
-using Arcus;
 using Arcus.Math;
 using Arcus.Tests.XunitSerializers;
-using Xunit;
-using Xunit.Sdk;
 
 [assembly: RegisterXunitSerializer(typeof(IPAddressXunitSerializer), typeof(IPAddress))]
 [assembly: RegisterXunitSerializer(typeof(IIPAddressRangeXunitSerializer), typeof(IIPAddressRange))]

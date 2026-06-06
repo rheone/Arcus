@@ -1,6 +1,4 @@
-﻿using Xunit;
-
-namespace Arcus.Tests
+﻿namespace Arcus.Tests
 {
     /// <content>
     ///     <see cref="IPAddressRange"/> tests for operators

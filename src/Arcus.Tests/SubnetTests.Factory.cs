@@ -2,12 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
-using Arcus;
-using Arcus.Math;
-using Xunit;
 
 namespace Arcus.Tests
 {

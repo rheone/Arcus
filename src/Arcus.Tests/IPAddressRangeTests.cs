@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Net;
-using Arcus;
 using Arcus.Tests.XunitSerializers;
-using Xunit;
-using Xunit.Sdk;
 #if NET48
 using System.Runtime.Serialization;
 #endif

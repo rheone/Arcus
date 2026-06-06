@@ -1,7 +1,6 @@
 ﻿using System.Net;
 using Arcus.Math;
 using Arcus.Utilities;
-using Xunit;
 
 namespace Arcus.Tests
 {

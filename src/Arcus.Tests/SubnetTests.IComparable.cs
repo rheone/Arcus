@@ -1,6 +1,4 @@
 ﻿using System;
-using Arcus;
-using Xunit;
 
 namespace Arcus.Tests
 {

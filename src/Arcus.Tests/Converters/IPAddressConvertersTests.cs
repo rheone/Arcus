@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Net;
 using Arcus.Converters;
-using Xunit;
 
 namespace Arcus.Tests.Converters
 {

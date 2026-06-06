@@ -1,7 +1,4 @@
-﻿using Arcus;
-using Xunit;
-
-namespace Arcus.Tests
+﻿namespace Arcus.Tests
 {
     /// <content>
     ///     <see cref="Subnet"/> tests for operators

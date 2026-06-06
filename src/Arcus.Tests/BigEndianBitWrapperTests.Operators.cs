@@ -1,6 +1,4 @@
-﻿using Xunit;
-
-namespace Arcus.Tests
+﻿namespace Arcus.Tests
 {
     /// <content>
     ///     <see cref="BigEndianBitWrapper"/> tests for bitwise operators (<c>&amp;</c>, <c>|</c>, <c>~</c>) and

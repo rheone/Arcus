@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Arcus
+﻿namespace Arcus
 {
     /// <content>
     ///     <see cref="Subnet"/> operators

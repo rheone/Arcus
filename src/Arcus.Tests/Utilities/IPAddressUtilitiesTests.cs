@@ -6,7 +6,6 @@ using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using Arcus.Math;
 using Arcus.Utilities;
-using Xunit;
 
 namespace Arcus.Tests.Utilities
 {

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Net.Sockets;
 using Arcus.Comparers;
-using Xunit;
 
 namespace Arcus.Tests.Comparers
 {

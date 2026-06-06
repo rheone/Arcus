@@ -4,7 +4,6 @@ using System.Net;
 using System.Numerics;
 using Arcus.Comparers;
 using NSubstitute;
-using Xunit;
 
 namespace Arcus.Tests.Comparers
 {

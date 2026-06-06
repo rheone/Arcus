@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Net;
-using Xunit.Sdk;
 
 namespace Arcus.Tests.XunitSerializers
 {
