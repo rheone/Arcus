@@ -95,6 +95,47 @@
   <ItemGroup Condition="'$(TargetFramework)' == 'netstandard2.0'">
     <PackageReference Include="Microsoft.Bcl.HashCode" Version="6.0.0" />
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="BigEndianBitWrapper.Factory.cs">
+      <DependentUpon>BigEndianBitWrapper.cs</DependentUpon>
+    </Compile>
+    <Compile Update="BigEndianBitWrapper.Operators.cs">
+      <DependentUpon>BigEndianBitWrapper.cs</DependentUpon>
+    </Compile>
+    <Compile Update="BigEndianBitWrapper.IComparable.cs">
+      <DependentUpon>BigEndianBitWrapper.cs</DependentUpon>
+    </Compile>
+    <Compile Update="BigEndianBitWrapper.IEquatable.cs">
+      <DependentUpon>BigEndianBitWrapper.cs</DependentUpon>
+    </Compile>
+    <Compile Update="BigEndianBitWrapper.IFormattable.cs">
+      <DependentUpon>BigEndianBitWrapper.cs</DependentUpon>
+    </Compile>
+    <Compile Update="IPAddressRange.ISerializable.cs">
+      <DependentUpon>IPAddressRange.cs</DependentUpon>
+    </Compile>
+    <Compile Update="IPAddressRange.IComparable.cs">
+      <DependentUpon>IPAddressRange.cs</DependentUpon>
+    </Compile>
+    <Compile Update="IPAddressRange.IEquatable.cs">
+      <DependentUpon>IPAddressRange.cs</DependentUpon>
+    </Compile>
+    <Compile Update="IPAddressRange.Operators.cs">
+      <DependentUpon>IPAddressRange.cs</DependentUpon>
+    </Compile>
+    <Compile Update="IPAddressRange.Factory.cs">
+      <DependentUpon>IPAddressRange.cs</DependentUpon>
+    </Compile>
+    <Compile Update="AbstractIPAddressRange.IIPAddressRange.cs">
+      <DependentUpon>AbstractIPAddressRange.cs</DependentUpon>
+    </Compile>
+    <Compile Update="AbstractIPAddressRange.IEnumerable.cs">
+      <DependentUpon>AbstractIPAddressRange.cs</DependentUpon>
+    </Compile>
+    <Compile Update="AbstractIPAddressRange.IFormattable.cs">
+      <DependentUpon>AbstractIPAddressRange.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
   <Target Name="Husky" BeforeTargets="Restore;CollectPackageReferences" Condition="'$(HUSKY)' != 0">
     <Exec Command="dotnet tool restore" StandardOutputImportance="Low" StandardErrorImportance="High" />
     <Exec Command="dotnet husky install" StandardOutputImportance="Low" StandardErrorImportance="High" WorkingDirectory="..\.." />

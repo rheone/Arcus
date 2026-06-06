@@ -1,0 +1,1089 @@
+﻿using System.Linq;
+using System.Net;
+using Arcus.Math;
+using Arcus.Utilities;
+using NSubstitute;
+using Xunit;
+
+namespace Arcus.Tests
+{
+    /// <content>
+    ///     <see cref="AbstractIPAddressRange"/> tests for <see cref="IIPAddressRange"/>
+    /// </content>
+    public partial class AbstractIPAddressRangeTests
+    {
+        #region Deconstructors
+
+        [Fact]
+        public void Deconstruct_Head_Tail_Test()
+        {
+            // Arrange
+            const string headString = "192.168.1.1";
+            const string tailString = "192.168.1.3";
+            var head = IPAddress.Parse(headString);
+            var tail = IPAddress.Parse(tailString);
+
+            // Act
+            var (resultHead, resultTail) = CreateSubstituteIPAddressRange(head, tail);
+
+            // Assert
+            Assert.Equal(resultHead, head);
+            Assert.Equal(resultTail, tail);
+        }
+
+        #endregion // end: Deconstructors
+
+        #region IsSingleIP
+
+        /// <summary>
+        ///     Gets parameters: expected (bool), ipAddressRange (AbstractIPAddressRange)
+        /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), ipAddressRange (AbstractIPAddressRange)
+        /// </value>
+        public static TheoryData<bool, AbstractIPAddressRange> IsSingleIP_Test_Data
+        {
+            get
+            {
+                var data = new TheoryData<bool, AbstractIPAddressRange>
+                {
+                    { true, CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Any) },
+                    { true, CreateSubstituteIPAddressRange(IPAddress.IPv6Any, IPAddress.IPv6Any) },
+                    { false, CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast) },
+                    { false, CreateSubstituteIPAddressRange(IPAddress.IPv6Any, IPAddress.IPv6Loopback) },
+                };
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(IsSingleIP_Test_Data))]
+        public void IsSingleIP_Test(bool expected, AbstractIPAddressRange ipAddressRange)
+        {
+            // Arrange
+            // Act
+            var isSingleIP = ipAddressRange.IsSingleIP;
+
+            // Assert
+            Assert.Equal(expected, isSingleIP);
+        }
+
+        #endregion // end: IsSingleIP
+
+        #region TryGetLength
+
+        [Theory]
+        [MemberData(nameof(Length_Test_Data))]
+        public static void TryGetLength_Integer_Test(System.Numerics.BigInteger expected, AbstractIPAddressRange ipAddressRange)
+        {
+            // Arrange
+            // Act
+            var success = ipAddressRange.TryGetLength(out int length);
+
+            // Assert
+            Assert.Equal(expected <= int.MaxValue, success);
+            Assert.Equal(expected <= int.MaxValue ? (int)expected : -1, length);
+        }
+
+        [Theory]
+        [MemberData(nameof(Length_Test_Data))]
+        public static void TryGetLength_Long_Test(System.Numerics.BigInteger expected, AbstractIPAddressRange ipAddressRange)
+        {
+            // Arrange
+            // Act
+            var success = ipAddressRange.TryGetLength(out long length);
+
+            // Assert
+            Assert.Equal(expected <= long.MaxValue, success);
+            Assert.Equal(expected <= long.MaxValue ? (long)expected : -1, length);
+        }
+
+        #endregion // end: TryGetLength
+
+        #region Contains
+
+        #region Contains(IPAddress)
+
+        [Theory]
+        [InlineData(true, "::", "::ABCD", "::1234")] // IPv6 range contains IPv6
+        [InlineData(false, "::", "::ABCD", "::FFFF")] // IPv6 range  doesn't contains IPv6
+        [InlineData(true, "::", "::ABCD", "::")] // IPv6 range contains IPv6 head
+        [InlineData(true, "::", "::ABCD", "::ABCD")] // IPv6 range contains IPv6 tail
+        [InlineData(false, "::", "::ABCD", "192.168.1.1")] // IPv6 range doesn't contains IPv4
+        [InlineData(false, "::", "::ABCD", null)] // IPv6 range doesn't contains null
+        [InlineData(true, "192.168.0.1", "192.168.0.254", "192.168.0.128")] // IPv4 range contains IPv4
+        [InlineData(false, "192.168.0.1", "192.168.0.254", "10.1.1.1")] // IPv4 range doesn't contains IPv4
+        [InlineData(true, "192.168.0.1", "192.168.0.254", "192.168.0.1")] // IPv4 range contains IPv4 head
+        [InlineData(true, "192.168.0.1", "192.168.0.254", "192.168.0.254")] // IPv4 range contains IPv4 tail
+        [InlineData(false, "192.168.0.1", "192.168.0.254", "::")] // IPv4 range doesn't contains IPv6
+        [InlineData(false, "192.168.0.1", "192.168.0.254", null)] // IPv4 range doesn't contains null
+        public void ContainsIPAddress_Test(bool expected, string headString, string tailString, string addressString)
+        {
+            // Arrange
+            var head = IPAddress.Parse(headString);
+            var tail = IPAddress.Parse(tailString);
+            _ = IPAddress.TryParse(addressString, out var containsAddress);
+
+            var iPAddressRange = CreateSubstituteIPAddressRange(head, tail);
+
+            // Act
+            var result = iPAddressRange.Contains(containsAddress);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        #endregion // end: Contains(IPAddress)
+
+        #region Contains(IIPAddressRange)
+
+        [Theory]
+        [InlineData(true, "::", "::ABCD", "::", "::ABCD")] // IPv6 range contains self
+        [InlineData(true, "::", "::ABCD", "::1", "::1234")] // IPv6 range contains internal IPv6 range
+        [InlineData(false, "::", "::ABCD", "AA::FFFF", "AB::FFFF")] // IPv6 range doesn't contains external IPv6 range
+        [InlineData(false, "A::", "A::ABCD", "::", "A::")] // IPv6 range  doesn't contains IPv6 overhang head
+        [InlineData(false, "::", "::ABCD", "::", "AA::FFFF")] // IPv6 range  doesn't contains IPv6 overhang tail
+        [InlineData(false, "::", "::ABCD", "192.168.1.1", "192.168.1.10")] // IPv6 range doesn't contains IPv4 range
+        [InlineData(false, "::", "A::ABCD", null, null)] // IPv6 range  doesn't contain null range
+        [InlineData(true, "128.0.0.1", "128.0.0.254", "128.0.0.1", "128.0.0.254")] // IPv4 range contains self
+        [InlineData(true, "128.0.0.1", "128.0.0.254", "128.0.0.5", "128.0.0.100")] // IPv4 range contains internal IPv4 range
+        [InlineData(false, "128.0.0.1", "128.0.0.254", "140.0.0.0", "145.0.0.0")] // IPv4 range doesn't contains external IPv4 range
+        [InlineData(false, "128.0.0.1", "128.0.0.254", "", "128.0.0.100")] // IPv4 range doesn't contains null head IPv4 range
+        [InlineData(false, "128.0.0.1", "128.0.0.254", "128.0.0.5", "")] // IPv4 range doesn't contains null tail IPv4 range
+        [InlineData(false, "128.0.0.1", "128.0.0.254", "0.0.0.0", "128.0.0.100")] // IPv4 range  doesn't contains IPv4 overhang head
+        [InlineData(false, "128.0.0.1", "128.0.0.254", "128.0.0.5", "145.0.0.0")] // IPv4 range  doesn't contains IPv4 overhang tail
+        [InlineData(false, "128.0.0.1", "128.0.0.254", "::ABCD", "42::ABCD")] // IPv4 range doesn't contains IPv6 range
+        [InlineData(false, "128.0.0.1", "128.0.0.254", null, null)] // IPv4 range  doesn't contain null range
+        public void ContainsIPAddressRange_Test(
+            bool expected,
+            string headString,
+            string tailString,
+            string containsHeadString,
+            string containsTailString
+        )
+        {
+            // Arrange
+            var head = IPAddress.Parse(headString);
+            var tail = IPAddress.Parse(tailString);
+
+            var substituteIPAddressSubRange =
+                IPAddress.TryParse(containsHeadString, out var subhead)
+                && IPAddress.TryParse(containsTailString, out var subtail)
+                    ? Substitute.For<AbstractIPAddressRange>(subhead, subtail)
+                    : null;
+
+            var iPAddressRange = CreateSubstituteIPAddressRange(head, tail);
+
+            var containedIPAddressRange = substituteIPAddressSubRange;
+
+            // Act
+            var result = iPAddressRange.Contains(containedIPAddressRange);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        #endregion // end: Contains(IIPAddressRange)
+
+        #region Contains IIPAddressRange
+
+        /// <summary>
+        ///     Gets parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </value>
+        public static TheoryData<bool, IIPAddressRange, IIPAddressRange> Contains_IIPAddressRange_Test_Data
+        {
+            get
+            {
+                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateSubstituteIPAddressRange(
+                    IPAddress.IPv6Any,
+                    IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                );
+
+                var data = new TheoryData<bool, IIPAddressRange, IIPAddressRange>
+                {
+                    // null overlap checking
+                    { false, ipv4Range, null },
+                    { false, ipv6Range, null },
+                    // same overlap checking
+                    { true, ipv4Range, ipv4Range },
+                    { true, ipv6Range, ipv6Range },
+                    // equal overlap checking
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast),
+                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast)
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(
+                            IPAddress.IPv6Any,
+                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                        ),
+                        CreateSubstituteIPAddressRange(
+                            IPAddress.IPv6Any,
+                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                        )
+                    },
+                    // differing address families
+                    { false, ipv4Range, ipv6Range },
+                    { false, ipv6Range, ipv4Range },
+                    // head only overlapped
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
+                    },
+                    // full head and tail overlapped
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00"))
+                    },
+                    // tail only overlapped
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
+                    },
+                    // not touching
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f"))
+                    },
+                    // disparate ranges
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                    },
+                };
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Contains_IIPAddressRange_Test_Data))]
+        public void Contains_IIPAddressRange_Test(bool expected, IIPAddressRange left, IIPAddressRange right)
+        {
+            // Arrange
+            // Act
+            var result = left.Contains(right);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        #endregion // end: Contains IIPAddressRange
+
+        #region Contains IPAddress
+
+        /// <summary>
+        ///     Gets parameters: expected (bool), range (IIPAddressRange), address (IPAddress)
+        /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), range (IIPAddressRange), address (IPAddress)
+        /// </value>
+        public static TheoryData<bool, IIPAddressRange, IPAddress> Contains_Test_Data
+        {
+            get
+            {
+                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateSubstituteIPAddressRange(
+                    IPAddress.IPv6Any,
+                    IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                );
+
+                var data = new TheoryData<bool, IIPAddressRange, IPAddress>
+                {
+                    // does not contain null
+                    { false, ipv4Range, null },
+                    { false, ipv6Range, null },
+                    // differing address families
+                    { false, ipv4Range, IPAddress.IPv6Any },
+                    { false, ipv6Range, IPAddress.Any },
+                    // contains head
+                    { true, ipv4Range, ipv4Range.Head },
+                    { true, ipv6Range, ipv6Range.Head },
+                    // contains tail
+                    { true, ipv4Range, ipv4Range.Tail },
+                    { true, ipv6Range, ipv6Range.Tail },
+                    // does not contain outside before
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.200")),
+                        IPAddress.Parse("192.168.1.0")
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff01"), IPAddress.Parse("::ff08")),
+                        IPAddress.Parse("::ff00")
+                    },
+                    // does not contain outside after
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.200")),
+                        IPAddress.Parse("192.168.1.201")
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff01"), IPAddress.Parse("::ff08")),
+                        IPAddress.Parse("::ff09")
+                    },
+                };
+
+                // contains all inside IPv4
+                var ipv4InsideRange = CreateSubstituteIPAddressRange(
+                    IPAddress.Parse("192.168.1.0"),
+                    IPAddress.Parse("192.168.1.5")
+                );
+                foreach (var ip in ipv4InsideRange)
+                {
+                    data.Add(true, ipv4InsideRange, ip);
+                }
+
+                // contains all inside IPv6
+                var ipv6InsideRange = CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("::ff0f"));
+                foreach (var ip in ipv6InsideRange)
+                {
+                    data.Add(true, ipv6InsideRange, ip);
+                }
+
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Contains_Test_Data))]
+        public void Contains_Test(bool expected, IIPAddressRange range, IPAddress address)
+        {
+            // Arrange
+            // Act
+            var result = range.Contains(address);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        #endregion // end: Contains IPAddress
+
+        #endregion // end: Contains
+
+        #region Overlap and Touches
+
+        #region HeadOverlappedBy
+
+        /// <summary>
+        ///     Gets parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </value>
+        public static TheoryData<bool, IIPAddressRange, IIPAddressRange> HeadOverlappedBy_Test_Data
+        {
+            get
+            {
+                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateSubstituteIPAddressRange(
+                    IPAddress.IPv6Any,
+                    IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                );
+
+                var data = new TheoryData<bool, IIPAddressRange, IIPAddressRange>
+                {
+                    // null overlap checking
+                    { false, ipv4Range, null },
+                    { false, ipv6Range, null },
+                    // same overlap checking
+                    { true, ipv4Range, ipv4Range },
+                    { true, ipv6Range, ipv6Range },
+                    // equal overlap checking
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast),
+                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast)
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(
+                            IPAddress.IPv6Any,
+                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                        ),
+                        CreateSubstituteIPAddressRange(
+                            IPAddress.IPv6Any,
+                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                        )
+                    },
+                    // differing address families
+                    { false, ipv4Range, ipv6Range },
+                    { false, ipv6Range, ipv4Range },
+                    // head only overlapped
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
+                    },
+                    // full head and tail overlapped
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff"))
+                    },
+                    // tail only overlapped
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
+                    },
+                    // not touching
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f"))
+                    },
+                    // disparate ranges
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                    },
+                };
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(HeadOverlappedBy_Test_Data))]
+        public void HeadOverlappedBy_Test(bool expected, IIPAddressRange left, IIPAddressRange right)
+        {
+            // Arrange
+            // Act
+            var result = left.HeadOverlappedBy(right);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        #endregion // end: HeadOverlappedBy
+
+        #region TailOverlappedBy
+
+        /// <summary>
+        ///     Gets parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </value>
+        public static TheoryData<bool, IIPAddressRange, IIPAddressRange> TailOverlappedBy_Test_Data
+        {
+            get
+            {
+                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateSubstituteIPAddressRange(
+                    IPAddress.IPv6Any,
+                    IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                );
+
+                var data = new TheoryData<bool, IIPAddressRange, IIPAddressRange>
+                {
+                    // null overlap checking
+                    { false, ipv4Range, null },
+                    { false, ipv6Range, null },
+                    // same overlap checking
+                    { true, ipv4Range, ipv4Range },
+                    { true, ipv6Range, ipv6Range },
+                    // equal overlap checking
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast),
+                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast)
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(
+                            IPAddress.IPv6Any,
+                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                        ),
+                        CreateSubstituteIPAddressRange(
+                            IPAddress.IPv6Any,
+                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                        )
+                    },
+                    // differing address families
+                    { false, ipv4Range, ipv6Range },
+                    { false, ipv6Range, ipv4Range },
+                    // head only overlapped
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
+                    },
+                    // full head and tail overlapped
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff"))
+                    },
+                    // tail only overlapped
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
+                    },
+                    // not touching
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f"))
+                    },
+                    // disparate ranges
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                    },
+                };
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(TailOverlappedBy_Test_Data))]
+        public void TailOverlappedBy_Test(bool expected, IIPAddressRange left, IIPAddressRange right)
+        {
+            // Arrange
+            // Act
+            var result = left.TailOverlappedBy(right);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        #endregion // end: TailOverlappedBy
+
+        #region Overlaps
+
+        /// <summary>
+        ///     Gets parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </value>
+        public static TheoryData<bool, IIPAddressRange, IIPAddressRange> Overlaps_Test_Data
+        {
+            get
+            {
+                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateSubstituteIPAddressRange(
+                    IPAddress.IPv6Any,
+                    IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                );
+
+                var data = new TheoryData<bool, IIPAddressRange, IIPAddressRange>
+                {
+                    // null overlap checking
+                    { false, ipv4Range, null },
+                    { false, ipv6Range, null },
+                    // same overlap checking
+                    { true, ipv4Range, ipv4Range },
+                    { true, ipv6Range, ipv6Range },
+                    // equal overlap checking
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast),
+                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast)
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(
+                            IPAddress.IPv6Any,
+                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                        ),
+                        CreateSubstituteIPAddressRange(
+                            IPAddress.IPv6Any,
+                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                        )
+                    },
+                    // differing address families
+                    { false, ipv4Range, ipv6Range },
+                    { false, ipv6Range, ipv4Range },
+                    // head only overlapped
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
+                    },
+                    // full head and tail overlapped
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00"))
+                    },
+                    // tail only overlapped
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
+                    },
+                    // not touching
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f"))
+                    },
+                    // disparate ranges
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                    },
+                    // wholly contained — both directions must return true (symmetry)
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.64"), IPAddress.Parse("192.168.1.192"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.64"), IPAddress.Parse("192.168.1.192")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("1::"), IPAddress.Parse("fffe::ffff"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("1::"), IPAddress.Parse("fffe::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff"))
+                    },
+                };
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Overlaps_Test_Data))]
+        public void Overlaps_Test(bool expected, IIPAddressRange left, IIPAddressRange right)
+        {
+            // Arrange
+            // Act
+            var result = left.Overlaps(right);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        #endregion // end: Overlaps
+
+        #region Touches
+
+        /// <summary>
+        ///     Gets parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </summary>
+        /// <value>
+        ///     Parameters: expected (bool), left (IIPAddressRange), right (IIPAddressRange)
+        /// </value>
+        public static TheoryData<bool, IIPAddressRange, IIPAddressRange> Touches_Test_Data
+        {
+            get
+            {
+                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateSubstituteIPAddressRange(
+                    IPAddress.IPv6Any,
+                    IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                );
+
+                var data = new TheoryData<bool, IIPAddressRange, IIPAddressRange>
+                {
+                    // null overlap checking
+                    { false, CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast), null },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(
+                            IPAddress.IPv6Any,
+                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                        ),
+                        null
+                    },
+                    // differing address families
+                    { false, ipv4Range, ipv6Range },
+                    { false, ipv6Range, ipv4Range },
+                    // left tail touches right head
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.100")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.101"), IPAddress.Parse("192.168.1.200"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::abcd")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::abce"), IPAddress.Parse("::ffff"))
+                    },
+                    // left head touches right tail
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.101"), IPAddress.Parse("192.168.1.200")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.100"))
+                    },
+                    {
+                        true,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::abce"), IPAddress.Parse("::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::abcd"))
+                    },
+                    // head only overlapped
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
+                    },
+                    // full head and tail overlapped
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00"))
+                    },
+                    // tail only overlapped
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
+                    },
+                    // disparate ranges
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                    },
+                    // this tail at max
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("255.255.255.255")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(
+                            IPAddress.Parse("::"),
+                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                        ),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                    },
+                    // that tail at max
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0")),
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("255.255.255.255"))
+                    },
+                    {
+                        false,
+                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::")),
+                        CreateSubstituteIPAddressRange(
+                            IPAddress.Parse("::"),
+                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                        )
+                    },
+                };
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(Touches_Test_Data))]
+        public void Touches_Test(bool expected, IIPAddressRange left, IIPAddressRange right)
+        {
+            // Arrange
+            // Act
+            var result = left.Touches(right);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
+        #endregion // end: Touches
+
+        #endregion // end: Overlap and Touches
+
+        #region Contains Any/All Public/Private Addresses
+
+        /// <summary>
+        ///     Gets parameters: expectedHasPublic (bool), expectedHasPrivate (bool), range (IIPAddressRange)
+        /// </summary>
+        /// <value>
+        ///     Parameters: expectedHasPublic (bool), expectedHasPrivate (bool), range (IIPAddressRange)
+        /// </value>
+        public static TheoryData<bool, bool, IIPAddressRange> ContainsPublicPrivate_Data
+        {
+            get
+            {
+                var data = new TheoryData<bool, bool, IIPAddressRange>();
+
+                // known private ranges
+                foreach (var subnet in SubnetUtilities.PrivateIPAddressRangesList)
+                {
+                    // has private
+                    data.Add(false, true, CreateSubstituteIPAddressRange(subnet.Head, subnet.Tail)); // on the border of private
+                    data.Add(false, true, CreateSubstituteIPAddressRange(subnet.Head.Increment(2), subnet.Tail.Increment(-2))); // wholly inside of private
+                    data.Add(false, true, CreateSubstituteIPAddressRange(subnet.Head.Increment(2), subnet.Tail)); // partially within of private
+                    data.Add(false, true, CreateSubstituteIPAddressRange(subnet.Head, subnet.Tail.Increment(-2))); // partially within of private
+
+                    // has private and public
+                    data.Add(true, true, CreateSubstituteIPAddressRange(subnet.Head.Increment(-2), subnet.Tail)); // partially outside of private
+                    data.Add(true, true, CreateSubstituteIPAddressRange(subnet.Head, subnet.Tail.Increment(2))); // partially outside of private
+                }
+
+                // public only
+                var publicSpace = new (IPAddress head, IPAddress tail)[]
+                {
+                    (IPAddress.Parse("128.64.32.0"), IPAddress.Parse("128.64.32.16")),
+                    (IPAddress.Parse("FFFF:7FFF:3FFF::"), IPAddress.Parse("FFFF:7FFF:3FFF:1FFF::")),
+                };
+
+                foreach (var (head, tail) in publicSpace)
+                {
+                    data.Add(true, false, CreateSubstituteIPAddressRange(head, tail)); // on the border of public
+                    data.Add(true, false, CreateSubstituteIPAddressRange(head.Increment(2), tail.Increment(-2))); // wholly inside public
+                }
+
+                return data;
+            }
+        }
+
+        [Theory]
+        [MemberData(nameof(ContainsPublicPrivate_Data))]
+        public void ContainsAnyPrivateAddresses_Test(bool expectedHasPublic, bool expectedHasPrivate, IIPAddressRange range)
+        {
+            // Arrange
+            // Act
+            var result = range.ContainsAnyPrivateAddresses();
+
+            this._testOutputHelper.WriteLine($"pr:{expectedHasPrivate} pu:{expectedHasPublic} {range.Head} - {range.Tail}");
+
+            // Assert
+            Assert.Equal(expectedHasPrivate, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(ContainsPublicPrivate_Data))]
+        public void ContainsAllPrivateAddresses_Test(bool expectedHasPublic, bool expectedHasPrivate, IIPAddressRange range)
+        {
+            // Arrange
+            // Act
+            var result = range.ContainsAllPrivateAddresses();
+
+            this._testOutputHelper.WriteLine($"pr:{expectedHasPrivate} pu:{expectedHasPublic} {range.Head} - {range.Tail}");
+
+            // Assert
+            Assert.Equal(expectedHasPrivate && !expectedHasPublic, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(ContainsPublicPrivate_Data))]
+        public void ContainsAnyPublicAddresses_Test(bool expectedHasPublic, bool expectedHasPrivate, IIPAddressRange range)
+        {
+            // Arrange
+            // Act
+            var result = range.ContainsAnyPublicAddresses();
+
+            this._testOutputHelper.WriteLine($"pr:{expectedHasPrivate} pu:{expectedHasPublic} {range.Head} - {range.Tail}");
+
+            // Assert
+            Assert.Equal(expectedHasPublic, result);
+        }
+
+        [Theory]
+        [MemberData(nameof(ContainsPublicPrivate_Data))]
+        public void ContainsAllPublicAddresses_Test(bool expectedHasPublic, bool expectedHasPrivate, IIPAddressRange range)
+        {
+            // Arrange
+            // Act
+            var result = range.ContainsAllPublicAddresses();
+
+            this._testOutputHelper.WriteLine($"pr:{expectedHasPrivate} pu:{expectedHasPublic} {range.Head} - {range.Tail}");
+
+            // Assert
+            Assert.Equal(!expectedHasPrivate && expectedHasPublic, result);
+        }
+
+        [Fact]
+        public void ContainsAnyPrivateAddresses_RangeSpansPrivateBlock_WithPublicEndpoints_Test()
+        {
+            // Regression: endpoints 11.0.0.0 and 173.0.0.0 are both public, but the range
+            // spans 172.16.0.0/12 — the endpoint heuristic incorrectly returned false.
+            var range = CreateSubstituteIPAddressRange(IPAddress.Parse("11.0.0.0"), IPAddress.Parse("173.0.0.0"));
+
+            Assert.True(range.ContainsAnyPrivateAddresses());
+        }
+
+        [Fact]
+        public void ContainsAllPublicAddresses_RangeSpansPrivateBlock_WithPublicEndpoints_Test()
+        {
+            // Regression: endpoints are both public, but the range spans 172.16.0.0/12 —
+            // not all addresses are public, so this must return false.
+            var range = CreateSubstituteIPAddressRange(IPAddress.Parse("11.0.0.0"), IPAddress.Parse("173.0.0.0"));
+
+            Assert.False(range.ContainsAllPublicAddresses());
+        }
+
+        [Theory]
+        [MemberData(nameof(ContainsPublicPrivate_Data))]
+        public void ContainsAnyPrivateAddresses_IsInverseOf_ContainsAllPublicAddresses_Test(
+            bool expectedHasPublic,
+            bool expectedHasPrivate,
+            IIPAddressRange range
+        )
+        {
+            // ContainsAnyPrivateAddresses and ContainsAllPublicAddresses must be logical inverses.
+            var hasPrivate = range.ContainsAnyPrivateAddresses();
+            var allPublic = range.ContainsAllPublicAddresses();
+
+            this._testOutputHelper.WriteLine($"pr:{expectedHasPrivate} pu:{expectedHasPublic} {range.Head} - {range.Tail}");
+
+            Assert.NotEqual(hasPrivate, allPublic);
+        }
+
+        [Theory]
+        [MemberData(nameof(ContainsPublicPrivate_Data))]
+        public void ContainsAllPrivateAddresses_IsInverseOf_ContainsAnyPublicAddresses_Test(
+            bool expectedHasPublic,
+            bool expectedHasPrivate,
+            IIPAddressRange range
+        )
+        {
+            // ContainsAllPrivateAddresses and ContainsAnyPublicAddresses must be logical inverses.
+            var allPrivate = range.ContainsAllPrivateAddresses();
+            var hasPublic = range.ContainsAnyPublicAddresses();
+
+            this._testOutputHelper.WriteLine($"pr:{expectedHasPrivate} pu:{expectedHasPublic} {range.Head} - {range.Tail}");
+
+            Assert.NotEqual(allPrivate, hasPublic);
+        }
+
+        #endregion // end: Contains Any/All Public/Private Addresses
+    }
+}

@@ -65,4 +65,45 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
   </ItemGroup>
+  <ItemGroup>
+    <Compile Update="BigEndianBitWrapperTests.Factory.cs">
+      <DependentUpon>BigEndianBitWrapperTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="BigEndianBitWrapperTests.Operators.cs">
+      <DependentUpon>BigEndianBitWrapperTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="BigEndianBitWrapperTests.IComparable.cs">
+      <DependentUpon>BigEndianBitWrapperTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="BigEndianBitWrapperTests.IEquatable.cs">
+      <DependentUpon>BigEndianBitWrapperTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="BigEndianBitWrapperTests.IFormattable.cs">
+      <DependentUpon>BigEndianBitWrapperTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="IPAddressRangeTests.ISerializable.cs">
+      <DependentUpon>IPAddressRangeTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="IPAddressRangeTests.IComparable.cs">
+      <DependentUpon>IPAddressRangeTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="IPAddressRangeTests.IEquatable.cs">
+      <DependentUpon>IPAddressRangeTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="IPAddressRangeTests.Operators.cs">
+      <DependentUpon>IPAddressRangeTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="IPAddressRangeTests.Factory.cs">
+      <DependentUpon>IPAddressRangeTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="AbstractIPAddressRangeTests.IIPAddressRange.cs">
+      <DependentUpon>AbstractIPAddressRangeTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="AbstractIPAddressRangeTests.IEnumerable.cs">
+      <DependentUpon>AbstractIPAddressRangeTests.cs</DependentUpon>
+    </Compile>
+    <Compile Update="AbstractIPAddressRangeTests.IFormattable.cs">
+      <DependentUpon>AbstractIPAddressRangeTests.cs</DependentUpon>
+    </Compile>
+  </ItemGroup>
 </Project>
