@@ -84,7 +84,7 @@ namespace Arcus.Tests
 
         [Theory]
         [MemberData(nameof(Length_Test_Data))]
-        public static void Length_Test(BigInteger expected, IPAddressRange ipAddressRange)
+        public void Length_Test(BigInteger expected, IPAddressRange ipAddressRange)
         {
             // Arrange
             // Act

@@ -6,9 +6,7 @@ using System.Net;
 using System.Numerics;
 using Arcus.Tests.XunitSerializers;
 #if NET48   // maintained for .NET 4.8 compatibility
-using System.IO;
 using System.Runtime.Serialization;
-using System.Runtime.Serialization.Formatters.Binary;
 #endif
 
 [assembly: RegisterXunitSerializer(typeof(SubnetXunitSerializer), typeof(Subnet))]
@@ -714,7 +712,7 @@ namespace Arcus.Tests
         /// <param name="subnet">The subnet under test.</param>
         [Theory]
         [MemberData(nameof(Length_Test_Values))]
-        public static void Length_Test(BigInteger expected, Subnet subnet)
+        public void Length_Test(BigInteger expected, Subnet subnet)
         {
             // Arrange
             // Act
@@ -730,7 +728,7 @@ namespace Arcus.Tests
         /// <param name="subnet">The subnet under test.</param>
         [Theory]
         [MemberData(nameof(Length_Test_Values))]
-        public static void TryGetLength_Integer_Test(BigInteger expected, Subnet subnet)
+        public void TryGetLength_Integer_Test(BigInteger expected, Subnet subnet)
         {
             // Arrange
             // Act
@@ -746,7 +744,7 @@ namespace Arcus.Tests
         /// <param name="subnet">The subnet under test.</param>
         [Theory]
         [MemberData(nameof(Length_Test_Values))]
-        public static void TryGetLength_Long_Test(BigInteger expected, Subnet subnet)
+        public void TryGetLength_Long_Test(BigInteger expected, Subnet subnet)
         {
             // Arrange
             // Act

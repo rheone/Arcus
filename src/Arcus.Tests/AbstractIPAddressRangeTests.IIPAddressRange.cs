@@ -78,7 +78,7 @@ namespace Arcus.Tests
         /// <param name="ipAddressRange">The range under test.</param>
         [Theory]
         [MemberData(nameof(Length_Test_Data))]
-        public static void TryGetLength_Integer_Test(System.Numerics.BigInteger expected, IPAddressRange ipAddressRange)
+        public void TryGetLength_Integer_Test(System.Numerics.BigInteger expected, IPAddressRange ipAddressRange)
         {
             // Arrange
             // Act
@@ -94,7 +94,7 @@ namespace Arcus.Tests
         /// <param name="ipAddressRange">The range under test.</param>
         [Theory]
         [MemberData(nameof(Length_Test_Data))]
-        public static void TryGetLength_Long_Test(System.Numerics.BigInteger expected, IPAddressRange ipAddressRange)
+        public void TryGetLength_Long_Test(System.Numerics.BigInteger expected, IPAddressRange ipAddressRange)
         {
             // Arrange
             // Act
