@@ -5,8 +5,10 @@ using Xunit;
 
 namespace Arcus.Tests
 {
+    /// <summary>Unit tests for <see cref="IIPAddressRange"/>.</summary>
     public class IIPAddressRangeTests
     {
+        /// <summary>Verifies IIPAddressRange extends IFormattable and IEnumerable&lt;IPAddress&gt;.</summary>
         [Fact]
         public void Assignability_Test()
         {
@@ -19,6 +21,7 @@ namespace Arcus.Tests
             Assert.True(typeof(IEnumerable<IPAddress>).IsAssignableFrom(type));
         }
 
+        /// <summary>Verifies IIPAddressRange is declared as an interface.</summary>
         [Fact]
         public void IsInterface_Test()
         {

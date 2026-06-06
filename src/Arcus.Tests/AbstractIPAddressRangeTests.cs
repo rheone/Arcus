@@ -1,8 +1,13 @@
 ﻿using System.Net;
 using System.Numerics;
+using Arcus;
 using Arcus.Math;
-using NSubstitute;
+using Arcus.Tests.XunitSerializers;
 using Xunit;
+using Xunit.Sdk;
+
+[assembly: RegisterXunitSerializer(typeof(IPAddressXunitSerializer), typeof(IPAddress))]
+[assembly: RegisterXunitSerializer(typeof(IIPAddressRangeXunitSerializer), typeof(IIPAddressRange))]
 
 namespace Arcus.Tests
 {
@@ -21,9 +26,9 @@ namespace Arcus.Tests
 
         #region other members
 
-        private static AbstractIPAddressRange CreateSubstituteIPAddressRange(IPAddress head, IPAddress tail)
+        private static IPAddressRange CreateSubstituteIPAddressRange(IPAddress head, IPAddress tail)
         {
-            return Substitute.For<AbstractIPAddressRange>(head, tail);
+            return new IPAddressRange(head, tail);
         }
 
         #endregion // end: other members
@@ -36,11 +41,11 @@ namespace Arcus.Tests
         /// <value>
         ///     Parameters: expected (BigInteger), ipAddressRange (AbstractIPAddressRange)
         /// </value>
-        public static TheoryData<BigInteger, AbstractIPAddressRange> Length_Test_Data
+        public static TheoryData<BigInteger, IPAddressRange> Length_Test_Data
         {
             get
             {
-                return new TheoryData<BigInteger, AbstractIPAddressRange>
+                return new TheoryData<BigInteger, IPAddressRange>
                 {
                     // single address
                     { new BigInteger(1), CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Any) },
@@ -87,7 +92,7 @@ namespace Arcus.Tests
 
         [Theory]
         [MemberData(nameof(Length_Test_Data))]
-        public static void Length_Test(BigInteger expected, AbstractIPAddressRange ipAddressRange)
+        public static void Length_Test(BigInteger expected, IPAddressRange ipAddressRange)
         {
             // Arrange
             // Act
@@ -101,6 +106,7 @@ namespace Arcus.Tests
 
         #region Class
 
+        /// <summary>Verifies that AbstractIPAddressRange implements IIPAddressRange.</summary>
         [Fact]
         public void Implementation_Test()
         {
@@ -112,6 +118,7 @@ namespace Arcus.Tests
             Assert.True(typeof(IIPAddressRange).IsAssignableFrom(type));
         }
 
+        /// <summary>Verifies that AbstractIPAddressRange is declared as an abstract class.</summary>
         [Fact]
         public void AbstractClass_Test()
         {
@@ -129,6 +136,9 @@ namespace Arcus.Tests
 
         #region Ctor
 
+        /// <summary>Verifies the constructor sets Head and Tail correctly for valid same-family address pairs.</summary>
+        /// <param name="headString">The head IP address string.</param>
+        /// <param name="tailString">The tail IP address string.</param>
         [Theory]
         [InlineData("192.168.1.1", "192.168.1.5")]
         [InlineData("::beef", "::dead")]
@@ -146,6 +156,9 @@ namespace Arcus.Tests
             Assert.Equal(tail, iPAddressRange.Tail);
         }
 
+        /// <summary>Verifies the constructor throws ArgumentNullException when either address is null.</summary>
+        /// <param name="headString">The head IP address string, or null.</param>
+        /// <param name="tailString">The tail IP address string, or null.</param>
         [Theory]
         [InlineData("192.168.1.1", null)]
         [InlineData(null, "192.168.1.5")]
@@ -159,10 +172,12 @@ namespace Arcus.Tests
 
             // Act
             // Assert
-            var exception = Assert.ThrowsAny<System.Exception>(() => CreateSubstituteIPAddressRange(head, tail));
-            Assert.IsAssignableFrom<System.ArgumentNullException>(exception.InnerException);
+            Assert.Throws<System.ArgumentNullException>(() => CreateSubstituteIPAddressRange(head, tail));
         }
 
+        /// <summary>Verifies the constructor throws InvalidOperationException when head and tail are from different address families.</summary>
+        /// <param name="headString">The head IP address string.</param>
+        /// <param name="tailString">The tail IP address string.</param>
         [Theory]
         [InlineData("192.168.1.1", "::beef")]
         [InlineData("::beef", "192.168.1.5")]
@@ -174,11 +189,13 @@ namespace Arcus.Tests
 
             // Act
             // Assert
-            var exception = Assert.ThrowsAny<System.Exception>(() => CreateSubstituteIPAddressRange(head, tail));
-            var inner = Assert.IsAssignableFrom<System.InvalidOperationException>(exception.InnerException);
-            Assert.Contains("matching address families", inner.Message, System.StringComparison.OrdinalIgnoreCase);
+            var exception = Assert.Throws<System.InvalidOperationException>(() => CreateSubstituteIPAddressRange(head, tail));
+            Assert.Contains("matching address families", exception.Message, System.StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>Verifies the constructor throws InvalidOperationException when tail is less than head.</summary>
+        /// <param name="headString">The head IP address string.</param>
+        /// <param name="tailString">The tail IP address string (less than head).</param>
         [Theory]
         [InlineData("192.168.1.5", "192.168.1.1")]
         [InlineData("::dead", "::beef")]
@@ -190,15 +207,15 @@ namespace Arcus.Tests
 
             // Act
             // Assert
-            var exception = Assert.ThrowsAny<System.Exception>(() => CreateSubstituteIPAddressRange(head, tail));
-            var inner = Assert.IsAssignableFrom<System.InvalidOperationException>(exception.InnerException);
-            Assert.Contains("greater or equal", inner.Message, System.StringComparison.OrdinalIgnoreCase);
+            var exception = Assert.Throws<System.InvalidOperationException>(() => CreateSubstituteIPAddressRange(head, tail));
+            Assert.Contains("greater or equal", exception.Message, System.StringComparison.OrdinalIgnoreCase);
         }
 
         #endregion // end: Ctor
 
         #region AddressFamily
 
+        /// <summary>Verifies AddressFamily is InterNetwork and IsIPv4 is true for an IPv4 range.</summary>
         [Fact]
         public void AddressFamily_IPv4_Test()
         {
@@ -218,6 +235,7 @@ namespace Arcus.Tests
             Assert.False(iPAddressRange.IsIPv6);
         }
 
+        /// <summary>Verifies AddressFamily is InterNetworkV6 and IsIPv6 is true for an IPv6 range.</summary>
         [Fact]
         public void AddressFamily_IPv6_Test()
         {

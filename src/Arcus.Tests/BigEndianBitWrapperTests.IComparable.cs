@@ -2,10 +2,19 @@
 
 namespace Arcus.Tests
 {
+    /// <content>
+    ///     <see cref="BigEndianBitWrapper"/> tests for <see cref="System.IComparable"/>.
+    /// </content>
     public partial class BigEndianBitWrapperTests
     {
         #region CompareTo
 
+        /// <summary>
+        ///     Gets theory data for CompareTo sign tests.
+        /// </summary>
+        /// <value>
+        ///     Rows: leftStr (string), rightStr (string), expectedSign (int).
+        /// </value>
         public static TheoryData<string, string, int> CompareTo_Test_Data =>
             new()
             {
@@ -18,6 +27,10 @@ namespace Arcus.Tests
                 { "192.168.1.0", "192.168.1.255", -1 },
             };
 
+        /// <summary>Verifies CompareTo returns the correct sign for ordered pairs of IPv4 addresses.</summary>
+        /// <param name="leftStr">The left IPv4 address string.</param>
+        /// <param name="rightStr">The right IPv4 address string.</param>
+        /// <param name="expectedSign">The expected sign of the comparison result (-1, 0, or 1).</param>
         [Theory]
         [MemberData(nameof(CompareTo_Test_Data))]
         public void CompareTo_IPv4Values_ReturnsExpectedSign_Test(string leftStr, string rightStr, int expectedSign)
@@ -33,6 +46,7 @@ namespace Arcus.Tests
             Assert.Equal(expectedSign, System.Math.Sign(result));
         }
 
+        /// <summary>Verifies CompareTo imposes strict ascending order across the IPv6 address space.</summary>
         [Fact]
         public void CompareTo_IPv6_AscendingOrder_Test()
         {

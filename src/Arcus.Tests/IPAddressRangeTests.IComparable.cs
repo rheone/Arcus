@@ -1,6 +1,4 @@
-﻿using System.Net;
-using Arcus;
-using Xunit;
+﻿using Xunit;
 
 namespace Arcus.Tests
 {
@@ -86,6 +84,10 @@ namespace Arcus.Tests
             }
         }
 
+        /// <summary>Verifies CompareTo returns the expected result for all ordered range pairs.</summary>
+        /// <param name="expected">Expected comparison result (-1, 0, or 1).</param>
+        /// <param name="left">The left operand range.</param>
+        /// <param name="right">The right operand range.</param>
         [Theory]
         [MemberData(nameof(Comparison_Values))]
         public void CompareTo_Test(int expected, IPAddressRange left, IPAddressRange right)

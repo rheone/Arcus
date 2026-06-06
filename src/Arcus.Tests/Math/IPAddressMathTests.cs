@@ -5,10 +5,13 @@ using Xunit;
 
 namespace Arcus.Tests.Math
 {
+    /// <summary>Unit tests for <see cref="IPAddressMath"/>.</summary>
     public class IPAddressMathTests
     {
         #region IsEqualTo
 
+        /// <summary>Gets theory data for <see cref="IsEqualTo_TwoAddresses_ReturnsExpectedEquality_Test"/>.</summary>
+        /// <value>Parameters: expected (bool), left (IPAddress), right (IPAddress).</value>
         public static TheoryData<bool, IPAddress, IPAddress> IsEqualTo_Test_Data
         {
             get
@@ -49,6 +52,10 @@ namespace Arcus.Tests.Math
             }
         }
 
+        /// <summary>Verifies that <c>IsEqualTo</c> returns the expected equality result for two IP addresses.</summary>
+        /// <param name="expected">The expected equality result.</param>
+        /// <param name="left">The left-hand IP address operand.</param>
+        /// <param name="right">The right-hand IP address operand.</param>
         [Theory]
         [MemberData(nameof(IsEqualTo_Test_Data))]
         public void IsEqualTo_TwoAddresses_ReturnsExpectedEquality_Test(bool expected, IPAddress left, IPAddress right)
@@ -65,6 +72,8 @@ namespace Arcus.Tests.Math
 
         #region IsGreaterThan
 
+        /// <summary>Gets theory data for <see cref="IsGreaterThan_TwoAddresses_ReturnsExpectedOrdering_Test"/>.</summary>
+        /// <value>Parameters: expected (bool), left (IPAddress), right (IPAddress).</value>
         public static TheoryData<bool, IPAddress, IPAddress> IsGreaterThan_Test_Data
         {
             get
@@ -105,6 +114,10 @@ namespace Arcus.Tests.Math
             }
         }
 
+        /// <summary>Verifies that <c>IsGreaterThan</c> returns the expected ordering result for two IP addresses.</summary>
+        /// <param name="expected">The expected result indicating whether <paramref name="left"/> is greater than <paramref name="right"/>.</param>
+        /// <param name="left">The left-hand IP address operand.</param>
+        /// <param name="right">The right-hand IP address operand.</param>
         [Theory]
         [MemberData(nameof(IsGreaterThan_Test_Data))]
         public void IsGreaterThan_TwoAddresses_ReturnsExpectedOrdering_Test(bool expected, IPAddress left, IPAddress right)
@@ -121,6 +134,8 @@ namespace Arcus.Tests.Math
 
         #region IsGreaterThanOrEqualTo
 
+        /// <summary>Gets theory data for <see cref="IsGreaterThanOrEqualTo_TwoAddresses_ReturnsExpectedOrdering_Test"/>.</summary>
+        /// <value>Parameters: expected (bool), left (IPAddress), right (IPAddress).</value>
         public static TheoryData<bool, IPAddress, IPAddress> IsGreaterThanOrEqualTo_Test_Data
         {
             get
@@ -161,6 +176,10 @@ namespace Arcus.Tests.Math
             }
         }
 
+        /// <summary>Verifies that <c>IsGreaterThanOrEqualTo</c> returns the expected ordering result for two IP addresses.</summary>
+        /// <param name="expected">The expected result indicating whether <paramref name="left"/> is greater than or equal to <paramref name="right"/>.</param>
+        /// <param name="left">The left-hand IP address operand.</param>
+        /// <param name="right">The right-hand IP address operand.</param>
         [Theory]
         [MemberData(nameof(IsGreaterThanOrEqualTo_Test_Data))]
         public void IsGreaterThanOrEqualTo_TwoAddresses_ReturnsExpectedOrdering_Test(
@@ -181,6 +200,8 @@ namespace Arcus.Tests.Math
 
         #region IsLessThan
 
+        /// <summary>Gets theory data for <see cref="IsLessThan_TwoAddresses_ReturnsExpectedOrdering_Test"/>.</summary>
+        /// <value>Parameters: expected (bool), left (IPAddress), right (IPAddress).</value>
         public static TheoryData<bool, IPAddress, IPAddress> IsLessThan_Test_Data
         {
             get
@@ -221,6 +242,10 @@ namespace Arcus.Tests.Math
             }
         }
 
+        /// <summary>Verifies that <c>IsLessThan</c> returns the expected ordering result for two IP addresses.</summary>
+        /// <param name="expected">The expected result indicating whether <paramref name="left"/> is less than <paramref name="right"/>.</param>
+        /// <param name="left">The left-hand IP address operand.</param>
+        /// <param name="right">The right-hand IP address operand.</param>
         [Theory]
         [MemberData(nameof(IsLessThan_Test_Data))]
         public void IsLessThan_TwoAddresses_ReturnsExpectedOrdering_Test(bool expected, IPAddress left, IPAddress right)
@@ -237,6 +262,8 @@ namespace Arcus.Tests.Math
 
         #region IsLessThanOrEqualTo
 
+        /// <summary>Gets theory data for <see cref="IsLessThanOrEqualTo_TwoAddresses_ReturnsExpectedOrdering_Test"/>.</summary>
+        /// <value>Parameters: expected (bool), left (IPAddress), right (IPAddress).</value>
         public static TheoryData<bool, IPAddress, IPAddress> IsLessThanOrEqualTo_Test_Data
         {
             get
@@ -277,6 +304,10 @@ namespace Arcus.Tests.Math
             }
         }
 
+        /// <summary>Verifies that <c>IsLessThanOrEqualTo</c> returns the expected ordering result for two IP addresses.</summary>
+        /// <param name="expected">The expected result indicating whether <paramref name="left"/> is less than or equal to <paramref name="right"/>.</param>
+        /// <param name="left">The left-hand IP address operand.</param>
+        /// <param name="right">The right-hand IP address operand.</param>
         [Theory]
         [MemberData(nameof(IsLessThanOrEqualTo_Test_Data))]
         public void IsLessThanOrEqualTo_TwoAddresses_ReturnsExpectedOrdering_Test(
@@ -297,6 +328,8 @@ namespace Arcus.Tests.Math
 
         #region IsBetween
 
+        /// <summary>Gets theory data for <see cref="IsBetween_AddressAndRange_ReturnsExpectedMembership_Test"/>.</summary>
+        /// <value>Parameters: expected (bool), input (IPAddress), low (IPAddress), high (IPAddress), inclusive (bool).</value>
         public static TheoryData<bool, IPAddress, IPAddress, IPAddress, bool> IsBetween_Test_Data
         {
             get
@@ -436,6 +469,12 @@ namespace Arcus.Tests.Math
             }
         }
 
+        /// <summary>Verifies that <c>IsBetween</c> returns the expected membership result for an IP address relative to a low/high range.</summary>
+        /// <param name="expected">The expected membership result.</param>
+        /// <param name="input">The IP address to test.</param>
+        /// <param name="low">The inclusive lower bound of the range.</param>
+        /// <param name="high">The inclusive upper bound of the range.</param>
+        /// <param name="inclusive">When <see langword="true"/>, the bounds are treated as inclusive; otherwise exclusive.</param>
         [Theory]
         [MemberData(nameof(IsBetween_Test_Data))]
         public void IsBetween_AddressAndRange_ReturnsExpectedMembership_Test(
@@ -454,6 +493,7 @@ namespace Arcus.Tests.Math
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <c>IsBetween</c> throws <see cref="ArgumentNullException"/> when the input address is <see langword="null"/>.</summary>
         [Fact]
         public void IsBetween_NullInput_Throws_ArgumentNullException_Test()
         {
@@ -463,6 +503,7 @@ namespace Arcus.Tests.Math
             Assert.Throws<ArgumentNullException>(() => ((IPAddress)null).IsBetween(IPAddress.Any, IPAddress.Any));
         }
 
+        /// <summary>Verifies that <c>IsBetween</c> throws <see cref="ArgumentNullException"/> when the low bound is <see langword="null"/>.</summary>
         [Fact]
         public void IsBetween_NullLow_Throws_ArgumentNullException_Test()
         {
@@ -472,6 +513,7 @@ namespace Arcus.Tests.Math
             Assert.Throws<ArgumentNullException>(() => IPAddress.Any.IsBetween(null, IPAddress.Any));
         }
 
+        /// <summary>Verifies that <c>IsBetween</c> throws <see cref="ArgumentNullException"/> when the high bound is <see langword="null"/>.</summary>
         [Fact]
         public void IsBetween_NullHigh_Throws_ArgumentNullException_Test()
         {
@@ -481,6 +523,7 @@ namespace Arcus.Tests.Math
             Assert.Throws<ArgumentNullException>(() => IPAddress.Any.IsBetween(IPAddress.Any, null));
         }
 
+        /// <summary>Verifies that <c>IsBetween</c> throws <see cref="InvalidOperationException"/> when the low bound is greater than the high bound.</summary>
         [Fact]
         public void IsBetween_LowGreaterThanHigh_Throws_InvalidOperationException_Test()
         {
@@ -492,6 +535,8 @@ namespace Arcus.Tests.Math
             );
         }
 
+        /// <summary>Gets theory data for <see cref="IsBetween_MismatchedAddressFamilies_Throws_InvalidOperationException_Test"/>.</summary>
+        /// <value>Parameters: input (IPAddress), low (IPAddress), high (IPAddress).</value>
         public static TheoryData<IPAddress, IPAddress, IPAddress> IsBetween_UnmatchedAddressFamilies_Test_Data
         {
             get
@@ -512,6 +557,10 @@ namespace Arcus.Tests.Math
             }
         }
 
+        /// <summary>Verifies that <c>IsBetween</c> throws <see cref="InvalidOperationException"/> when the input, low, and high addresses do not all share the same address family.</summary>
+        /// <param name="input">The IP address to test.</param>
+        /// <param name="low">The lower bound IP address.</param>
+        /// <param name="high">The upper bound IP address.</param>
         [Theory]
         [MemberData(nameof(IsBetween_UnmatchedAddressFamilies_Test_Data))]
         public void IsBetween_MismatchedAddressFamilies_Throws_InvalidOperationException_Test(
@@ -530,6 +579,9 @@ namespace Arcus.Tests.Math
 
         #region IsAtMax
 
+        /// <summary>Verifies that <c>IsAtMax</c> returns the expected result for a known IP address.</summary>
+        /// <param name="expected">The expected result indicating whether the address is at the maximum value for its address family.</param>
+        /// <param name="input">The IP address string to parse and test.</param>
         [Theory]
         [InlineData(false, "::")]
         [InlineData(false, "0.0.0.0")]
@@ -549,6 +601,7 @@ namespace Arcus.Tests.Math
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <c>IsAtMax</c> throws <see cref="ArgumentNullException"/> when the input address is <see langword="null"/>.</summary>
         [Fact]
         public void IsAtMax_NullInput_Throws_ArgumentNullException_Test()
         {
@@ -562,6 +615,9 @@ namespace Arcus.Tests.Math
 
         #region IsAtMin
 
+        /// <summary>Verifies that <c>IsAtMin</c> returns the expected result for a known IP address.</summary>
+        /// <param name="expected">The expected result indicating whether the address is at the minimum value for its address family.</param>
+        /// <param name="input">The IP address string to parse and test.</param>
         [Theory]
         [InlineData(false, "255.255.255.255")]
         [InlineData(false, "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")]
@@ -581,6 +637,7 @@ namespace Arcus.Tests.Math
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <c>IsAtMin</c> throws <see cref="ArgumentNullException"/> when the input address is <see langword="null"/>.</summary>
         [Fact]
         public void IsAtMin_NullInput_Throws_ArgumentNullException_Test()
         {
@@ -594,6 +651,8 @@ namespace Arcus.Tests.Math
 
         #region Max
 
+        /// <summary>Gets theory data for <see cref="Max_TwoAddresses_ReturnsLargerAddress_Test"/>.</summary>
+        /// <value>Parameters: expected (IPAddress), left (IPAddress), right (IPAddress).</value>
         public static TheoryData<IPAddress, IPAddress, IPAddress> Max_Test_Data
         {
             get
@@ -618,6 +677,10 @@ namespace Arcus.Tests.Math
             }
         }
 
+        /// <summary>Verifies that <c>Max</c> returns the larger of two IP addresses.</summary>
+        /// <param name="expected">The expected larger IP address.</param>
+        /// <param name="left">The left-hand IP address operand.</param>
+        /// <param name="right">The right-hand IP address operand.</param>
         [Theory]
         [MemberData(nameof(Max_Test_Data))]
         public void Max_TwoAddresses_ReturnsLargerAddress_Test(IPAddress expected, IPAddress left, IPAddress right)
@@ -630,6 +693,7 @@ namespace Arcus.Tests.Math
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <c>Max</c> throws <see cref="ArgumentNullException"/> when the left operand is <see langword="null"/>.</summary>
         [Fact]
         public void Max_NullLeftInput_Throws_ArgumentNullException_Test()
         {
@@ -639,6 +703,7 @@ namespace Arcus.Tests.Math
             Assert.Throws<ArgumentNullException>(() => IPAddressMath.Max(null, IPAddress.Any));
         }
 
+        /// <summary>Verifies that <c>Max</c> throws <see cref="ArgumentNullException"/> when the right operand is <see langword="null"/>.</summary>
         [Fact]
         public void Max_NullRightInput_Throws_ArgumentNullException_Test()
         {
@@ -648,6 +713,7 @@ namespace Arcus.Tests.Math
             Assert.Throws<ArgumentNullException>(() => IPAddressMath.Max(IPAddress.Any, null));
         }
 
+        /// <summary>Verifies that <c>Max</c> throws <see cref="ArgumentNullException"/> when both operands are <see langword="null"/>.</summary>
         [Fact]
         public void Max_BothInputsNull_Throws_ArgumentNullException_Test()
         {
@@ -657,6 +723,7 @@ namespace Arcus.Tests.Math
             Assert.Throws<ArgumentNullException>(() => IPAddressMath.Max(null, null));
         }
 
+        /// <summary>Verifies that <c>Max</c> throws <see cref="InvalidOperationException"/> when the left operand is IPv4 and the right operand is IPv6.</summary>
         [Fact]
         public void Max_MismatchedAddressFamilies_LeftIPv4RightIPv6_Throws_InvalidOperationException_Test()
         {
@@ -666,6 +733,7 @@ namespace Arcus.Tests.Math
             Assert.Throws<InvalidOperationException>(() => IPAddressMath.Max(IPAddress.Any, IPAddress.IPv6Any));
         }
 
+        /// <summary>Verifies that <c>Max</c> throws <see cref="InvalidOperationException"/> when the left operand is IPv6 and the right operand is IPv4.</summary>
         [Fact]
         public void Max_MismatchedAddressFamilies_LeftIPv6RightIPv4_Throws_InvalidOperationException_Test()
         {
@@ -679,6 +747,8 @@ namespace Arcus.Tests.Math
 
         #region Min
 
+        /// <summary>Gets theory data for <see cref="Min_TwoAddresses_ReturnsSmallerAddress_Test"/>.</summary>
+        /// <value>Parameters: expected (IPAddress), left (IPAddress), right (IPAddress).</value>
         public static TheoryData<IPAddress, IPAddress, IPAddress> Min_Test_Data
         {
             get
@@ -703,6 +773,10 @@ namespace Arcus.Tests.Math
             }
         }
 
+        /// <summary>Verifies that <c>Min</c> returns the smaller of two IP addresses.</summary>
+        /// <param name="expected">The expected smaller IP address.</param>
+        /// <param name="left">The left-hand IP address operand.</param>
+        /// <param name="right">The right-hand IP address operand.</param>
         [Theory]
         [MemberData(nameof(Min_Test_Data))]
         public void Min_TwoAddresses_ReturnsSmallerAddress_Test(IPAddress expected, IPAddress left, IPAddress right)
@@ -715,6 +789,7 @@ namespace Arcus.Tests.Math
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <c>Min</c> throws <see cref="ArgumentNullException"/> when the left operand is <see langword="null"/>.</summary>
         [Fact]
         public void Min_NullLeftInput_Throws_ArgumentNullException_Test()
         {
@@ -724,6 +799,7 @@ namespace Arcus.Tests.Math
             Assert.Throws<ArgumentNullException>(() => IPAddressMath.Min(null, IPAddress.Any));
         }
 
+        /// <summary>Verifies that <c>Min</c> throws <see cref="ArgumentNullException"/> when the right operand is <see langword="null"/>.</summary>
         [Fact]
         public void Min_NullRightInput_Throws_ArgumentNullException_Test()
         {
@@ -733,6 +809,7 @@ namespace Arcus.Tests.Math
             Assert.Throws<ArgumentNullException>(() => IPAddressMath.Min(IPAddress.Any, null));
         }
 
+        /// <summary>Verifies that <c>Min</c> throws <see cref="ArgumentNullException"/> when both operands are <see langword="null"/>.</summary>
         [Fact]
         public void Min_BothInputsNull_Throws_ArgumentNullException_Test()
         {
@@ -742,6 +819,7 @@ namespace Arcus.Tests.Math
             Assert.Throws<ArgumentNullException>(() => IPAddressMath.Min(null, null));
         }
 
+        /// <summary>Verifies that <c>Min</c> throws <see cref="InvalidOperationException"/> when the left operand is IPv4 and the right operand is IPv6.</summary>
         [Fact]
         public void Min_MismatchedAddressFamilies_LeftIPv4RightIPv6_Throws_InvalidOperationException_Test()
         {
@@ -751,6 +829,7 @@ namespace Arcus.Tests.Math
             Assert.Throws<InvalidOperationException>(() => IPAddressMath.Min(IPAddress.Any, IPAddress.IPv6Any));
         }
 
+        /// <summary>Verifies that <c>Min</c> throws <see cref="InvalidOperationException"/> when the left operand is IPv6 and the right operand is IPv4.</summary>
         [Fact]
         public void Min_MismatchedAddressFamilies_LeftIPv6RightIPv4_Throws_InvalidOperationException_Test()
         {
@@ -764,6 +843,10 @@ namespace Arcus.Tests.Math
 
         #region Increment
 
+        /// <summary>Verifies that <c>Increment</c> returns the expected IP address when applied a valid delta.</summary>
+        /// <param name="expected">The expected resulting IP address string.</param>
+        /// <param name="input">The input IP address string to parse and increment.</param>
+        /// <param name="delta">The signed integer delta to apply.</param>
         [Theory]
         [InlineData("::", "::", 0)]
         [InlineData("::1", "::", 1)]
@@ -797,6 +880,9 @@ namespace Arcus.Tests.Math
             Assert.Equal(expected, result.ToString());
         }
 
+        /// <summary>Verifies that <c>Increment</c> throws <see cref="InvalidOperationException"/> when a negative delta causes an address underflow.</summary>
+        /// <param name="input">The input IP address string to parse.</param>
+        /// <param name="delta">The negative delta that causes underflow.</param>
         [Theory]
         [InlineData("::", -1)] // IPv6 underflow
         [InlineData("::FF", -1024)] // IPv6 underflow by large negative delta
@@ -808,12 +894,15 @@ namespace Arcus.Tests.Math
             var address = IPAddress.Parse(input);
 
             // Act
-            Action act = () => address.Increment(delta);
+            void Act() => address.Increment(delta);
 
             // Assert
-            Assert.Throws<InvalidOperationException>(act);
+            Assert.Throws<InvalidOperationException>(Act);
         }
 
+        /// <summary>Verifies that <c>Increment</c> throws <see cref="InvalidOperationException"/> containing "overflow" when a positive delta causes an address overflow.</summary>
+        /// <param name="input">The input IP address string to parse.</param>
+        /// <param name="delta">The positive delta that causes overflow.</param>
         [Theory]
         [InlineData("255.255.255.0", 1024)] // IPv4 overflow by large positive delta
         [InlineData("255.255.255.255", 1)] // IPv4 overflow at max
@@ -832,6 +921,7 @@ namespace Arcus.Tests.Math
             Assert.Contains("overflow", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 
+        /// <summary>Verifies that <c>Increment</c> throws <see cref="ArgumentNullException"/> when the input address is <see langword="null"/>.</summary>
         [Fact]
         public void Increment_NullInput_Throws_ArgumentNullException_Test()
         {
@@ -843,6 +933,11 @@ namespace Arcus.Tests.Math
 
         #region TryIncrement
 
+        /// <summary>Verifies that <c>TryIncrement</c> returns the expected success flag and resulting address for various inputs including null, overflow, underflow, and valid deltas.</summary>
+        /// <param name="expectedSuccess">The expected return value indicating whether the increment succeeded.</param>
+        /// <param name="expectedResultString">The expected resulting IP address string, or <see langword="null"/> when the operation is expected to fail.</param>
+        /// <param name="inputString">The input IP address string, or <see langword="null"/> to test a null input.</param>
+        /// <param name="delta">The signed integer delta to apply.</param>
         [Theory]
         [InlineData(false, null, null, 0)]
         [InlineData(false, null, "255.255.255.0", 1024)]

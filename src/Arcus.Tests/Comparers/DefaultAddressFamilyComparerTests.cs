@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Arcus.Tests.Comparers
 {
+    /// <summary>Unit tests for <see cref="DefaultAddressFamilyComparer"/>.</summary>
     public class DefaultAddressFamilyComparerTests
     {
         /// <summary>

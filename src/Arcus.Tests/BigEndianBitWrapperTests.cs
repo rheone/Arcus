@@ -5,6 +5,7 @@ using Xunit;
 
 namespace Arcus.Tests
 {
+    /// <summary>Unit tests for <see cref="BigEndianBitWrapper"/>.</summary>
     public partial class BigEndianBitWrapperTests
     {
         // Convenience helpers — keep tests focused on behaviour, not construction noise.
@@ -16,6 +17,7 @@ namespace Arcus.Tests
 
         #region TryAdd
 
+        /// <summary>Verifies TryAdd with delta zero returns true and leaves the value unchanged.</summary>
         [Fact]
         public void TryAdd_DeltaZero_ReturnsTrueWithSameValue_Test()
         {
@@ -30,6 +32,7 @@ namespace Arcus.Tests
             Assert.Equal(w, result);
         }
 
+        /// <summary>Verifies TryAdd with a positive delta of one increments to the next address.</summary>
         [Fact]
         public void TryAdd_PositiveDelta_IncrementsByDelta_Test()
         {
@@ -44,6 +47,7 @@ namespace Arcus.Tests
             Assert.Equal(WrapIPv4("10.0.0.2"), result);
         }
 
+        /// <summary>Verifies TryAdd with a large positive delta produces the correctly incremented value.</summary>
         [Fact]
         public void TryAdd_PositiveDeltaLarge_IncrementsByDelta_Test()
         {
@@ -58,6 +62,7 @@ namespace Arcus.Tests
             Assert.Equal(WrapIPv4("10.0.0.255"), result);
         }
 
+        /// <summary>Verifies TryAdd with a negative delta decrements the address by the given amount.</summary>
         [Fact]
         public void TryAdd_NegativeDelta_DecrementsByDelta_Test()
         {
@@ -72,6 +77,7 @@ namespace Arcus.Tests
             Assert.Equal(WrapIPv4("10.0.0.2"), result);
         }
 
+        /// <summary>Verifies TryAdd returns false and default when incrementing past the IPv4 maximum address.</summary>
         [Fact]
         public void TryAdd_PositiveDelta_IPv4MaxAddress_ReturnsFalse_Test()
         {
@@ -86,6 +92,7 @@ namespace Arcus.Tests
             Assert.Equal(default, result);
         }
 
+        /// <summary>Verifies TryAdd returns false and default when decrementing below the IPv4 minimum address.</summary>
         [Fact]
         public void TryAdd_NegativeDelta_OnZeroAddress_ReturnsFalse_Test()
         {
@@ -100,6 +107,7 @@ namespace Arcus.Tests
             Assert.Equal(default, result);
         }
 
+        /// <summary>Verifies TryAdd returns false when the delta exceeds the maximum value representable by the byte width.</summary>
         [Fact]
         public void TryAdd_PositiveDeltaExceedsWidthBound_ReturnsFalse_Test()
         {
@@ -113,6 +121,7 @@ namespace Arcus.Tests
             Assert.False(success);
         }
 
+        /// <summary>Verifies TryAdd returns false when incrementing past the IPv6 maximum address.</summary>
         [Fact]
         public void TryAdd_IPv6_MaxAddress_Overflow_ReturnsFalse_Test()
         {
@@ -126,6 +135,7 @@ namespace Arcus.Tests
             Assert.False(success);
         }
 
+        /// <summary>Verifies TryAdd returns false when decrementing below the IPv6 minimum address.</summary>
         [Fact]
         public void TryAdd_IPv6_ZeroAddress_Underflow_ReturnsFalse_Test()
         {
@@ -139,6 +149,7 @@ namespace Arcus.Tests
             Assert.False(success);
         }
 
+        /// <summary>Verifies TryAdd correctly increments across a 16-bit word boundary in an IPv6 address.</summary>
         [Fact]
         public void TryAdd_IPv6_IncrementAcrossWordBoundary_Test()
         {
@@ -153,6 +164,7 @@ namespace Arcus.Tests
             Assert.Equal(WrapIPv6("::1:0"), result);
         }
 
+        /// <summary>Verifies TryAdd correctly increments across a byte rollover boundary in an IPv4 address.</summary>
         [Fact]
         public void TryAdd_IPv4_IncrementAcrossByteRollover_Test()
         {
@@ -171,6 +183,7 @@ namespace Arcus.Tests
 
         #region Subtract
 
+        /// <summary>Verifies Subtract returns the correct numeric difference between two IPv4 addresses.</summary>
         [Fact]
         public void Subtract_BasicDifference_ReturnsExpectedValue_Test()
         {
@@ -185,6 +198,7 @@ namespace Arcus.Tests
             Assert.Equal(9, (int)diff.ToBigInteger());
         }
 
+        /// <summary>Verifies Subtract returns zero when both operands are equal.</summary>
         [Fact]
         public void Subtract_EqualValues_ReturnsZero_Test()
         {
@@ -199,6 +213,7 @@ namespace Arcus.Tests
             Assert.Equal(new byte[] { 0, 0, 0, 0 }, diff.ToBytes());
         }
 
+        /// <summary>Verifies Subtract throws InvalidOperationException when the result would be negative.</summary>
         [Fact]
         public void Subtract_Underflow_ThrowsInvalidOperationException_Test()
         {
@@ -210,6 +225,7 @@ namespace Arcus.Tests
             Assert.Throws<InvalidOperationException>(() => small.Subtract(large));
         }
 
+        /// <summary>Verifies Subtract returns the correct BigInteger difference for a large IPv6 range.</summary>
         [Fact]
         public void Subtract_IPv6_LargeRange_ReturnsExpectedBigInteger_Test()
         {
@@ -228,6 +244,12 @@ namespace Arcus.Tests
 
         #region ToBigInteger
 
+        /// <summary>
+        ///     Gets parameters: input (byte[]), expected (long).
+        /// </summary>
+        /// <value>
+        ///     Parameters: input (byte[]), expected (long).
+        /// </value>
         public static TheoryData<byte[], long> ToBigInteger_KnownValues_Test_Data =>
             new()
             {
@@ -239,6 +261,9 @@ namespace Arcus.Tests
                 { new byte[] { 192, 168, 1, 1 }, 3232235777L },
             };
 
+        /// <summary>Verifies ToBigInteger returns the expected unsigned big-endian value for known IPv4 byte patterns.</summary>
+        /// <param name="input">The raw bytes to wrap.</param>
+        /// <param name="expected">The expected integer value.</param>
         [Theory]
         [MemberData(nameof(ToBigInteger_KnownValues_Test_Data))]
         public void ToBigInteger_KnownIPv4Values_ReturnsExpected_Test(byte[] input, long expected)
@@ -253,6 +278,7 @@ namespace Arcus.Tests
             Assert.Equal(new System.Numerics.BigInteger(expected), result);
         }
 
+        /// <summary>Verifies ToBigInteger returns zero for the IPv6 all-zeros address.</summary>
         [Fact]
         public void ToBigInteger_ZeroIPv6_ReturnsZero_Test()
         {
@@ -263,6 +289,7 @@ namespace Arcus.Tests
             Assert.Equal(System.Numerics.BigInteger.Zero, result);
         }
 
+        /// <summary>Verifies ToBigInteger always returns a non-negative value (unsigned interpretation).</summary>
         [Fact]
         public void ToBigInteger_IsNonNegative_Test()
         {
@@ -280,6 +307,8 @@ namespace Arcus.Tests
 
         #region ByteWidth preservation
 
+        /// <summary>Verifies ByteWidth is preserved through bitwise NOT, TryAdd increment, and bitwise AND operations.</summary>
+        /// <param name="byteWidth">The byte width to test.</param>
         [Theory]
         [InlineData(4)]
         [InlineData(6)]
@@ -306,6 +335,7 @@ namespace Arcus.Tests
 
         #region Subnet operations (combined)
 
+        /// <summary>Verifies that applying a /24 mask to a host address correctly computes the network and broadcast addresses for IPv4.</summary>
         [Fact]
         public void SubnetOps_ComputeNetworkAndBroadcast_IPv4_Test()
         {
@@ -324,6 +354,7 @@ namespace Arcus.Tests
             Assert.Equal(IPAddress.Parse("192.168.1.255").GetAddressBytes(), broadcast);
         }
 
+        /// <summary>Verifies that applying a /64 mask to a host address correctly computes the network and broadcast addresses for IPv6.</summary>
         [Fact]
         public void SubnetOps_ComputeNetworkAndBroadcast_IPv6_Test()
         {

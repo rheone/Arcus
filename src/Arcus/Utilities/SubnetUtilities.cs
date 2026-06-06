@@ -168,9 +168,9 @@ namespace Arcus.Utilities
         }
 
         /// <summary>
-        ///     Return the largest subnet (smallest route prefix value)
-        ///     if more than one "largest" return is not predictable beyond that one will be returned
-        ///     Consider usage of DefaultSubnetComparer
+        ///     Return the largest subnet (smallest routing prefix value).
+        ///     When multiple subnets tie for largest, which one is returned is not guaranteed beyond that one will be returned;
+        ///     consider <see cref="Comparers.DefaultIIPAddressRangeComparer" /> for a stable sort.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -180,23 +180,17 @@ namespace Arcus.Utilities
         ///     </para>
         /// </remarks>
         /// <param name="subnets">the subnets to search</param>
-        /// <returns>
-        ///     The first largest subnet by routing prefix, or <see langword="null" /> if no <paramref name="subnets" /> to
-        ///     choose from
-        /// </returns>
-        public static Subnet LargestSubnet(IEnumerable<Subnet> subnets)
-        {
-            var enumerable = (subnets ?? []).ToList();
-
-            return !enumerable.Any()
-                ? null
-                : enumerable.Where(s => s != null).Aggregate((s1, s2) => s1.RoutingPrefix < s2.RoutingPrefix ? s1 : s2);
-        }
+        /// <returns>The first largest subnet by routing prefix.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="subnets" /> is <see langword="null" />.</exception>
+        /// <exception cref="InvalidOperationException"><paramref name="subnets" /> contains no elements.</exception>
+        /// <exception cref="ArgumentException"><paramref name="subnets" /> contains a <see langword="null" /> element.</exception>
+        public static Subnet LargestSubnet(IEnumerable<Subnet> subnets) =>
+            SelectSubnet(subnets, (candidate, current) => candidate.RoutingPrefix < current.RoutingPrefix);
 
         /// <summary>
-        ///     Return the smallest subnet (largest route prefix value)
-        ///     if more than one "smallest" return is not predictable beyond that one will be returned
-        ///     Consider usage of DefaultSubnetComparer
+        ///     Return the smallest subnet (largest routing prefix value).
+        ///     When multiple subnets tie for smallest, which one is returned is not guaranteed beyond that one will be returned;
+        ///     consider <see cref="Comparers.DefaultIIPAddressRangeComparer" /> for a stable sort.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -205,15 +199,55 @@ namespace Arcus.Utilities
         ///         (block size = 2<sup>max−prefix</sup>).
         ///     </para>
         /// </remarks>
-        /// <param name="subnets">the list of subnets</param>
-        /// <returns>The first smallest subnet by routing prefix, or null if no subnets to choose from</returns>
-        public static Subnet SmallestSubnet(IEnumerable<Subnet> subnets)
-        {
-            var enumerable = (subnets ?? []).ToList();
+        /// <param name="subnets">the subnets to search</param>
+        /// <returns>The first smallest subnet by routing prefix.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="subnets" /> is <see langword="null" />.</exception>
+        /// <exception cref="InvalidOperationException"><paramref name="subnets" /> contains no elements.</exception>
+        /// <exception cref="ArgumentException"><paramref name="subnets" /> contains a <see langword="null" /> element.</exception>
+        public static Subnet SmallestSubnet(IEnumerable<Subnet> subnets) =>
+            SelectSubnet(subnets, (candidate, current) => candidate.RoutingPrefix > current.RoutingPrefix);
 
-            return !enumerable.Any()
-                ? null
-                : enumerable.Where(s => s != null).Aggregate((s1, s2) => s1.RoutingPrefix > s2.RoutingPrefix ? s1 : s2);
+        /// <summary>Iterates <paramref name="subnets" /> and returns the element for which <paramref name="shouldReplace" /> never returns <see langword="true" /> when compared against a later element.</summary>
+        /// <param name="subnets">the subnets to search; must not be <see langword="null" /> or empty, and must contain no <see langword="null" /> elements.</param>
+        /// <param name="shouldReplace">
+        ///     A predicate of the form <c>(candidate, currentBest)</c> that returns <see langword="true" /> when
+        ///     <c>candidate</c> should displace <c>currentBest</c> as the running winner.
+        /// </param>
+        /// <returns>The winning subnet after a single pass.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="subnets" /> is <see langword="null" />.</exception>
+        /// <exception cref="InvalidOperationException"><paramref name="subnets" /> contains no elements.</exception>
+        /// <exception cref="ArgumentException"><paramref name="subnets" /> contains a <see langword="null" /> element.</exception>
+        private static Subnet SelectSubnet(IEnumerable<Subnet> subnets, Func<Subnet, Subnet, bool> shouldReplace)
+        {
+            if (subnets is null)
+            {
+                throw new ArgumentNullException(nameof(subnets));
+            }
+
+            using var enumerator = subnets.GetEnumerator();
+
+            if (!enumerator.MoveNext())
+            {
+                throw new InvalidOperationException("Sequence contains no elements.");
+            }
+
+            var best =
+                enumerator.Current
+                ?? throw new ArgumentException("The collection cannot contain null elements.", nameof(subnets));
+
+            while (enumerator.MoveNext())
+            {
+                var candidate =
+                    enumerator.Current
+                    ?? throw new ArgumentException("The collection cannot contain null elements.", nameof(subnets));
+
+                if (shouldReplace(candidate, best))
+                {
+                    best = candidate;
+                }
+            }
+
+            return best;
         }
     }
 }

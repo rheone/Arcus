@@ -14,10 +14,17 @@ using System.Runtime.Serialization;
 
 namespace Arcus.Tests
 {
+    /// <summary>Unit tests for <see cref="IPAddressRange"/>.</summary>
     public partial class IPAddressRangeTests
     {
         #region HeadOverlappedBy
 
+        /// <summary>Verifies HeadOverlappedBy returns the expected result for an IPAddressRange against various ranges.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="thisHead">The head address of the range under test.</param>
+        /// <param name="thisTail">The tail address of the range under test.</param>
+        /// <param name="thatHead">The head address of the other range, or null.</param>
+        /// <param name="thatTail">The tail address of the other range, or null.</param>
         [Theory]
         [InlineData(false, "192.168.1.0", "255.255.255.255", null, null)]
         [InlineData(false, "192.168.1.0", "255.255.255.255", "::", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:")]
@@ -51,6 +58,8 @@ namespace Arcus.Tests
 
         #region Class
 
+        /// <summary>Verifies IPAddressRange is assignable from its expected base types and interfaces.</summary>
+        /// <param name="assignableFromType">The type that should be assignable from IPAddressRange.</param>
         [Theory]
         [InlineData(typeof(AbstractIPAddressRange))]
         [InlineData(typeof(IEquatable<IPAddressRange>))]
@@ -75,6 +84,12 @@ namespace Arcus.Tests
 
         #region TailOverlappedBy
 
+        /// <summary>Verifies TailOverlappedBy returns the expected result for an IPAddressRange against various ranges.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="thisHead">The head address of the range under test.</param>
+        /// <param name="thisTail">The tail address of the range under test.</param>
+        /// <param name="thatHead">The head address of the other range, or null.</param>
+        /// <param name="thatTail">The tail address of the other range, or null.</param>
         [Theory]
         [InlineData(false, "0.0.0.0", "192.168.1.0", null, null)]
         [InlineData(false, "0.0.0.0", "192.168.1.0", "::", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:")]
@@ -108,6 +123,7 @@ namespace Arcus.Tests
 
         #region Ctor
 
+        /// <summary>Verifies the two-argument constructor correctly sets Head and Tail.</summary>
         [Fact]
         public void Ctor_HeadAndTail_Specified_Test()
         {
@@ -123,6 +139,7 @@ namespace Arcus.Tests
             Assert.Equal(tail, addressRange.Tail);
         }
 
+        /// <summary>Verifies the single-address constructor sets both Head and Tail to the same address.</summary>
         [Fact]
         public void Ctor_SingleAddressRange_Test()
         {
@@ -141,6 +158,7 @@ namespace Arcus.Tests
 
         #region Head set
 
+        /// <summary>Verifies constructing with head greater than tail throws InvalidOperationException.</summary>
         [Fact]
         public void Head_Set_GreaterThanTail_Test()
         {
@@ -150,6 +168,7 @@ namespace Arcus.Tests
             Assert.Throws<InvalidOperationException>(() => new IPAddressRange(IPAddress.Broadcast, IPAddress.Any));
         }
 
+        /// <summary>Verifies constructing with head from a different address family than tail throws InvalidOperationException.</summary>
         [Fact]
         public void Head_Set_DifferentAddressFamilyThanTail_Throw_InvalidOperationException_Test()
         {
@@ -163,6 +182,7 @@ namespace Arcus.Tests
 
         #region Tail set
 
+        /// <summary>Verifies constructing with tail from a different address family than head throws InvalidOperationException.</summary>
         [Fact]
         public void Tail_Set_DifferentAddressFamilyThanHead_Throw_InvalidOperationException_Test()
         {
@@ -172,6 +192,7 @@ namespace Arcus.Tests
             Assert.Throws<InvalidOperationException>(() => new IPAddressRange(IPAddress.Any, IPAddress.IPv6Loopback));
         }
 
+        /// <summary>Verifies constructing with tail less than head throws InvalidOperationException.</summary>
         [Fact]
         public void Tail_Set_LessThanHead_Test()
         {
@@ -187,6 +208,9 @@ namespace Arcus.Tests
 
         #region ToString
 
+        /// <summary>Verifies ToString() produces the same output as the "G" format specifier.</summary>
+        /// <param name="headString">The head IP address string.</param>
+        /// <param name="tailString">The tail IP address string.</param>
         [Theory]
         [InlineData("192.168.1.1", "192.168.1.42")]
         [InlineData("::beef", "0123::dead")]
@@ -267,6 +291,7 @@ namespace Arcus.Tests
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies ToString throws FormatException for an unrecognized format specifier.</summary>
         [Fact]
         public void ToString_UnknownFormat_Throws_FormatException_Test()
         {

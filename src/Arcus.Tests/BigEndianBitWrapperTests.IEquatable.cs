@@ -2,10 +2,14 @@
 
 namespace Arcus.Tests
 {
+    /// <content>
+    ///     <see cref="BigEndianBitWrapper"/> tests for <see cref="System.IEquatable{T}"/>, <c>==</c>, and <c>!=</c>.
+    /// </content>
     public partial class BigEndianBitWrapperTests
     {
         #region Equals / == / !=
 
+        /// <summary>Verifies that Equals, ==, and != all agree when two wrappers have the same value and byte width.</summary>
         [Fact]
         public void Equals_SameValueAndWidth_ReturnsTrue_Test()
         {
@@ -15,10 +19,11 @@ namespace Arcus.Tests
 
             // Act / Assert
             Assert.True(a.Equals(b));
-            Assert.True(a == b);
-            Assert.False(a != b);
+            Assert.True(a == b); // SWEEP-AMBIGUITY: intentional == operator test; Assert.Equal would bypass the operator
+            Assert.False(a != b); // SWEEP-AMBIGUITY: intentional != operator test; Assert.NotEqual would bypass the operator
         }
 
+        /// <summary>Verifies that Equals, ==, and != all agree when two wrappers have different values.</summary>
         [Fact]
         public void Equals_DifferentValues_ReturnsFalse_Test()
         {
@@ -28,10 +33,11 @@ namespace Arcus.Tests
 
             // Act / Assert
             Assert.False(a.Equals(b));
-            Assert.False(a == b);
-            Assert.True(a != b);
+            Assert.False(a == b); // SWEEP-AMBIGUITY: intentional == operator test; Assert.Equal would bypass the operator
+            Assert.True(a != b); // SWEEP-AMBIGUITY: intentional != operator test; Assert.NotEqual would bypass the operator
         }
 
+        /// <summary>Verifies that wrappers with the same numeric value but different byte widths are not equal.</summary>
         [Fact]
         public void Equals_DifferentByteWidth_ReturnsFalse_Test()
         {
@@ -41,10 +47,11 @@ namespace Arcus.Tests
 
             // Act / Assert
             Assert.False(ipv4.Equals(ipv6));
-            Assert.False(ipv4 == ipv6);
-            Assert.True(ipv4 != ipv6);
+            Assert.False(ipv4 == ipv6); // SWEEP-AMBIGUITY: intentional == operator test; Assert.Equal would bypass the operator
+            Assert.True(ipv4 != ipv6); // SWEEP-AMBIGUITY: intentional != operator test; Assert.NotEqual would bypass the operator
         }
 
+        /// <summary>Verifies that Equals(object) returns true when the boxed object is an equal wrapper.</summary>
         [Fact]
         public void Equals_ObjectBoxed_ReturnsTrueWhenEqual_Test()
         {
@@ -56,6 +63,7 @@ namespace Arcus.Tests
             Assert.True(a.Equals(b));
         }
 
+        /// <summary>Verifies that Equals(object) returns false when the argument is a non-wrapper type.</summary>
         [Fact]
         public void Equals_NonWrapper_ReturnsFalse_Test()
         {
@@ -66,6 +74,7 @@ namespace Arcus.Tests
             Assert.False(a.Equals("not a wrapper"));
         }
 
+        /// <summary>Verifies that equal wrappers produce identical hash codes.</summary>
         [Fact]
         public void GetHashCode_EqualValues_HaveSameHashCode_Test()
         {

@@ -8,10 +8,12 @@ using Xunit;
 
 namespace Arcus.Tests.Utilities
 {
+    /// <summary>Unit tests for <see cref="SubnetUtilities"/>.</summary>
     public class SubnetUtilitiesTests
     {
         #region PrivateIPAddressRangesList
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.PrivateIPAddressRangesList"/> returns a read-only list containing the four expected private subnets.</summary>
         [Fact]
         public void PrivateIPAddressRangesList_Test()
         {
@@ -28,7 +30,7 @@ namespace Arcus.Tests.Utilities
             var list = SubnetUtilities.PrivateIPAddressRangesList;
 
             // Assert
-            Assert.IsAssignableFrom<IReadOnlyList<Subnet>>(list);
+            Assert.IsType<IReadOnlyList<Subnet>>(list, exactMatch: false);
             Assert.Equal(4, list.Count);
             Assert.Equal(list.Count, list.Distinct().Count());
             Assert.Contains(list, s => s.IsIPv4);
@@ -47,6 +49,7 @@ namespace Arcus.Tests.Utilities
 
         #region LinkLocalIPAddressRangesList
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.LinkLocalIPAddressRangesList"/> returns a read-only list containing the two expected link-local subnets.</summary>
         [Fact]
         public void LinkLocalIPAddressRangesList_Test()
         {
@@ -57,7 +60,7 @@ namespace Arcus.Tests.Utilities
             var list = SubnetUtilities.LinkLocalIPAddressRangesList;
 
             // Assert
-            Assert.IsAssignableFrom<IReadOnlyList<Subnet>>(list);
+            Assert.IsType<IReadOnlyList<Subnet>>(list, exactMatch: false);
             Assert.Equal(2, list.Count);
             Assert.Equal(list.Count, list.Distinct().Count());
             Assert.Contains(list, s => s.IsIPv4);
@@ -76,8 +79,10 @@ namespace Arcus.Tests.Utilities
 
         #region FewestConsecutiveSubnetsFor
 
-        // IEnumerable<object[]> is required here because IEnumerable<Subnet> is not an xUnit-serializable type
-        // and cannot be used as a TheoryData<> type parameter directly.
+        // IEnumerable<Subnet> is not xUnit-serializable; kept as IEnumerable<object[]>
+
+        /// <summary>Gets theory data for <see cref="FewestConsecutiveSubnetsFor_ValidInputs_ReturnsExpectedSubnets_Test"/>.</summary>
+        /// <returns>Parameters: expected (IEnumerable&lt;Subnet&gt;), left (IPAddress), right (IPAddress).</returns>
         public static IEnumerable<object[]> FewestConsecutiveSubnetsFor_ValidInputs_ReturnsExpectedSubnets_Test_Data()
         {
             // single IPv4 address (same left and right)
@@ -540,6 +545,10 @@ namespace Arcus.Tests.Utilities
             };
         }
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.FewestConsecutiveSubnetsFor"/> returns the expected minimal set of subnets for valid address pairs.</summary>
+        /// <param name="expected">Expected collection of subnets covering the range.</param>
+        /// <param name="left">Left bound of the IP address range.</param>
+        /// <param name="right">Right bound of the IP address range.</param>
         [Theory]
         [MemberData(nameof(FewestConsecutiveSubnetsFor_ValidInputs_ReturnsExpectedSubnets_Test_Data))]
         public void FewestConsecutiveSubnetsFor_ValidInputs_ReturnsExpectedSubnets_Test(
@@ -564,12 +573,17 @@ namespace Arcus.Tests.Utilities
             Assert.True(result.SequenceEqual(new SortedSet<Subnet>(result, new DefaultIIPAddressRangeComparer())));
         }
 
+        /// <summary>Gets theory data for <see cref="FewestConsecutiveSubnetsFor_MismatchedAddressFamilies_ThrowsInvalidOperationException_Test"/>.</summary>
+        /// <value>Parameters: left (IPAddress), right (IPAddress).</value>
         public static TheoryData<
             IPAddress,
             IPAddress
         > FewestConsecutiveSubnetsFor_MismatchedAddressFamilies_ThrowsInvalidOperationException_Test_Data =>
             new() { { IPAddress.Any, IPAddress.IPv6Any }, { IPAddress.IPv6Any, IPAddress.Any } };
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.FewestConsecutiveSubnetsFor"/> throws <see cref="InvalidOperationException"/> when the two addresses belong to different address families.</summary>
+        /// <param name="left">Left bound address.</param>
+        /// <param name="right">Right bound address.</param>
         [Theory]
         [MemberData(nameof(FewestConsecutiveSubnetsFor_MismatchedAddressFamilies_ThrowsInvalidOperationException_Test_Data))]
         public void FewestConsecutiveSubnetsFor_MismatchedAddressFamilies_ThrowsInvalidOperationException_Test(
@@ -583,6 +597,8 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<InvalidOperationException>(() => SubnetUtilities.FewestConsecutiveSubnetsFor(left, right));
         }
 
+        /// <summary>Gets theory data for <see cref="FewestConsecutiveSubnetsFor_NullArgument_ThrowsArgumentNullException_Test"/>.</summary>
+        /// <value>Parameters: left (IPAddress), right (IPAddress).</value>
         public static TheoryData<
             IPAddress,
             IPAddress
@@ -594,6 +610,9 @@ namespace Arcus.Tests.Utilities
                 { null, IPAddress.Any },
             };
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.FewestConsecutiveSubnetsFor"/> throws <see cref="ArgumentNullException"/> when either argument is null.</summary>
+        /// <param name="left">Left bound address, or <c>null</c>.</param>
+        /// <param name="right">Right bound address, or <c>null</c>.</param>
         [Theory]
         [MemberData(nameof(FewestConsecutiveSubnetsFor_NullArgument_ThrowsArgumentNullException_Test_Data))]
         public void FewestConsecutiveSubnetsFor_NullArgument_ThrowsArgumentNullException_Test(IPAddress left, IPAddress right)
@@ -608,6 +627,7 @@ namespace Arcus.Tests.Utilities
 
         #region LargestSubnet
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.LargestSubnet"/> returns one of the tied-largest subnets when multiple share the largest size.</summary>
         [Fact]
         public void LargestSubnet_Ambiguous_ReturnsOneOfLargest_Test()
         {
@@ -627,41 +647,41 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(new Subnet(IPAddress.Any, 16), result);
         }
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.LargestSubnet"/> throws <see cref="InvalidOperationException"/> when given an empty sequence.</summary>
         [Fact]
-        public void LargestSubnet_EmptyInput_ReturnsNull_Test()
+        public void LargestSubnet_EmptyInput_ThrowsInvalidOperationException_Test()
         {
             // Arrange
             var subnets = Enumerable.Empty<Subnet>();
-
-            // Act
-            var result = SubnetUtilities.LargestSubnet(subnets);
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void LargestSubnet_NullInput_ReturnsNull_Test()
-        {
-            // Arrange
-            // Act
-            var result = SubnetUtilities.LargestSubnet(null);
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void LargestSubnet_AllNullElements_ThrowsInvalidOperationException_Test()
-        {
-            // Arrange
-            var subnets = new Subnet[] { null, null, null };
 
             // Act
             // Assert
             Assert.Throws<InvalidOperationException>(() => SubnetUtilities.LargestSubnet(subnets));
         }
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.LargestSubnet"/> throws <see cref="ArgumentNullException"/> when given a null input.</summary>
+        [Fact]
+        public void LargestSubnet_NullInput_ThrowsArgumentNullException_Test()
+        {
+            // Arrange
+            // Act
+            // Assert
+            Assert.Throws<ArgumentNullException>(() => SubnetUtilities.LargestSubnet(null));
+        }
+
+        /// <summary>Verifies that <see cref="SubnetUtilities.LargestSubnet"/> throws <see cref="ArgumentException"/> when the collection contains null elements.</summary>
+        [Fact]
+        public void LargestSubnet_NullElements_ThrowsArgumentException_Test()
+        {
+            // Arrange
+            var subnets = new Subnet[] { null, null, null };
+
+            // Act
+            // Assert
+            Assert.Throws<ArgumentException>(() => SubnetUtilities.LargestSubnet(subnets));
+        }
+
+        /// <summary>Verifies that <see cref="SubnetUtilities.LargestSubnet"/> returns the single element when the input contains exactly one subnet.</summary>
         [Fact]
         public void LargestSubnet_Single_ReturnsSingle_Test()
         {
@@ -676,6 +696,7 @@ namespace Arcus.Tests.Utilities
             Assert.Same(expected, result);
         }
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.LargestSubnet"/> returns the largest subnet from a collection of mixed sizes.</summary>
         [Fact]
         public void LargestSubnet_ReturnsLargest_Test()
         {
@@ -694,6 +715,7 @@ namespace Arcus.Tests.Utilities
 
         #region SmallestSubnet
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.SmallestSubnet"/> returns one of the tied-smallest subnets when multiple share the smallest size.</summary>
         [Fact]
         public void SmallestSubnet_Ambiguous_ReturnsOneOfSmallest_Test()
         {
@@ -713,41 +735,41 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(new Subnet(IPAddress.Any, 32), result);
         }
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.SmallestSubnet"/> throws <see cref="InvalidOperationException"/> when given an empty sequence.</summary>
         [Fact]
-        public void SmallestSubnet_EmptyInput_ReturnsNull_Test()
+        public void SmallestSubnet_EmptyInput_ThrowsInvalidOperationException_Test()
         {
             // Arrange
             var subnets = Enumerable.Empty<Subnet>();
-
-            // Act
-            var result = SubnetUtilities.SmallestSubnet(subnets);
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void SmallestSubnet_NullInput_ReturnsNull_Test()
-        {
-            // Arrange
-            // Act
-            var result = SubnetUtilities.SmallestSubnet(null);
-
-            // Assert
-            Assert.Null(result);
-        }
-
-        [Fact]
-        public void SmallestSubnet_AllNullElements_ThrowsInvalidOperationException_Test()
-        {
-            // Arrange
-            var subnets = new Subnet[] { null, null, null };
 
             // Act
             // Assert
             Assert.Throws<InvalidOperationException>(() => SubnetUtilities.SmallestSubnet(subnets));
         }
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.SmallestSubnet"/> throws <see cref="ArgumentNullException"/> when given a null input.</summary>
+        [Fact]
+        public void SmallestSubnet_NullInput_ThrowsArgumentNullException_Test()
+        {
+            // Arrange
+            // Act
+            // Assert
+            Assert.Throws<ArgumentNullException>(() => SubnetUtilities.SmallestSubnet(null));
+        }
+
+        /// <summary>Verifies that <see cref="SubnetUtilities.SmallestSubnet"/> throws <see cref="ArgumentException"/> when the collection contains null elements.</summary>
+        [Fact]
+        public void SmallestSubnet_NullElements_ThrowsArgumentException_Test()
+        {
+            // Arrange
+            var subnets = new Subnet[] { null, null, null };
+
+            // Act
+            // Assert
+            Assert.Throws<ArgumentException>(() => SubnetUtilities.SmallestSubnet(subnets));
+        }
+
+        /// <summary>Verifies that <see cref="SubnetUtilities.SmallestSubnet"/> returns the single element when the input contains exactly one subnet.</summary>
         [Fact]
         public void SmallestSubnet_Single_ReturnsSingle_Test()
         {
@@ -762,6 +784,7 @@ namespace Arcus.Tests.Utilities
             Assert.Same(expected, result);
         }
 
+        /// <summary>Verifies that <see cref="SubnetUtilities.SmallestSubnet"/> returns the smallest subnet from a collection of mixed sizes.</summary>
         [Fact]
         public void SmallestSubnet_ReturnsSmallest_Test()
         {

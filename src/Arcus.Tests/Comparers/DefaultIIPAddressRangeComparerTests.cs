@@ -8,6 +8,7 @@ using Xunit;
 
 namespace Arcus.Tests.Comparers
 {
+    /// <summary>Unit tests for <see cref="DefaultIIPAddressRangeComparer"/>.</summary>
     public class DefaultIIPAddressRangeComparerTests
     {
         /// <summary>

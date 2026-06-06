@@ -4,20 +4,18 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
-using Arcus;
 using Arcus.Math;
 using Arcus.Utilities;
 using Xunit;
 
 namespace Arcus.Tests.Utilities
 {
-#if NET6_0_OR_GREATER
-#pragma warning disable IDE0062 // Make local function static (IDE0062); purposely allowing non-static functions that could be static for .net4.8 compatibility
-#endif
+    /// <summary>Unit tests for <see cref="IPAddressUtilities"/>.</summary>
     public class IPAddressUtilitiesTests
     {
         #region IPv4MaxAddress
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv4MaxAddress"/> returns 255.255.255.255.</summary>
         [Fact]
         public void IPv4MaxAddress_Test()
         {
@@ -33,6 +31,7 @@ namespace Arcus.Tests.Utilities
 
         #region IPv4MinAddress
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv4MinAddress"/> returns 0.0.0.0.</summary>
         [Fact]
         public void IPv4MinAddress_Test()
         {
@@ -48,6 +47,7 @@ namespace Arcus.Tests.Utilities
 
         #region IPv4OctetCount
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv4OctetCount"/> equals 4.</summary>
         [Fact]
         public void IPv4OctetCount_Test()
         {
@@ -61,6 +61,7 @@ namespace Arcus.Tests.Utilities
 
         #region IPv6HextetCount
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv6HextetCount"/> equals 8.</summary>
         [Fact]
         public void IPv6HextetCount_Test()
         {
@@ -74,6 +75,7 @@ namespace Arcus.Tests.Utilities
 
         #region IPv6MaxAddress
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv6MaxAddress"/> returns ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff.</summary>
         [Fact]
         public void IPv6MaxAddress_Test()
         {
@@ -89,6 +91,7 @@ namespace Arcus.Tests.Utilities
 
         #region IPv6MinAddress
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv6MinAddress"/> returns the all-zeros IPv6 address.</summary>
         [Fact]
         public void IPv6MinAddress_Test()
         {
@@ -104,6 +107,8 @@ namespace Arcus.Tests.Utilities
 
         #region IsIPv4
 
+        /// <summary>Gets theory data for <see cref="IsIPv4_ReturnsExpected_Test"/>.</summary>
+        /// <value>Parameters: expected (bool), input (string).</value>
         public static TheoryData<bool, string> IsIPv4_Test_Data =>
             new()
             {
@@ -114,6 +119,9 @@ namespace Arcus.Tests.Utilities
                 { true, "0.0.0.0" },
             };
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IsIPv4"/> returns the expected result for the given input.</summary>
+        /// <param name="expected">Expected result of the <see cref="IPAddressUtilities.IsIPv4"/> call.</param>
+        /// <param name="input">String representation of the IP address to test, or <c>null</c>.</param>
         [Theory]
         [MemberData(nameof(IsIPv4_Test_Data))]
         public void IsIPv4_ReturnsExpected_Test(bool expected, string input)
@@ -132,6 +140,8 @@ namespace Arcus.Tests.Utilities
 
         #region IsIPv4MappedIPv6
 
+        /// <summary>Gets theory data for <see cref="IsIPv4MappedIPv6_ReturnsExpected_Test"/>.</summary>
+        /// <value>Parameters: expected (bool), input (string).</value>
         public static TheoryData<bool, string> IsIPv4MappedIPv6_Test_Data =>
             new()
             {
@@ -144,6 +154,9 @@ namespace Arcus.Tests.Utilities
                 { false, "1234::ffff:ab:cd" },
             };
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IsIPv4MappedIPv6"/> returns the expected result for the given input.</summary>
+        /// <param name="expected">Expected result of the <see cref="IPAddressUtilities.IsIPv4MappedIPv6"/> call.</param>
+        /// <param name="input">String representation of the IP address to test, or <c>null</c>.</param>
         [Theory]
         [MemberData(nameof(IsIPv4MappedIPv6_Test_Data))]
         public void IsIPv4MappedIPv6_ReturnsExpected_Test(bool expected, string input)
@@ -162,6 +175,8 @@ namespace Arcus.Tests.Utilities
 
         #region IsIPv6
 
+        /// <summary>Gets theory data for <see cref="IsIPv6_ReturnsExpected_Test"/>.</summary>
+        /// <value>Parameters: expected (bool), input (string).</value>
         public static TheoryData<bool, string> IsIPv6_Test_Data =>
             new()
             {
@@ -172,6 +187,9 @@ namespace Arcus.Tests.Utilities
                 { false, "0.0.0.0" },
             };
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IsIPv6"/> returns the expected result for the given input.</summary>
+        /// <param name="expected">Expected result of the <see cref="IPAddressUtilities.IsIPv6"/> call.</param>
+        /// <param name="input">String representation of the IP address to test, or <c>null</c>.</param>
         [Theory]
         [MemberData(nameof(IsIPv6_Test_Data))]
         public void IsIPv6_ReturnsExpected_Test(bool expected, string input)
@@ -244,6 +262,8 @@ namespace Arcus.Tests.Utilities
 
         #region IsValidNetMask
 
+        /// <summary>Gets theory data for <see cref="IsValidNetMask_ReturnsExpected_Test"/>.</summary>
+        /// <returns>Parameters: expected (bool), input (IPAddress).</returns>
         public static TheoryData<bool, IPAddress> IsValidNetMask_Test_Data()
         {
             var data = new TheoryData<bool, IPAddress>();
@@ -276,6 +296,9 @@ namespace Arcus.Tests.Utilities
             return data;
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IsValidNetMask"/> returns the expected result for the given input.</summary>
+        /// <param name="expected">Expected result of the <see cref="IPAddressUtilities.IsValidNetMask"/> call.</param>
+        /// <param name="input">IP address to test, or <c>null</c>.</param>
         [Theory]
         [MemberData(nameof(IsValidNetMask_Test_Data))]
         public void IsValidNetMask_ReturnsExpected_Test(bool expected, IPAddress input)
@@ -294,6 +317,8 @@ namespace Arcus.Tests.Utilities
 
         #region ParseFromHexString / TryParseFromHexString
 
+        /// <summary>Gets theory data for hex-string parse tests with valid inputs.</summary>
+        /// <returns>Parameters: expected (IPAddress), addressString (string), addressFamily (AddressFamily).</returns>
         public static TheoryData<IPAddress, string, AddressFamily> ParseFromHexString_Valid_Test_Data()
         {
             var data = new TheoryData<IPAddress, string, AddressFamily>();
@@ -323,6 +348,8 @@ namespace Arcus.Tests.Utilities
             return data;
         }
 
+        /// <summary>Gets theory data for hex-string parse tests with invalid address families.</summary>
+        /// <returns>Parameters: addressFamily (AddressFamily).</returns>
         public static TheoryData<AddressFamily> ParseFromHexString_InvalidAddressFamily_Test_Data()
         {
             var data = new TheoryData<AddressFamily>();
@@ -334,6 +361,10 @@ namespace Arcus.Tests.Utilities
             return data;
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ParseFromHexString"/> returns the expected address for valid hex inputs.</summary>
+        /// <param name="expected">Expected parsed IP address.</param>
+        /// <param name="addressString">Hex string representation of the address.</param>
+        /// <param name="addressFamily">Address family used to parse the hex string.</param>
         [Theory]
         [MemberData(nameof(ParseFromHexString_Valid_Test_Data))]
         public void ParseFromHexString_ValidInput_ReturnsExpected_Test(
@@ -350,6 +381,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ParseFromHexString"/> throws <see cref="ArgumentNullException"/> when given a null input.</summary>
         [Fact]
         public void ParseFromHexString_NullInput_Throws_ArgumentNullException_Test()
         {
@@ -359,6 +391,8 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<ArgumentNullException>(() => IPAddressUtilities.ParseFromHexString(null, default));
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ParseFromHexString"/> throws <see cref="ArgumentException"/> for empty or whitespace input.</summary>
+        /// <param name="input">Empty or whitespace string to test.</param>
         [Theory]
         [InlineData("")]
         [InlineData("\t")]
@@ -371,6 +405,8 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<ArgumentException>(() => IPAddressUtilities.ParseFromHexString(input, AddressFamily.InterNetwork));
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ParseFromHexString"/> throws <see cref="ArgumentException"/> for non-standard address families.</summary>
+        /// <param name="addressFamily">Non-standard address family to test.</param>
         [Theory]
         [MemberData(nameof(ParseFromHexString_InvalidAddressFamily_Test_Data))]
         public void ParseFromHexString_InvalidAddressFamily_Throws_ArgumentException_Test(AddressFamily addressFamily)
@@ -381,6 +417,8 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<ArgumentException>(() => IPAddressUtilities.ParseFromHexString("abc123", addressFamily));
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ParseFromHexString"/> throws <see cref="ArgumentException"/> for non-hex input strings.</summary>
+        /// <param name="input">Non-hex string to test.</param>
         [Theory]
         [InlineData("abcdxyz")]
         [InlineData("potato")]
@@ -393,6 +431,7 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<ArgumentException>(() => IPAddressUtilities.ParseFromHexString(input, AddressFamily.InterNetwork));
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ParseFromHexString"/> throws <see cref="ArgumentOutOfRangeException"/> when an IPv6-length hex string is parsed as IPv4.</summary>
         [Fact]
         public void ParseFromHexString_IPv6HexTooLargeForIPv4_Throws_ArgumentOutOfRangeException_Test()
         {
@@ -406,6 +445,10 @@ namespace Arcus.Tests.Utilities
             );
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.TryParseFromHexString"/> returns <c>true</c> and the expected address for valid hex inputs.</summary>
+        /// <param name="expected">Expected parsed IP address.</param>
+        /// <param name="addressString">Hex string representation of the address.</param>
+        /// <param name="addressFamily">Address family used to parse the hex string.</param>
         [Theory]
         [MemberData(nameof(ParseFromHexString_Valid_Test_Data))]
         public void TryParseFromHexString_ValidInput_ReturnsTrue_Test(
@@ -423,6 +466,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.TryParseFromHexString"/> returns <c>false</c> and a null result when given null input.</summary>
         [Fact]
         public void TryParseFromHexString_NullInput_ReturnsFalse_Test()
         {
@@ -435,6 +479,8 @@ namespace Arcus.Tests.Utilities
             Assert.Null(result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.TryParseFromHexString"/> returns <c>false</c> for non-standard address families.</summary>
+        /// <param name="addressFamily">Non-standard address family to test.</param>
         [Theory]
         [MemberData(nameof(ParseFromHexString_InvalidAddressFamily_Test_Data))]
         public void TryParseFromHexString_InvalidAddressFamily_ReturnsFalse_Test(AddressFamily addressFamily)
@@ -473,6 +519,8 @@ namespace Arcus.Tests.Utilities
 
         #region ParseIgnoreOctalInIPv4 / TryParseIgnoreOctalInIPv4
 
+        /// <summary>Gets theory data for <see cref="ParseIgnoreOctalInIPv4_ValidInput_ReturnsExpected_Test"/> and related tests.</summary>
+        /// <returns>Parameters: expected (IPAddress), input (string).</returns>
         public static TheoryData<IPAddress, string> ParseIgnoreOctalInIPv4_Valid_Test_Data()
         {
             var data = new TheoryData<IPAddress, string>();
@@ -497,9 +545,14 @@ namespace Arcus.Tests.Utilities
             return data;
         }
 
+        /// <summary>Gets theory data for <see cref="ParseIgnoreOctalInIPv4_InvalidInput_Throws_Test"/> and related tests.</summary>
+        /// <value>Parameters: input (string).</value>
         public static TheoryData<string> ParseIgnoreOctalInIPv4_Invalid_Test_Data =>
             new() { { "potato" }, { "255.255.255.255.255" } };
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ParseIgnoreOctalInIPv4"/> returns the expected address for valid inputs.</summary>
+        /// <param name="expected">Expected parsed IP address.</param>
+        /// <param name="input">String representation of the address to parse.</param>
         [Theory]
         [MemberData(nameof(ParseIgnoreOctalInIPv4_Valid_Test_Data))]
         public void ParseIgnoreOctalInIPv4_ValidInput_ReturnsExpected_Test(IPAddress expected, string input)
@@ -512,6 +565,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ParseIgnoreOctalInIPv4"/> throws <see cref="ArgumentNullException"/> for null input.</summary>
         [Fact]
         public void ParseIgnoreOctalInIPv4_NullInput_Throws_ArgumentNullException_Test()
         {
@@ -521,6 +575,8 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<ArgumentNullException>(() => IPAddressUtilities.ParseIgnoreOctalInIPv4(null));
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ParseIgnoreOctalInIPv4"/> throws <see cref="ArgumentException"/> for empty or whitespace input.</summary>
+        /// <param name="input">Empty or whitespace string to test.</param>
         [Theory]
         [InlineData("")]
         [InlineData("\t")]
@@ -533,6 +589,8 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<ArgumentException>(() => IPAddressUtilities.ParseIgnoreOctalInIPv4(input));
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ParseIgnoreOctalInIPv4"/> throws for invalid input strings.</summary>
+        /// <param name="input">Invalid address string to test.</param>
         [Theory]
         [MemberData(nameof(ParseIgnoreOctalInIPv4_Invalid_Test_Data))]
         public void ParseIgnoreOctalInIPv4_InvalidInput_Throws_Test(string input)
@@ -543,6 +601,9 @@ namespace Arcus.Tests.Utilities
             Assert.ThrowsAny<Exception>(() => IPAddressUtilities.ParseIgnoreOctalInIPv4(input));
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.TryParseIgnoreOctalInIPv4"/> returns <c>true</c> and the expected address for valid inputs.</summary>
+        /// <param name="expected">Expected parsed IP address.</param>
+        /// <param name="input">String representation of the address to parse.</param>
         [Theory]
         [MemberData(nameof(ParseIgnoreOctalInIPv4_Valid_Test_Data))]
         public void TryParseIgnoreOctalInIPv4_ValidInput_ReturnsTrue_Test(IPAddress expected, string input)
@@ -556,6 +617,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.TryParseIgnoreOctalInIPv4"/> returns <c>false</c> and a null result when given null input.</summary>
         [Fact]
         public void TryParseIgnoreOctalInIPv4_NullInput_ReturnsFalse_Test()
         {
@@ -568,6 +630,8 @@ namespace Arcus.Tests.Utilities
             Assert.Null(result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.TryParseIgnoreOctalInIPv4"/> returns <c>false</c> for invalid input strings.</summary>
+        /// <param name="input">Invalid address string to test.</param>
         [Theory]
         [MemberData(nameof(ParseIgnoreOctalInIPv4_Invalid_Test_Data))]
         public void TryParseIgnoreOctalInIPv4_InvalidInput_ReturnsFalse_Test(string input)
@@ -608,6 +672,8 @@ namespace Arcus.Tests.Utilities
 
         #region HexLikePattern
 
+        /// <summary>Gets theory data for <see cref="HexLikePattern_IsMatch_ReturnsExpected_Test"/>.</summary>
+        /// <value>Parameters: expected (bool), input (string).</value>
         public static TheoryData<bool, string> HexLikePattern_Test_Data =>
             new()
             {
@@ -631,6 +697,9 @@ namespace Arcus.Tests.Utilities
                 { false, "!" },
             };
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.HexLikePattern"/> matches expected inputs.</summary>
+        /// <param name="expected">Whether the pattern is expected to match the input.</param>
+        /// <param name="input">Input string to match against the hex pattern.</param>
         [Theory]
         [MemberData(nameof(HexLikePattern_Test_Data))]
         public void HexLikePattern_IsMatch_ReturnsExpected_Test(bool expected, string input)
@@ -649,6 +718,8 @@ namespace Arcus.Tests.Utilities
 
         #region DottedQuadRegularExpressionPattern
 
+        /// <summary>Gets theory data for <see cref="DottedQuadRegularExpressionPattern_IsMatch_ReturnsExpected_Test"/>.</summary>
+        /// <value>Parameters: expected (bool), input (string).</value>
         public static TheoryData<bool, string> DottedQuadRegularExpressionPattern_Test_Data =>
             new()
             {
@@ -672,6 +743,9 @@ namespace Arcus.Tests.Utilities
                 { false, "1234.1.1.1" },
             };
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.DottedQuadRegularExpressionPattern"/> matches expected dotted-quad inputs.</summary>
+        /// <param name="expected">Whether the pattern is expected to match the input.</param>
+        /// <param name="input">Input string to match against the dotted-quad pattern.</param>
         [Theory]
         [MemberData(nameof(DottedQuadRegularExpressionPattern_Test_Data))]
         public void DottedQuadRegularExpressionPattern_IsMatch_ReturnsExpected_Test(bool expected, string input)
@@ -690,6 +764,8 @@ namespace Arcus.Tests.Utilities
 
         #region DottedQuadLeadingZerosPattern
 
+        /// <summary>Gets theory data for <see cref="DottedQuadLeadingZerosPattern_Replace_ReturnsExpected_Test"/>.</summary>
+        /// <value>Parameters: expected (string), input (string).</value>
         public static TheoryData<string, string> DottedQuadLeadingZerosPattern_Replace_Test_Data =>
             new()
             {
@@ -704,6 +780,9 @@ namespace Arcus.Tests.Utilities
                 { "0.1.0.1", "0.1.0.1" },
             };
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.DottedQuadLeadingZerosPattern"/> strips leading zeros correctly.</summary>
+        /// <param name="expected">Expected string after replacing leading zeros.</param>
+        /// <param name="input">Input dotted-quad string to process.</param>
         [Theory]
         [MemberData(nameof(DottedQuadLeadingZerosPattern_Replace_Test_Data))]
         public void DottedQuadLeadingZerosPattern_Replace_ReturnsExpected_Test(string expected, string input)
@@ -722,6 +801,8 @@ namespace Arcus.Tests.Utilities
 
         #region Parse(byte[]) / TryParse(byte[])
 
+        /// <summary>Gets theory data for byte-array parse tests with valid inputs.</summary>
+        /// <returns>Parameters: expected (IPAddress), bytes (byte[]), addressFamily (AddressFamily).</returns>
         public static TheoryData<IPAddress, byte[], AddressFamily> Parse_ByteArray_Valid_Test_Data()
         {
             var data = new TheoryData<IPAddress, byte[], AddressFamily>();
@@ -740,6 +821,10 @@ namespace Arcus.Tests.Utilities
             return data;
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.Parse(byte[], System.Net.Sockets.AddressFamily)"/> returns the expected address for valid byte array inputs.</summary>
+        /// <param name="expected">Expected parsed IP address.</param>
+        /// <param name="bytes">Byte array to parse.</param>
+        /// <param name="addressFamily">Address family used to interpret the byte array.</param>
         [Theory]
         [MemberData(nameof(Parse_ByteArray_Valid_Test_Data))]
         public void Parse_ByteArray_ValidInput_ReturnsExpected_Test(
@@ -756,6 +841,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.Parse(byte[], System.Net.Sockets.AddressFamily)"/> throws <see cref="ArgumentNullException"/> when given a null byte array.</summary>
         [Fact]
         public void Parse_ByteArray_NullInput_Throws_ArgumentNullException_Test()
         {
@@ -765,6 +851,8 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<ArgumentNullException>(() => IPAddressUtilities.Parse(null, AddressFamily.InterNetwork));
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.Parse(byte[], System.Net.Sockets.AddressFamily)"/> throws <see cref="ArgumentOutOfRangeException"/> for non-standard address families.</summary>
+        /// <param name="addressFamily">Non-standard address family to test.</param>
         [Theory]
         [MemberData(nameof(ParseFromHexString_InvalidAddressFamily_Test_Data))]
         public void Parse_ByteArray_InvalidAddressFamily_Throws_ArgumentOutOfRangeException_Test(AddressFamily addressFamily)
@@ -775,6 +863,9 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<ArgumentOutOfRangeException>(() => IPAddressUtilities.Parse([0x42], addressFamily));
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.Parse(byte[], System.Net.Sockets.AddressFamily)"/> throws <see cref="ArgumentOutOfRangeException"/> when the byte array is longer than the address family supports.</summary>
+        /// <param name="count">Number of bytes in the oversized array.</param>
+        /// <param name="addressFamily">Address family for which the byte array is too long.</param>
         [Theory]
         [InlineData(17, AddressFamily.InterNetworkV6)]
         [InlineData(5, AddressFamily.InterNetwork)]
@@ -788,6 +879,10 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<ArgumentOutOfRangeException>(() => IPAddressUtilities.Parse(bytes, addressFamily));
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.TryParse(byte[], System.Net.Sockets.AddressFamily, out IPAddress)"/> returns <c>true</c> and the expected address for valid byte array inputs.</summary>
+        /// <param name="expected">Expected parsed IP address.</param>
+        /// <param name="bytes">Byte array to parse.</param>
+        /// <param name="addressFamily">Address family used to interpret the byte array.</param>
         [Theory]
         [MemberData(nameof(Parse_ByteArray_Valid_Test_Data))]
         public void TryParse_ByteArray_ValidInput_ReturnsTrue_Test(
@@ -805,6 +900,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.TryParse(byte[], System.Net.Sockets.AddressFamily, out IPAddress)"/> returns <c>false</c> and a null result when given a null byte array.</summary>
         [Fact]
         public void TryParse_ByteArray_NullInput_ReturnsFalse_Test()
         {
@@ -817,6 +913,8 @@ namespace Arcus.Tests.Utilities
             Assert.Null(result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.TryParse(byte[], System.Net.Sockets.AddressFamily, out IPAddress)"/> returns <c>false</c> for non-standard address families.</summary>
+        /// <param name="addressFamily">Non-standard address family to test.</param>
         [Theory]
         [MemberData(nameof(ParseFromHexString_InvalidAddressFamily_Test_Data))]
         public void TryParse_ByteArray_InvalidAddressFamily_ReturnsFalse_Test(AddressFamily addressFamily)
@@ -836,6 +934,7 @@ namespace Arcus.Tests.Utilities
 
         #region MaxIPAddress
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.MaxIPAddress"/> returns <see cref="IPAddressUtilities.IPv4MaxAddress"/> for <see cref="AddressFamily.InterNetwork"/>.</summary>
         [Fact]
         public void MaxIPAddress_IPv4_ReturnsIPv4MaxAddress_Test()
         {
@@ -847,6 +946,7 @@ namespace Arcus.Tests.Utilities
             Assert.Same(IPAddressUtilities.IPv4MaxAddress, result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.MaxIPAddress"/> returns <see cref="IPAddressUtilities.IPv6MaxAddress"/> for <see cref="AddressFamily.InterNetworkV6"/>.</summary>
         [Fact]
         public void MaxIPAddress_IPv6_ReturnsIPv6MaxAddress_Test()
         {
@@ -858,6 +958,8 @@ namespace Arcus.Tests.Utilities
             Assert.Same(IPAddressUtilities.IPv6MaxAddress, result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.MaxIPAddress"/> throws <see cref="ArgumentException"/> for non-standard address families.</summary>
+        /// <param name="addressFamily">Non-standard address family to test.</param>
         [Theory]
         [MemberData(nameof(ParseFromHexString_InvalidAddressFamily_Test_Data))]
         public void MaxIPAddress_InvalidAddressFamily_Throws_ArgumentException_Test(AddressFamily addressFamily)
@@ -872,6 +974,7 @@ namespace Arcus.Tests.Utilities
 
         #region MinIPAddress
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.MinIPAddress"/> returns <see cref="IPAddressUtilities.IPv4MinAddress"/> for <see cref="AddressFamily.InterNetwork"/>.</summary>
         [Fact]
         public void MinIPAddress_IPv4_ReturnsIPv4MinAddress_Test()
         {
@@ -883,6 +986,7 @@ namespace Arcus.Tests.Utilities
             Assert.Same(IPAddressUtilities.IPv4MinAddress, result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.MinIPAddress"/> returns <see cref="IPAddressUtilities.IPv6MinAddress"/> for <see cref="AddressFamily.InterNetworkV6"/>.</summary>
         [Fact]
         public void MinIPAddress_IPv6_ReturnsIPv6MinAddress_Test()
         {
@@ -894,6 +998,8 @@ namespace Arcus.Tests.Utilities
             Assert.Same(IPAddressUtilities.IPv6MinAddress, result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.MinIPAddress"/> throws <see cref="ArgumentException"/> for non-standard address families.</summary>
+        /// <param name="addressFamily">Non-standard address family to test.</param>
         [Theory]
         [MemberData(nameof(ParseFromHexString_InvalidAddressFamily_Test_Data))]
         public void MinIPAddress_InvalidAddressFamily_Throws_ArgumentException_Test(AddressFamily addressFamily)
@@ -910,6 +1016,7 @@ namespace Arcus.Tests.Utilities
 
         #region BitCount
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv4BitCount"/> equals 32.</summary>
         [Fact]
         public void IPv4BitCount_Value_IsThirtyTwo_Test()
         {
@@ -919,6 +1026,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(32, IPAddressUtilities.IPv4BitCount);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv4BitCount"/> matches the actual bit count of an IPv4 address.</summary>
         [Fact]
         public void IPv4BitCount_MatchesIPv4ByteCount_Test()
         {
@@ -928,6 +1036,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(IPAddressUtilities.IPv4BitCount, IPAddress.Any.GetAddressBytes().Length * 8);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv6BitCount"/> equals 128.</summary>
         [Fact]
         public void IPv6BitCount_Value_IsOneTwentyEight_Test()
         {
@@ -937,6 +1046,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(128, IPAddressUtilities.IPv6BitCount);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv6BitCount"/> matches the actual bit count of an IPv6 address.</summary>
         [Fact]
         public void IPv6BitCount_MatchesIPv6ByteCount_Test()
         {
@@ -950,6 +1060,7 @@ namespace Arcus.Tests.Utilities
 
         #region ByteCount
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv4ByteCount"/> equals 4.</summary>
         [Fact]
         public void IPv4ByteCount_Value_IsFour_Test()
         {
@@ -959,6 +1070,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(4, IPAddressUtilities.IPv4ByteCount);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv4ByteCount"/> matches the actual byte count of an IPv4 address.</summary>
         [Fact]
         public void IPv4ByteCount_MatchesIPv4AddressBytes_Test()
         {
@@ -968,6 +1080,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(IPAddressUtilities.IPv4ByteCount, IPAddress.Any.GetAddressBytes().Length);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv6ByteCount"/> equals 16.</summary>
         [Fact]
         public void IPv6ByteCount_Value_IsSixteen_Test()
         {
@@ -977,6 +1090,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(16, IPAddressUtilities.IPv6ByteCount);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv6ByteCount"/> matches the actual byte count of an IPv6 address.</summary>
         [Fact]
         public void IPv6ByteCount_MatchesIPv6AddressBytes_Test()
         {
@@ -990,6 +1104,7 @@ namespace Arcus.Tests.Utilities
 
         #region MaxAddress
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv6MaxAddress"/> has all bytes set to 0xFF and is an IPv6 address.</summary>
         [Fact]
         public void IPv6MaxAddress_Value_IsAllFF_Test()
         {
@@ -1002,6 +1117,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(AddressFamily.InterNetworkV6, address.AddressFamily);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv4MaxAddress"/> has all bytes set to 0xFF and is an IPv4 address.</summary>
         [Fact]
         public void IPv4MaxAddress_Value_IsAllFF_Test()
         {
@@ -1018,6 +1134,7 @@ namespace Arcus.Tests.Utilities
 
         #region MinAddress
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv6MinAddress"/> has all bytes set to 0x00 and is an IPv6 address.</summary>
         [Fact]
         public void IPv6MinAddress_Value_IsAllZero_Test()
         {
@@ -1030,6 +1147,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(AddressFamily.InterNetworkV6, address.AddressFamily);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IPv4MinAddress"/> has all bytes set to 0x00 and is an IPv4 address.</summary>
         [Fact]
         public void IPv4MinAddress_Value_IsAllZero_Test()
         {
@@ -1046,6 +1164,7 @@ namespace Arcus.Tests.Utilities
 
         #region ValidAddressFamilies
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ValidAddressFamilies"/> is a read-only collection containing both IPv4 and IPv6 families.</summary>
         [Fact]
         public void ValidAddressFamilies_IsReadOnlyCollection_ContainsBothFamilies_Test()
         {
@@ -1067,6 +1186,8 @@ namespace Arcus.Tests.Utilities
 
         #region IsPrivate
 
+        /// <summary>Gets theory data for <see cref="IsPrivate_ReturnsExpected_Test"/>.</summary>
+        /// <returns>Parameters: expected (bool), address (IPAddress).</returns>
         public static TheoryData<bool, IPAddress> IsPrivate_Test_Data()
         {
             var data = new TheoryData<bool, IPAddress>();
@@ -1087,6 +1208,9 @@ namespace Arcus.Tests.Utilities
             return data;
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IsPrivate"/> returns the expected result for the given address.</summary>
+        /// <param name="expected">Expected result of the <see cref="IPAddressUtilities.IsPrivate"/> call.</param>
+        /// <param name="address">IP address to test.</param>
         [Theory]
         [MemberData(nameof(IsPrivate_Test_Data))]
         public void IsPrivate_ReturnsExpected_Test(bool expected, IPAddress address)
@@ -1099,6 +1223,7 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(expected, isPrivate);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.IsPrivate"/> throws <see cref="ArgumentNullException"/> when given a null address.</summary>
         [Fact]
         public void IsPrivate_NullAddress_Throws_ArgumentNullException_Test()
         {

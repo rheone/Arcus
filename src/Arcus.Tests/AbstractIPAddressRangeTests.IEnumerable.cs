@@ -13,6 +13,9 @@ namespace Arcus.Tests
     {
         #region IEnumerable
 
+        /// <summary>Verifies the generic enumerator yields every address from head to tail inclusive.</summary>
+        /// <param name="headAddressString">The head IP address string for the range.</param>
+        /// <param name="tailAddressString">The tail IP address string for the range.</param>
         [Theory]
         [InlineData("::", "::")]
         [InlineData("::", "::FF")]
@@ -40,6 +43,9 @@ namespace Arcus.Tests
             Assert.Equal(tail, ipAddressArray[ipAddressArray.Length - 1]);
         }
 
+        /// <summary>Verifies the non-generic IEnumerable enumerator yields every address from head to tail inclusive.</summary>
+        /// <param name="headAddressString">The head IP address string for the range.</param>
+        /// <param name="tailAddressString">The tail IP address string for the range.</param>
         [Theory]
         [InlineData("::", "::")]
         [InlineData("::", "::FF")]
@@ -76,7 +82,8 @@ namespace Arcus.Tests
 
         #region IEnumerable / IEnumerable<IPAddress>
 
-        [Fact] //Test that the expected addresses appear in the given IPv6 range
+        /// <summary>Verifies that enumerating an IPv6 range yields exactly the expected addresses.</summary>
+        [Fact]
         public void Enumerable_IPv6_ContainsExpected_Test()
         {
             // Arrange
@@ -95,6 +102,7 @@ namespace Arcus.Tests
             Assert.Equal(new[] { head, IPAddress.Parse("::b"), tail }, result);
         }
 
+        /// <summary>Verifies that taking more elements than the IPv6 range contains stops at the tail without error.</summary>
         [Fact]
         public void Enumerable_IPv6_TakePastEnd_Test()
         {
@@ -112,6 +120,7 @@ namespace Arcus.Tests
             Assert.Equal(tail, result[result.Count - 1]);
         }
 
+        /// <summary>Verifies that taking more elements than the IPv4 range contains stops at the tail without error.</summary>
         [Fact]
         public void Enumerable_IPv4_TakePastEnd_Test()
         {
@@ -129,7 +138,8 @@ namespace Arcus.Tests
             Assert.Equal(tail, result[result.Count - 1]);
         }
 
-        [Fact] // Test that the expected addresses appear in the given IPv4 range
+        /// <summary>Verifies that enumerating an IPv4 range yields exactly the expected addresses.</summary>
+        [Fact]
         public void Enumerable_IPv4_ContainsExpected_Test()
         {
             // Arrange
@@ -148,7 +158,8 @@ namespace Arcus.Tests
             Assert.Equal(new[] { head, IPAddress.Parse("192.168.1.2"), tail }, result);
         }
 
-        [Fact] // Test that a range of one returns a single address when Addresses is called
+        /// <summary>Verifies that a range whose head and tail are the same address enumerates to exactly one element.</summary>
+        [Fact]
         public void Enumerable_SameHead_And_SameTail_ReturnsSingle_Test()
         {
             // Arrange
@@ -164,6 +175,7 @@ namespace Arcus.Tests
             Assert.Equal(ipAddress, addresses.Single());
         }
 
+        /// <summary>Verifies that skipping and taking within a huge IPv6 range completes in finite time (lazy enumeration).</summary>
         [Fact]
         public void Enumerable_ReasonableIteration_Test()
         {

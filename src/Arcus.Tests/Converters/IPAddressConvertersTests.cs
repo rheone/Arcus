@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Net;
-using Arcus;
 using Arcus.Converters;
 using Xunit;
 
 namespace Arcus.Tests.Converters
 {
+    /// <summary>Unit tests for <see cref="IPAddressConverters"/>.</summary>
     public class IPAddressConvertersTests
     {
         #region ToUncompressedString
 
+        /// <summary>Gets theory data for <see cref="ToUncompressedString_ValidInput_ReturnsUncompressed_Test"/>.</summary>
+        /// <value>Parameters: expected (string), input (string).</value>
         public static TheoryData<string, string> ToUncompressedString_ValidInput_ReturnsUncompressed_Test_Values =>
             new()
             {
@@ -28,6 +30,9 @@ namespace Arcus.Tests.Converters
                 { "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff" },
             };
 
+        /// <summary>Verifies that <c>ToUncompressedString</c> returns the fully-expanded uncompressed form of a valid IP address.</summary>
+        /// <param name="expected">The expected uncompressed string representation.</param>
+        /// <param name="input">The input IP address string to parse and convert.</param>
         [Theory]
         [MemberData(nameof(ToUncompressedString_ValidInput_ReturnsUncompressed_Test_Values))]
         public void ToUncompressedString_ValidInput_ReturnsUncompressed_Test(string expected, string input)
@@ -42,6 +47,7 @@ namespace Arcus.Tests.Converters
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <c>ToUncompressedString</c> returns <see langword="null"/> when the input address is <see langword="null"/>.</summary>
         [Fact]
         public void ToUncompressedString_NullInput_ReturnsNull_Test()
         {
@@ -59,6 +65,8 @@ namespace Arcus.Tests.Converters
 
         #region ToBase85String
 
+        /// <summary>Gets theory data for <see cref="ToBase85String_ValidIPv6Input_ReturnsBase85_Test"/>.</summary>
+        /// <value>Parameters: expected (string), input (string).</value>
         public static TheoryData<string, string> ToBase85String_ValidIPv6Input_ReturnsBase85_Test_Values =>
             new()
             {
@@ -69,6 +77,9 @@ namespace Arcus.Tests.Converters
                 { "4)+k&C#VzJ4br>0wv%Yp", "1080:0:0:0:8:800:200C:417A" }, // specific example from RFC 1924
             };
 
+        /// <summary>Verifies that <c>ToBase85String</c> returns the correct RFC 1924 Base-85 encoding for a valid IPv6 address.</summary>
+        /// <param name="expected">The expected Base-85 encoded string.</param>
+        /// <param name="input">The input IPv6 address string to parse and convert.</param>
         [Theory]
         [MemberData(nameof(ToBase85String_ValidIPv6Input_ReturnsBase85_Test_Values))]
         public void ToBase85String_ValidIPv6Input_ReturnsBase85_Test(string expected, string input)
@@ -83,6 +94,7 @@ namespace Arcus.Tests.Converters
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <c>ToBase85String</c> returns <see langword="null"/> when the input address is <see langword="null"/>.</summary>
         [Fact]
         public void ToBase85String_NullInput_ReturnsNull_Test()
         {
@@ -96,6 +108,7 @@ namespace Arcus.Tests.Converters
             Assert.Null(result);
         }
 
+        /// <summary>Verifies that <c>ToBase85String</c> returns <see langword="null"/> for an IPv4 address, since Base-85 encoding applies only to IPv6.</summary>
         [Fact]
         public void ToBase85String_IPv4Input_ReturnsNull_Test()
         {
@@ -113,6 +126,8 @@ namespace Arcus.Tests.Converters
 
         #region ToDottedQuadString
 
+        /// <summary>Gets theory data for <see cref="ToDottedQuadString_ValidInput_ReturnsDottedQuad_Test"/>.</summary>
+        /// <value>Parameters: expected (string), input (string).</value>
         public static TheoryData<string, string> ToDottedQuadString_ValidInput_ReturnsDottedQuad_Test_Values =>
             new()
             {
@@ -138,6 +153,9 @@ namespace Arcus.Tests.Converters
                 { "1::1:1:0.0.0.0", "1:0:0:0:1:1:0:0" },
             };
 
+        /// <summary>Verifies that <c>ToDottedQuadString</c> returns the correct dotted-quad notation string for a valid IP address.</summary>
+        /// <param name="expected">The expected dotted-quad string representation.</param>
+        /// <param name="input">The input IP address string to parse and convert.</param>
         [Theory]
         [MemberData(nameof(ToDottedQuadString_ValidInput_ReturnsDottedQuad_Test_Values))]
         public void ToDottedQuadString_ValidInput_ReturnsDottedQuad_Test(string expected, string input)
@@ -152,6 +170,7 @@ namespace Arcus.Tests.Converters
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <c>ToDottedQuadString</c> returns <see langword="null"/> when the input address is <see langword="null"/>.</summary>
         [Fact]
         public void ToDottedQuadString_NullInput_ReturnsNull_Test()
         {
@@ -169,6 +188,8 @@ namespace Arcus.Tests.Converters
 
         #region ToHexString
 
+        /// <summary>Gets theory data for <see cref="ToHexString_ValidInput_ReturnsHex_Test"/>.</summary>
+        /// <value>Parameters: expected (string), input (string).</value>
         public static TheoryData<string, string> ToHexString_ValidInput_ReturnsHex_Test_Values =>
             new()
             {
@@ -184,6 +205,9 @@ namespace Arcus.Tests.Converters
                 { "80808000", "128.128.128.0" },
             };
 
+        /// <summary>Verifies that <c>ToHexString</c> returns the uppercase hexadecimal string representation of a valid IP address.</summary>
+        /// <param name="expected">The expected hexadecimal string.</param>
+        /// <param name="input">The input IP address string to parse and convert.</param>
         [Theory]
         [MemberData(nameof(ToHexString_ValidInput_ReturnsHex_Test_Values))]
         public void ToHexString_ValidInput_ReturnsHex_Test(string expected, string input)
@@ -198,6 +222,7 @@ namespace Arcus.Tests.Converters
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <c>ToHexString</c> returns <see langword="null"/> when the input address is <see langword="null"/>.</summary>
         [Fact]
         public void ToHexString_NullInput_ReturnsNull_Test()
         {
@@ -215,6 +240,8 @@ namespace Arcus.Tests.Converters
 
         #region ToNumericString
 
+        /// <summary>Gets theory data for <see cref="ToNumericString_ValidInput_ReturnsNumeric_Test"/>.</summary>
+        /// <value>Parameters: expected (string), input (string).</value>
         public static TheoryData<string, string> ToNumericString_ValidInput_ReturnsNumeric_Test_Values =>
             new()
             {
@@ -230,6 +257,9 @@ namespace Arcus.Tests.Converters
                 { "2155905024", "128.128.128.0" },
             };
 
+        /// <summary>Verifies that <c>ToNumericString</c> returns the decimal numeric string representation of a valid IP address.</summary>
+        /// <param name="expected">The expected decimal numeric string.</param>
+        /// <param name="input">The input IP address string to parse and convert.</param>
         [Theory]
         [MemberData(nameof(ToNumericString_ValidInput_ReturnsNumeric_Test_Values))]
         public void ToNumericString_ValidInput_ReturnsNumeric_Test(string expected, string input)
@@ -244,6 +274,7 @@ namespace Arcus.Tests.Converters
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <c>ToNumericString</c> returns <see langword="null"/> when the input address is <see langword="null"/>.</summary>
         [Fact]
         public void ToNumericString_NullInput_ReturnsNull_Test()
         {
@@ -261,6 +292,8 @@ namespace Arcus.Tests.Converters
 
         #region NetmaskToCidrRoutePrefix
 
+        /// <summary>Gets theory data for <see cref="NetmaskToCidrRoutePrefix_ValidNetmask_ReturnsRoutePrefix_Test"/>.</summary>
+        /// <value>Parameters: expected (int), address (IPAddress).</value>
         public static TheoryData<int, IPAddress> NetmaskToCidrRoutePrefix_ValidNetmask_ReturnsRoutePrefix_Test_Values
         {
             get
@@ -277,6 +310,9 @@ namespace Arcus.Tests.Converters
             }
         }
 
+        /// <summary>Verifies that <c>NetmaskToCidrRoutePrefix</c> returns the correct CIDR prefix length for a valid IPv4 netmask.</summary>
+        /// <param name="expected">The expected CIDR route prefix integer.</param>
+        /// <param name="address">The netmask IP address to convert.</param>
         [Theory]
         [MemberData(nameof(NetmaskToCidrRoutePrefix_ValidNetmask_ReturnsRoutePrefix_Test_Values))]
         public void NetmaskToCidrRoutePrefix_ValidNetmask_ReturnsRoutePrefix_Test(int expected, IPAddress address)
@@ -291,6 +327,8 @@ namespace Arcus.Tests.Converters
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Gets theory data for <see cref="NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsInvalidOperationException_Test"/>.</summary>
+        /// <value>Parameters: input (string).</value>
         public static TheoryData<string> NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsInvalidOperationException_Test_Values =>
             new()
             {
@@ -299,6 +337,8 @@ namespace Arcus.Tests.Converters
                 { "0.0.0.255" },
             };
 
+        /// <summary>Verifies that <c>NetmaskToCidrRoutePrefix</c> throws <see cref="InvalidOperationException"/> for an address that is not a valid contiguous netmask.</summary>
+        /// <param name="input">The invalid netmask IP address string to parse.</param>
         [Theory]
         [MemberData(nameof(NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsInvalidOperationException_Test_Values))]
         public void NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsInvalidOperationException_Test(string input)
@@ -310,6 +350,7 @@ namespace Arcus.Tests.Converters
             Assert.Throws<InvalidOperationException>(() => address.NetmaskToCidrRoutePrefix());
         }
 
+        /// <summary>Verifies that <c>NetmaskToCidrRoutePrefix</c> throws <see cref="ArgumentNullException"/> when the input address is <see langword="null"/>.</summary>
         [Fact]
         public void NetmaskToCidrRoutePrefix_NullInput_ThrowsArgumentNullException_Test()
         {

@@ -12,6 +12,11 @@ namespace Arcus.Tests
     {
         #region Formatting
 
+        /// <summary>Verifies ToString with a general format specifier returns the Head-dash-Tail representation.</summary>
+        /// <param name="headString">Head address string.</param>
+        /// <param name="tailString">Tail address string.</param>
+        /// <param name="format">Format specifier (null, empty, "g", or "G").</param>
+        /// <param name="expected">Expected formatted string.</param>
         [Theory]
         [InlineData("192.168.1.1", "192.168.1.5", null, "192.168.1.1 - 192.168.1.5")]
         [InlineData("192.168.1.1", "192.168.1.5", "", "192.168.1.1 - 192.168.1.5")]
@@ -40,6 +45,7 @@ namespace Arcus.Tests
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies the no-arg ToString returns the Head-dash-Tail representation.</summary>
         [Fact]
         public void ToString_NoArgs_ReturnsHeadDashTail_Test()
         {
@@ -55,6 +61,10 @@ namespace Arcus.Tests
             Assert.Equal("10.0.0.1 - 10.0.0.255", result);
         }
 
+        /// <summary>Verifies ToString throws FormatException for an unrecognized format specifier.</summary>
+        /// <param name="headString">Head address string.</param>
+        /// <param name="tailString">Tail address string.</param>
+        /// <param name="format">Unrecognized format specifier.</param>
         [Theory]
         [InlineData("192.168.1.1", "192.168.1.5", "X")]
         [InlineData("192.168.1.1", "192.168.1.5", "R")]

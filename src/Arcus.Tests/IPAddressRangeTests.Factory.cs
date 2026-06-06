@@ -1,6 +1,5 @@
 ﻿using System.Linq;
 using System.Net;
-using Arcus;
 using Xunit;
 
 namespace Arcus.Tests
@@ -12,6 +11,12 @@ namespace Arcus.Tests
     {
         #region TryMerge
 
+        /// <summary>Verifies TryMerge produces the expected merged range (or null) for touching, overlapping, non-adjacent, and null range pairs.</summary>
+        /// <param name="expected">The expected Head-Tail string of the merged range, or null if merge should fail.</param>
+        /// <param name="alphaHead">The head address of the first range, or null.</param>
+        /// <param name="alphaTail">The tail address of the first range, or null.</param>
+        /// <param name="betaHead">The head address of the second range, or null.</param>
+        /// <param name="betaTail">The tail address of the second range, or null.</param>
         [Theory]
         [InlineData(null, null, null, null, null)]
         [InlineData(null, "192.168.1.1", "192.168.1.9", "::", "::")]
@@ -62,6 +67,7 @@ namespace Arcus.Tests
 
         #region TryCollapseAll
 
+        /// <summary>Verifies TryCollapseAll merges three consecutive non-overlapping ranges into a single contiguous range.</summary>
         [Fact]
         public void TryCollapseAll_Consecutive_Test()
         {
@@ -87,6 +93,7 @@ namespace Arcus.Tests
             Assert.Equal(IPAddress.Parse("192.168.1.20"), result.Tail);
         }
 
+        /// <summary>Verifies TryCollapseAll returns false and an empty result when ranges are from different address families.</summary>
         [Fact]
         public void TryCollapse_MismatchedAddressFamilies_Test()
         {
@@ -106,6 +113,7 @@ namespace Arcus.Tests
             Assert.False(results.Any());
         }
 
+        /// <summary>Verifies TryCollapseAll succeeds with an empty input and returns an empty result set.</summary>
         [Fact]
         public void TryCollapseAll_EmptyInput_Test()
         {
@@ -118,6 +126,7 @@ namespace Arcus.Tests
             Assert.False(results.Any());
         }
 
+        /// <summary>Verifies TryCollapseAll returns false when the input contains a null element.</summary>
         [Fact]
         public void TryCollapse_AllInvalidInput_Test()
         {
@@ -138,6 +147,7 @@ namespace Arcus.Tests
             Assert.False(results.Any());
         }
 
+        /// <summary>Verifies TryCollapseAll merges three overlapping ranges into a single contiguous range.</summary>
         [Fact]
         public void TryCollapse_AllOverlap_Test()
         {
@@ -163,6 +173,7 @@ namespace Arcus.Tests
             Assert.Equal(IPAddress.Parse("192.168.1.20"), result.Tail);
         }
 
+        /// <summary>Verifies TryCollapseAll produces one range when one input wholly contains all others.</summary>
         [Fact]
         public void TryCollapseAll_SubsetContainsAll_Test()
         {
@@ -188,6 +199,7 @@ namespace Arcus.Tests
             Assert.Equal(IPAddress.Parse("192.168.1.20"), result.Tail);
         }
 
+        /// <summary>Verifies TryCollapseAll preserves three ranges that have gaps between them.</summary>
         [Fact]
         public void TryCollapseAll_WithGaps_Test()
         {
@@ -214,6 +226,7 @@ namespace Arcus.Tests
 
         #region TryExcludeAll
 
+        /// <summary>Verifies TryExcludeAll carves three non-overlapping exclusions from the middle of the initial range, leaving two segments.</summary>
         [Fact]
         public void TryExcludeAll_Carve_Test()
         {
@@ -245,6 +258,7 @@ namespace Arcus.Tests
             );
         }
 
+        /// <summary>Verifies TryExcludeAll with consecutive exclusions leaves exactly the first and last addresses.</summary>
         [Fact]
         public void TryExcludeAll_ConsecutiveCarve_Test()
         {
@@ -275,6 +289,7 @@ namespace Arcus.Tests
             );
         }
 
+        /// <summary>Verifies TryExcludeAll with a head exclusion returns only the trailing segment.</summary>
         [Fact]
         public void TryExcludeAll_Head_Test()
         {
@@ -298,6 +313,7 @@ namespace Arcus.Tests
             Assert.Equal(IPAddress.Parse("192.168.1.100"), result.Tail);
         }
 
+        /// <summary>Verifies TryExcludeAll with overlapping exclusions that cover the entire range produces an empty result.</summary>
         [Fact]
         public void TryExcludeAll_Overlap_Test()
         {
@@ -319,6 +335,7 @@ namespace Arcus.Tests
             Assert.Empty(results);
         }
 
+        /// <summary>Verifies TryExcludeAll with a tail exclusion returns only the leading segment.</summary>
         [Fact]
         public void TryExcludeAll_Tail_Test()
         {
@@ -342,6 +359,7 @@ namespace Arcus.Tests
             Assert.Equal(IPAddress.Parse("192.168.1.49"), result.Tail);
         }
 
+        /// <summary>Verifies TryExcludeAll with an empty exclusion list returns the original range unchanged.</summary>
         [Fact]
         public void TryExcludeAll_NoExclusions_Test()
         {
@@ -360,6 +378,7 @@ namespace Arcus.Tests
             Assert.Equal(initialRange, collection.Single());
         }
 
+        /// <summary>Verifies TryExcludeAll returns false when the initial range and exclusion ranges are from different address families.</summary>
         [Fact]
         public void TryExcludeAll_InitialMissMatchedAddressFamily_Test()
         {
@@ -376,6 +395,7 @@ namespace Arcus.Tests
             Assert.Empty(results);
         }
 
+        /// <summary>Verifies TryExcludeAll retains only the leading segment when an exclusion ends at the IPv4 maximum address.</summary>
         [Fact]
         public void TryExcludeAll_ExclusionTailAtIPv4Max_WithLeadingSegment_Test()
         {
@@ -392,6 +412,7 @@ namespace Arcus.Tests
             Assert.Equal(IPAddress.Parse("99.255.255.255"), list[0].Tail);
         }
 
+        /// <summary>Verifies TryExcludeAll produces an empty result when an exclusion spanning the entire address space covers the initial range.</summary>
         [Fact]
         public void TryExcludeAll_ExclusionTailAtIPv4Max_CoversAll_Test()
         {
@@ -405,6 +426,7 @@ namespace Arcus.Tests
             Assert.Empty(results);
         }
 
+        /// <summary>Verifies TryExcludeAll retains only the trailing segment when an exclusion starts at the IPv4 minimum address.</summary>
         [Fact]
         public void TryExcludeAll_ExclusionHeadAtIPv4Min_WithTrailingSegment_Test()
         {
@@ -421,6 +443,7 @@ namespace Arcus.Tests
             Assert.Equal(IPAddress.Parse("200.0.0.0"), list[0].Tail);
         }
 
+        /// <summary>Verifies TryExcludeAll retains only the leading segment when an IPv6 exclusion ends at the family maximum.</summary>
         [Fact]
         public void TryExcludeAll_ExclusionTailAtIPv6Max_WithLeadingSegment_Test()
         {
@@ -440,6 +463,7 @@ namespace Arcus.Tests
             Assert.Equal(IPAddress.Parse("7fff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"), list[0].Tail);
         }
 
+        /// <summary>Verifies TryExcludeAll retains only the trailing segment when an IPv6 exclusion starts at the family minimum.</summary>
         [Fact]
         public void TryExcludeAll_ExclusionHeadAtIPv6Min_WithTrailingSegment_Test()
         {

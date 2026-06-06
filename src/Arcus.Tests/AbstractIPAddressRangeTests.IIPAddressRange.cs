@@ -1,8 +1,6 @@
-﻿using System.Linq;
-using System.Net;
+﻿using System.Net;
 using Arcus.Math;
 using Arcus.Utilities;
-using NSubstitute;
 using Xunit;
 
 namespace Arcus.Tests
@@ -14,6 +12,7 @@ namespace Arcus.Tests
     {
         #region Deconstructors
 
+        /// <summary>Verifies Deconstruct returns the Head and Tail of the range.</summary>
         [Fact]
         public void Deconstruct_Head_Tail_Test()
         {
@@ -41,11 +40,11 @@ namespace Arcus.Tests
         /// <value>
         ///     Parameters: expected (bool), ipAddressRange (AbstractIPAddressRange)
         /// </value>
-        public static TheoryData<bool, AbstractIPAddressRange> IsSingleIP_Test_Data
+        public static TheoryData<bool, IPAddressRange> IsSingleIP_Test_Data
         {
             get
             {
-                var data = new TheoryData<bool, AbstractIPAddressRange>
+                var data = new TheoryData<bool, IPAddressRange>
                 {
                     { true, CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Any) },
                     { true, CreateSubstituteIPAddressRange(IPAddress.IPv6Any, IPAddress.IPv6Any) },
@@ -56,9 +55,12 @@ namespace Arcus.Tests
             }
         }
 
+        /// <summary>Verifies IsSingleIP returns expected for a range of length one vs longer.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="ipAddressRange">The range under test.</param>
         [Theory]
         [MemberData(nameof(IsSingleIP_Test_Data))]
-        public void IsSingleIP_Test(bool expected, AbstractIPAddressRange ipAddressRange)
+        public void IsSingleIP_Test(bool expected, IPAddressRange ipAddressRange)
         {
             // Arrange
             // Act
@@ -72,9 +74,12 @@ namespace Arcus.Tests
 
         #region TryGetLength
 
+        /// <summary>Verifies TryGetLength (int overload) returns success and the correct value when the length fits in int.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="ipAddressRange">The range under test.</param>
         [Theory]
         [MemberData(nameof(Length_Test_Data))]
-        public static void TryGetLength_Integer_Test(System.Numerics.BigInteger expected, AbstractIPAddressRange ipAddressRange)
+        public static void TryGetLength_Integer_Test(System.Numerics.BigInteger expected, IPAddressRange ipAddressRange)
         {
             // Arrange
             // Act
@@ -85,9 +90,12 @@ namespace Arcus.Tests
             Assert.Equal(expected <= int.MaxValue ? (int)expected : -1, length);
         }
 
+        /// <summary>Verifies TryGetLength (long overload) returns success and the correct value when the length fits in long.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="ipAddressRange">The range under test.</param>
         [Theory]
         [MemberData(nameof(Length_Test_Data))]
-        public static void TryGetLength_Long_Test(System.Numerics.BigInteger expected, AbstractIPAddressRange ipAddressRange)
+        public static void TryGetLength_Long_Test(System.Numerics.BigInteger expected, IPAddressRange ipAddressRange)
         {
             // Arrange
             // Act
@@ -104,6 +112,11 @@ namespace Arcus.Tests
 
         #region Contains(IPAddress)
 
+        /// <summary>Verifies Contains(IPAddress) returns the expected result for addresses inside, outside, and at the boundary of the range.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="headString">The head IP address string for the range.</param>
+        /// <param name="tailString">The tail IP address string for the range.</param>
+        /// <param name="addressString">The IP address string to test for containment.</param>
         [Theory]
         [InlineData(true, "::", "::ABCD", "::1234")] // IPv6 range contains IPv6
         [InlineData(false, "::", "::ABCD", "::FFFF")] // IPv6 range  doesn't contains IPv6
@@ -137,6 +150,12 @@ namespace Arcus.Tests
 
         #region Contains(IIPAddressRange)
 
+        /// <summary>Verifies Contains(IIPAddressRange) returns the expected result for ranges that fit, overlap, or fall outside.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="headString">The head IP address string for the range.</param>
+        /// <param name="tailString">The tail IP address string for the range.</param>
+        /// <param name="containsHeadString">The head IP address string for the contained range.</param>
+        /// <param name="containsTailString">The tail IP address string for the contained range.</param>
         [Theory]
         [InlineData(true, "::", "::ABCD", "::", "::ABCD")] // IPv6 range contains self
         [InlineData(true, "::", "::ABCD", "::1", "::1234")] // IPv6 range contains internal IPv6 range
@@ -169,7 +188,7 @@ namespace Arcus.Tests
             var substituteIPAddressSubRange =
                 IPAddress.TryParse(containsHeadString, out var subhead)
                 && IPAddress.TryParse(containsTailString, out var subtail)
-                    ? Substitute.For<AbstractIPAddressRange>(subhead, subtail)
+                    ? new IPAddressRange(subhead, subtail)
                     : null;
 
             var iPAddressRange = CreateSubstituteIPAddressRange(head, tail);
@@ -291,6 +310,10 @@ namespace Arcus.Tests
             }
         }
 
+        /// <summary>Verifies Contains(IIPAddressRange) returns the expected result for the given range pair.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="left">Left operand range.</param>
+        /// <param name="right">Right operand range.</param>
         [Theory]
         [MemberData(nameof(Contains_IIPAddressRange_Test_Data))]
         public void Contains_IIPAddressRange_Test(bool expected, IIPAddressRange left, IIPAddressRange right)
@@ -382,6 +405,10 @@ namespace Arcus.Tests
             }
         }
 
+        /// <summary>Verifies Contains(IPAddress) via IIPAddressRange returns the expected result.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="range">The range under test.</param>
+        /// <param name="address">The address to test for containment.</param>
         [Theory]
         [MemberData(nameof(Contains_Test_Data))]
         public void Contains_Test(bool expected, IIPAddressRange range, IPAddress address)
@@ -506,6 +533,10 @@ namespace Arcus.Tests
             }
         }
 
+        /// <summary>Verifies HeadOverlappedBy returns the expected result for the given pair of ranges.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="left">Left operand range.</param>
+        /// <param name="right">Right operand range.</param>
         [Theory]
         [MemberData(nameof(HeadOverlappedBy_Test_Data))]
         public void HeadOverlappedBy_Test(bool expected, IIPAddressRange left, IIPAddressRange right)
@@ -626,6 +657,10 @@ namespace Arcus.Tests
             }
         }
 
+        /// <summary>Verifies TailOverlappedBy returns the expected result for the given pair of ranges.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="left">Left operand range.</param>
+        /// <param name="right">Right operand range.</param>
         [Theory]
         [MemberData(nameof(TailOverlappedBy_Test_Data))]
         public void TailOverlappedBy_Test(bool expected, IIPAddressRange left, IIPAddressRange right)
@@ -767,6 +802,10 @@ namespace Arcus.Tests
             }
         }
 
+        /// <summary>Verifies that Overlaps returns the expected result for the given pair of ranges.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="left">Left operand range.</param>
+        /// <param name="right">Right operand range.</param>
         [Theory]
         [MemberData(nameof(Overlaps_Test_Data))]
         public void Overlaps_Test(bool expected, IIPAddressRange left, IIPAddressRange right)
@@ -913,6 +952,10 @@ namespace Arcus.Tests
             }
         }
 
+        /// <summary>Verifies that Touches returns the expected result for the given pair of ranges.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="left">Left operand range.</param>
+        /// <param name="right">Right operand range.</param>
         [Theory]
         [MemberData(nameof(Touches_Test_Data))]
         public void Touches_Test(bool expected, IIPAddressRange left, IIPAddressRange right)
@@ -974,6 +1017,10 @@ namespace Arcus.Tests
             }
         }
 
+        /// <summary>Verifies ContainsAnyPrivateAddresses returns the expected result for ranges with known public/private composition.</summary>
+        /// <param name="expectedHasPublic">Whether the range is expected to contain public addresses.</param>
+        /// <param name="expectedHasPrivate">Whether the range is expected to contain private addresses.</param>
+        /// <param name="range">The range under test.</param>
         [Theory]
         [MemberData(nameof(ContainsPublicPrivate_Data))]
         public void ContainsAnyPrivateAddresses_Test(bool expectedHasPublic, bool expectedHasPrivate, IIPAddressRange range)
@@ -988,6 +1035,10 @@ namespace Arcus.Tests
             Assert.Equal(expectedHasPrivate, result);
         }
 
+        /// <summary>Verifies ContainsAllPrivateAddresses returns true only when the range is wholly within private space.</summary>
+        /// <param name="expectedHasPublic">Whether the range is expected to contain public addresses.</param>
+        /// <param name="expectedHasPrivate">Whether the range is expected to contain private addresses.</param>
+        /// <param name="range">The range under test.</param>
         [Theory]
         [MemberData(nameof(ContainsPublicPrivate_Data))]
         public void ContainsAllPrivateAddresses_Test(bool expectedHasPublic, bool expectedHasPrivate, IIPAddressRange range)
@@ -1002,6 +1053,10 @@ namespace Arcus.Tests
             Assert.Equal(expectedHasPrivate && !expectedHasPublic, result);
         }
 
+        /// <summary>Verifies ContainsAnyPublicAddresses returns the expected result for ranges with known public/private composition.</summary>
+        /// <param name="expectedHasPublic">Whether the range is expected to contain public addresses.</param>
+        /// <param name="expectedHasPrivate">Whether the range is expected to contain private addresses.</param>
+        /// <param name="range">The range under test.</param>
         [Theory]
         [MemberData(nameof(ContainsPublicPrivate_Data))]
         public void ContainsAnyPublicAddresses_Test(bool expectedHasPublic, bool expectedHasPrivate, IIPAddressRange range)
@@ -1016,6 +1071,10 @@ namespace Arcus.Tests
             Assert.Equal(expectedHasPublic, result);
         }
 
+        /// <summary>Verifies ContainsAllPublicAddresses returns true only when the range has no private addresses.</summary>
+        /// <param name="expectedHasPublic">Whether the range is expected to contain public addresses.</param>
+        /// <param name="expectedHasPrivate">Whether the range is expected to contain private addresses.</param>
+        /// <param name="range">The range under test.</param>
         [Theory]
         [MemberData(nameof(ContainsPublicPrivate_Data))]
         public void ContainsAllPublicAddresses_Test(bool expectedHasPublic, bool expectedHasPrivate, IIPAddressRange range)
@@ -1030,6 +1089,7 @@ namespace Arcus.Tests
             Assert.Equal(!expectedHasPrivate && expectedHasPublic, result);
         }
 
+        /// <summary>Regression: a range whose endpoints are both public but spans a private block must report private addresses present.</summary>
         [Fact]
         public void ContainsAnyPrivateAddresses_RangeSpansPrivateBlock_WithPublicEndpoints_Test()
         {
@@ -1040,6 +1100,7 @@ namespace Arcus.Tests
             Assert.True(range.ContainsAnyPrivateAddresses());
         }
 
+        /// <summary>Regression: a range whose endpoints are both public but spans a private block must not be classified as all-public.</summary>
         [Fact]
         public void ContainsAllPublicAddresses_RangeSpansPrivateBlock_WithPublicEndpoints_Test()
         {
@@ -1050,6 +1111,10 @@ namespace Arcus.Tests
             Assert.False(range.ContainsAllPublicAddresses());
         }
 
+        /// <summary>Verifies ContainsAnyPrivateAddresses and ContainsAllPublicAddresses are logical inverses.</summary>
+        /// <param name="expectedHasPublic">Whether the range is expected to contain public addresses.</param>
+        /// <param name="expectedHasPrivate">Whether the range is expected to contain private addresses.</param>
+        /// <param name="range">The range under test.</param>
         [Theory]
         [MemberData(nameof(ContainsPublicPrivate_Data))]
         public void ContainsAnyPrivateAddresses_IsInverseOf_ContainsAllPublicAddresses_Test(
@@ -1067,6 +1132,10 @@ namespace Arcus.Tests
             Assert.NotEqual(hasPrivate, allPublic);
         }
 
+        /// <summary>Verifies ContainsAllPrivateAddresses and ContainsAnyPublicAddresses are logical inverses.</summary>
+        /// <param name="expectedHasPublic">Whether the range is expected to contain public addresses.</param>
+        /// <param name="expectedHasPrivate">Whether the range is expected to contain private addresses.</param>
+        /// <param name="range">The range under test.</param>
         [Theory]
         [MemberData(nameof(ContainsPublicPrivate_Data))]
         public void ContainsAllPrivateAddresses_IsInverseOf_ContainsAnyPublicAddresses_Test(
