@@ -1,4 +1,4 @@
-# ![Arcus](src/Arcus/icon.png) Arcus
+﻿# ![Arcus](src/Arcus/icon.png) Arcus
 
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/sandialabs/Arcus/build.yml?branch=main)
 [![nuget Version](https://img.shields.io/nuget/v/Arcus)](https://www.nuget.org/packages/Arcus)
@@ -11,11 +11,11 @@
 
 Arcus is a C# manipulation library for calculating, parsing, formatting, converting, and comparing both IPv4 and IPv6 addresses and subnets. It accounts for 128-bit numbers on 32-bit platforms.
 
-## ❗Breaking Changes
+## ❗Breaking Changes in v4.0.0
 
 ### Removed types and members
 
-The following types and members have been permanently removed. They were previously marked `[Obsolete]`.
+The following previously `[Obsolete]` types and members have been removed.
 
 | Removed | Namespace / Location | Migration |
 | --- | --- | --- |
@@ -24,19 +24,9 @@ The following types and members have been permanently removed. They were previou
 
 ---
 
-### Gulliver dependency removed
+### `SubnetUtilities` static fields are now `readonly`
 
-The [Gulliver](https://github.com/sandialabs/gulliver) NuGet package has been removed as a dependency. All byte-level manipulation previously delegated to Gulliver is now handled by the internal `BigEndianBitWrapper` type inside this library.
-
-**Impact on consumers:** If your project depended on Gulliver being available transitively through Arcus (e.g. you used `ByteArrayUtils`, `ShiftBitsLeft`, or the `byte[].ToString("HC"/"IBE"/"b")` format extensions without a direct reference to Gulliver), you must now add a direct `PackageReference` to Gulliver in your project, or replace those usages with equivalent implementations.
-
-**`BigEndianBitWrapper` (internal):** An internal `BigEndianBitWrapper` struct now handles all big-endian unsigned integer arithmetic, bitwise operations, comparison, and formatting for IP address and subnet calculations. It is not part of the public API.
-
----
-
-### `SubnetUtilities.PrivateIPAddressRangesList` and `LinkLocalIPAddressRangesList` are now `readonly`
-
-The two public static fields `SubnetUtilities.PrivateIPAddressRangesList` and `SubnetUtilities.LinkLocalIPAddressRangesList` are now declared `readonly`. Previously the field *reference* could be replaced by external code (e.g., `SubnetUtilities.PrivateIPAddressRangesList = myList`). That pattern will no longer compile. The `IReadOnlyList<Subnet>` type already prevented mutation of the list *contents*; `readonly` now also prevents replacement of the list itself.
+`SubnetUtilities.PrivateIPAddressRangesList` and `SubnetUtilities.LinkLocalIPAddressRangesList` are now declared `readonly`. Previously the field *reference* could be replaced by external code (e.g., `SubnetUtilities.PrivateIPAddressRangesList = myList`). That pattern will no longer compile. The `IReadOnlyList<Subnet>` type already prevented mutation of the list *contents*; `readonly` now also prevents replacement of the list itself.
 
 **Migration:** If you were replacing these fields to customize private-address detection, extract that logic into a separate variable and pass it explicitly to your own helper methods.
 
@@ -55,15 +45,13 @@ The following bugs have been fixed. If your code was intentionally relying on th
 
 ---
 
-### Version 3+ — IP Address Parsing based on .NET Targets
+### IP Address Parsing across .NET Targets
 
-In .NET versions up to and including .NET 4.8 (which corresponds to .NET Standard 2.0), stricter parsing rules were enforced for `IPAddress` according to the IPv6 specification. Specifically, the presence of a terminal '%' character without a valid zone index is considered invalid in these versions. As a result, the input `abcd::%` fails to parse, leading to a null or failed address parsing depending on `Parse`/`TryParse`. This behavior represents a breaking change from Arcus's previous target of .NET Standard 1.3. and may provide confusion for .NET 4.8 / .NET Standard 2.0 versions.
+In .NET versions up to and including .NET 4.8 (which corresponds to .NET Standard 2.0), stricter parsing rules are enforced for `IPAddress` according to the IPv6 specification. Specifically, the presence of a terminal '%' character without a valid zone index is considered invalid in these versions. As a result, the input `abcd::%` fails to parse, leading to a null or failed address parsing depending on `Parse`/`TryParse`.
 
-In contrast, in newer versions of .NET, including .NET 8 and .NET 9, and .NET 10 the parsing rules have been relaxed. The trailing '%' character is now ignored during parsing, allowing for inputs that would have previously failed.
+In newer versions of .NET, including .NET 8, .NET 9, and .NET 10, the parsing rules have been relaxed. The trailing '%' character is now ignored during parsing, allowing for inputs that would have previously failed.
 
-It is important to note that this scenario appears to be an extreme edge case, and developers should ensure that their applications handle `IPAddress` parsing appropriately across different target frameworks as expected.
-
-If in doubt it is suggested that IP Address based user input should be sanitized to meet your development needs.
+It is important to note that this scenario appears to be an extreme edge case. If in doubt, sanitize IP address user input to meet your development needs.
 
 ## Getting Started
 
@@ -73,118 +61,175 @@ The latest [Arcus documentation](https://arcus.readthedocs.io/en/latest/) may be
 
 ### Usage
 
-At its heart Arcus is split amongst five separate interdependent units. _Types_, _Comparers_, _Converters_, _Math_, and _Utilities_.
+Arcus provides types and utilities for working with IP addresses and subnets beyond what the .NET BCL offers. The library is organized around a few core concepts.
 
-These units each work across Arcus's `IPAddressRange`, `Subnet` and .NET's `System.Net.IPAddress`. Arcus adds extra desired functionality where the standard C# libraries left off.
+#### Quick Start
 
-#### Types
+```csharp
+using Arcus;
+using Arcus.Utilities;
 
-##### `Subnet`
+// Parse a subnet
+var subnet = Subnet.Parse("192.168.1.0/24");
+Console.WriteLine($"Network: {subnet.Head}, Broadcast: {subnet.Tail}");
+Console.WriteLine($"Usable addresses: {subnet.UsableHostAddressCount}");
 
-An IPv4 or IPv6 subnetwork representation - the work horse and original reason for the Arcus library. Outside the concept of the `Subnet` object, most everything else in Arcus is auxiliary and exists only in support of the `Subnet` object. That’s not to say that the remaining pieces of the Arcus library aren’t useful, on the contrary their utility can benefit a developer greatly.
+// Check containment
+var testAddress = IPAddress.Parse("192.168.1.50");
+Console.WriteLine(subnet.Contains(testAddress)); // True
 
-A `Subnet` may be instantiated in several ways:
+// IP math
+var nextAddress = testAddress.Increment(); // 192.168.1.51
+var prevAddress = testAddress.Increment(-2); // 192.168.1.48
 
-The most common way to create a `Subnet` object is to construct it via a high and low `IPAddress` by calling the constructor `Subnet(IPAddress primary, IPAddress secondary)`. This constructs the smallest possible subnet that would contain both IP addresses. Typically the addresses specified are the Network and Broadcast addresses (lower and higher bounds of a subnet) but this is not necessary. Addresses _MUST_ be the same address family (either Internetwork or InternetworkV6).
+// Comparison
+testAddress.IsBetween(subnet.Head, subnet.Tail);      // True
+testAddress.IsGreaterThan(IPAddress.Parse("10.0.0.1")); // True
 
-It is also possible to create a `Subnet` from an `IPAddress` and an `integer` based _route prefix_. Eg: `Subnet(IPAddress ipAddress, int routingPrefix)`.
+// Address family detection
+testAddress.IsIPv4(); // True
+testAddress.IsIPv6(); // False
 
-Likewise it may be desired to statically parse a subnet string with `Subnet.Parse(string input)` or it’s safe equivalent of `bool Subnet.TryParse(string input, out Subnet subnet)`
+// Work with ranges
+var range = new IPAddressRange(
+    IPAddress.Parse("10.0.0.0"),
+    IPAddress.Parse("10.0.0.255"));
+Console.WriteLine($"Range length: {range.Length}");
 
-For example, one could safely parse the `string` "192.168.1.0/16" via
-
-```c#
-Subnet subnet;
-var success = Subnet.TryParse("192.168.1.0/16", out subnet)
+// Fewest subnets covering a range
+var covering = SubnetUtilities.FewestConsecutiveSubnetsFor(
+    IPAddress.Parse("128.64.20.3"),
+    IPAddress.Parse("128.64.20.12"));
 ```
 
-##### `IPAddressRange`
+#### `Subnet`
 
-`IPAddressRange` is a basic implementation of `IIPAddressRange` it is used to represent an inclusive range of arbitrary IP Addresses of the same address family. Unlike `Subnet`, `IPAddressRange` is not restricted to a power of two length, nor a valid broadcast address head.
+An IPv4 or IPv6 subnetwork representation conforming to CIDR rules (power-of-two length, aligned to a prefix boundary). Implements `IIPAddressRange`, `IEquatable<Subnet>`, `IComparable<Subnet>`, `IFormattable`, `IEnumerable<IPAddress>`, and `ISerializable`.
+
+**Construction:**
+
+```csharp
+// From two addresses (smallest subnet containing both)
+var subnet = new Subnet(
+    IPAddress.Parse("192.168.1.0"),
+    IPAddress.Parse("192.168.1.255"));
+
+// From address and routing prefix
+var subnet = new Subnet(IPAddress.Parse("192.168.1.1"), 24); // autocorrects to 192.168.1.0/24
+
+// From a CIDR string
+var subnet = Subnet.Parse("192.168.1.0/24");
+Subnet.TryParse("10.0.0.0/8", out var result);
+
+// From netmask
+var subnet = Subnet.FromNetMask(
+    IPAddress.Parse("192.168.1.0"),
+    IPAddress.Parse("255.255.255.0"));
+
+// Single-address subnet
+var single = new Subnet(IPAddress.Parse("192.168.1.1")); // 192.168.1.1/32
+```
+
+**Properties:** `Head`, `Tail`, `RoutingPrefix`, `Netmask` (IPv4 only), `BroadcastAddress`, `NetworkPrefixAddress`, `UsableHostAddressCount`, `Length`.
+
+**Set operations:** `Contains(Subnet)`, `Overlaps(Subnet)`, `Touches(IIPAddressRange)`.
+
+#### `IPAddressRange`
+
+An inclusive range of IP addresses of the same address family. Unlike `Subnet`, not restricted to CIDR boundaries — any `head` through `tail` inclusive.
+
+```csharp
+var range = new IPAddressRange(
+    IPAddress.Parse("10.0.0.5"),
+    IPAddress.Parse("10.0.0.42"));
+
+// Static utilities
+IPAddressRange.TryCollapseAll(ranges, out var collapsed);
+IPAddressRange.TryExcludeAll(initial, exclusions, out var remaining);
+IPAddressRange.TryMerge(left, right, out var merged);
+```
 
 #### Comparers
 
-The _Comparers_ package contains useful Comparer objects for comparing properties of IP Addresses and IP Address composite objects.
+| Comparer | Description |
+|---|---|
+| `DefaultAddressFamilyComparer` | Compares `AddressFamily` values (`InterNetwork` < `InterNetworkV6`) |
+| `DefaultIPAddressComparer` | Compares `IPAddress` by family then unsigned big-endian value |
+| `DefaultIIPAddressRangeComparer` | Compares ranges by head address then by length |
 
-- `DefaultAddressFamilyComparer` - A comparer that compares address families. Most frequently `Internetwork` (IPv4) and `InternetworkV6` (IPv6)
-- `DefaultIPAddressComparer` - A comparer for `IPAddress` objects
-- `DefaultIIPAddressRangeComparer` - A comparer for `IIPAddressRange`. Compares such that lower order ranges are less that higher order ranges accounting for size at matching range starts
+#### `IPAddressMath` — Arithmetic and Comparison
 
-#### Converters
+```csharp
+// Increment and decrement
+var next = address.Increment();       // +1
+var prev = address.Increment(-5);     // -5
+address.TryIncrement(out var result, delta: 10);
 
-The _Converters_ package is a package of static utility classes for converting one type into another type.
+// Comparison
+address.IsEqualTo(other);
+address.IsGreaterThan(other);
+address.IsLessThan(other);
+address.IsBetween(low, high);
 
-##### `IPAddressConverters`
-
-Static utility class containing conversion methods for converting `IPAddress` objects into something else.
-
-#### Math
-
-The _Math_ package is a package of static utility classes for doing computational mathematics on objects.
-
-##### `IPAddressMath`
-
-In some cases the C# `IPAddress` object doesn't go far enough with what you can do with it mathematically, this static utility class containing mathematical methods to fill in the gaps.
-
-###### Incrementing and Decrementing
-
-Incrementing and Decrementing an `IPAddress` is easy.
-
-Incrementing by one is a simple call to the extension method:
-
-```c#
-var address = IPAddress.Parse("192.168.1.1");
-var result = address.Increment(); // result is 192.168.1.2
+// Bounds
+address.IsAtMin();    // true for 0.0.0.0 or ::
+address.IsAtMax();    // true for 255.255.255.255 or ffff:...:ffff
+IPAddressMath.Min(a, b);
+IPAddressMath.Max(a, b);
 ```
 
-Decrementing is just as simple:
+#### `IPAddressConverters`
 
-```c#
-var address = IPAddress.Parse("192.168.1.1");
-var result = address.Increment(-2); // result is 192.168.0.0
+```csharp
+// CIDR conversion (IPv4 only)
+netmask.NetmaskToCidrRoutePrefix(); // IPAddress → int
+
+// String formatting
+address.ToDottedQuadString();       // IPv6 → mixed IPv4/IPv6 notation
+address.ToHexString();              // Big-endian hex
+address.ToNumericString();          // Unsigned integer string
+address.ToUncompressedString();     // Fully expanded
+address.ToBase85String();           // RFC 1924 (IPv6 only)
 ```
 
-_Overflow_ and _Underflow_ conditions will result in an `InvalidOperationException`.
+#### `IPAddressUtilities`
 
-###### Equality
+```csharp
+// Address family
+address.IsIPv4();
+address.IsIPv6();
 
-Equality may also be tested via a host of equality extension methods:
+// Detection
+address.IsIPv4MappedIPv6();         // RFC 4291
+netmask.IsValidNetMask();           // IPv4 netmask validation
 
-- `bool IsEqualTo(this IPAddress alpha, IPAddress beta)`
-- `bool IsGreaterThan(this IPAddress alpha, IPAddress beta)`
-- `bool IsGreaterThanOrEqualTo(this IPAddress alpha, IPAddress beta)`
-- `bool IsLessThan(this IPAddress alpha, IPAddress beta)`
-- `bool IsLessThanOrEqualTo(this IPAddress alpha, IPAddress beta)`
+// Special values
+AddressFamily.InterNetwork.MaxIPAddress();
+AddressFamily.InterNetworkV6.MinIPAddress();
 
-#### Utilities
-
-The _Utilities_ package contains static classes for miscellaneous operations on specific types.
-
-##### `IPAddressUtilities`
-
-Static utility class containing miscellaneous operations for `IPAddress` objects
-
-###### Address Family Detection
-
-A couple of extension methods were created to quickly determine the address family of an IP Address. To determine if an address is IPv4 use `bool IsIPv4(this IPAddress ipAddress)`, likewise `bool IsIPv6(this IPAddress ipAddress)` can be used to test for IPv6.
-
-###### Parsing
-
-It is possible to parse an `IPAddress` from a hexadecimal string into either an IPv4 of IPv6 address using the `IPAddress ParseFromHexString(string input, AddressFamily addressFamily)` method. Likewise it can be done safely with `bool TryParseFromHexString(string input, AddressFamily addressFamily, out IPAddress address)`.
-
-Similarly, conversion may be done from an octal string by using `bool TryParseIgnoreOctalInIPv4(string input, out IPAddress address)` or even a `BigInteger` by way of `bool TryParse(BigInteger input, AddressFamily addressFamily, out IPAddress address)`.
-
-##### `SubnetUtilities`
-
-Static utility class containing miscellaneous operations for `Subnet` objects that didn't make sense to put on the object itself.
-
-Given two arbitrary IP Addresses of the same family it may be desired to calculate the fewest consecutive subnets that would hold the inclusive range between them. For example
-
-```c#
-SubnetUtilities.FewestConsecutiveSubnetsFor(IPAddress.Parse("128.64.20.3"), IPAddress.Parse("128.64.20.12"))
+// Parsing
+IPAddressUtilities.ParseFromHexString("C0A80101", AddressFamily.InterNetwork);
+IPAddressUtilities.TryParseFromHexString(input, family, out address);
+IPAddressUtilities.ParseIgnoreOctalInIPv4("010.000.001.001");
+IPAddressUtilities.TryParse(bigInteger, family, out address);
 ```
 
-would return an `Enumerable` containing the subnets `128.64.20.3/32`, `128.64.20.4/30`, `128.64.20.8/30`, `128.64.20.12/32`.
+#### `SubnetUtilities`
+
+```csharp
+// Fewest consecutive subnets covering an address range
+var subnets = SubnetUtilities.FewestConsecutiveSubnetsFor(
+    IPAddress.Parse("128.64.20.3"),
+    IPAddress.Parse("128.64.20.12"));
+
+// Largest / smallest subnet in a collection
+SubnetUtilities.LargestSubnet(subnets);
+SubnetUtilities.SmallestSubnet(subnets);
+
+// Private/public range detection (constants)
+SubnetUtilities.PrivateIPAddressRangesList;
+SubnetUtilities.LinkLocalIPAddressRangesList;
+```
 
 ### Developer Notes
 
@@ -238,9 +283,9 @@ This project was built by the Production Tools Team at Sandia National Laborator
 
 Including, but not limited to:
 
-- **Robert H. Engelhardt** - _Primary Developer, Source of Ideas Good and Bad_ - [rheone](https://github.com/rheone)
-- **Andrew Steele** - _Review and Suggestions_ - [ahsteele](https://github.com/ahsteele)
-- **Nick Bachicha** - _Git Wrangler and DevOps Extraordinaire_ - [nicksterx](https://github.com/nicksterx)
+- **Robert H. Engelhardt** - *Primary Developer, Source of Ideas Good and Bad* - [rheone](https://github.com/rheone)
+- **Andrew Steele** - *Review and Suggestions* - [ahsteele](https://github.com/ahsteele)
+- **Nick Bachicha** - *Git Wrangler and DevOps Extraordinaire* - [nicksterx](https://github.com/nicksterx)
 
 ## Copyright
 
@@ -250,6 +295,6 @@ Including, but not limited to:
 
 > Licensed under the Apache License, Version 2.0 (the "License"); you may not use this file except in compliance with the License. You may obtain a copy of the License at
 >
-> http://www.apache.org/licenses/LICENSE-2.0
+> <http://www.apache.org/licenses/LICENSE-2.0>
 >
 > Unless required by applicable law or agreed to in writing, software distributed under the License is distributed on an "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. See the License for the specific language governing permissions and limitations under the License.

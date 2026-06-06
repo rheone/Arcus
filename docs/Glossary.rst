@@ -19,17 +19,12 @@ Glossary
 
      `see Endianness on Wikipedia <https://en.wikipedia.org/wiki/Endianness>`_
 
-   Big-Endian
-    Big-Endian ordering, at times also referred to as *Network Byte Order*, is a left-to-right ordering of bytes where the left most bytes are most significant than right most.
+    Big-Endian
+     Big-Endian ordering, at times also referred to as *Network Byte Order*, is a left-to-right ordering of bytes where the left most bytes are most significant than right most.
 
-    For example, the decimal value of the unsigned integer ``6060842`` may be represented as ``0x5C7B2A`` in hexadecimal. This hexadecimal value is composed of the three bytes ``0x5C``, ``0x7B``, and ``0x28``. As such the value ``6060842`` may be represented in Big-Endian as a byte array of ``[0x5C, 0x7B, 0x2A]``.
+     For example, the decimal value of the unsigned integer ``6060842`` may be represented as ``0x5C7B2A`` in hexadecimal. This hexadecimal value is composed of the three bytes ``0x5C``, ``0x7B``, and ``0x28``. As such the value ``6060842`` may be represented in Big-Endian as a byte array of ``[0x5C, 0x7B, 0x2A]``.
 
-     `see Gulliver's What is Endianness <https://gulliver.readthedocs.io/en/latest/What-is-Endianness.html#what-is-endianness>`_
-
-   Gulliver
-     Gulliver is a C# utility package and library engineered for the manipulation of arbitrary sized byte arrays accounting for appropriate endianness and jagged byte length. It was developed by the same folks who created Arcus.
-
-     `see Gulliver on GitHub <https://github.com/sandialabs/gulliver>`_
+      `see Endianness on Wikipedia <https://en.wikipedia.org/wiki/Endianness>`_
 
    IP Address
     Short for **Internet Protocol Address** it is a numeric representation that typically comes in two flavors IPv4 and IPv6.
