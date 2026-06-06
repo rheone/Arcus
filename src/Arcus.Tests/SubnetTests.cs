@@ -2598,6 +2598,37 @@ namespace Arcus.Tests
 
         #endregion // end: Deconstruct
 
+        #region Ctor refactoring verification
+
+        /// <summary>Verifies that the Subnet(IPAddress, IPAddress) ctor computes correct prefix and netmask.</summary>
+        /// <param name="subnetString">CIDR notation expected after construction from low/high addresses.</param>
+        /// <param name="lowString">Low address string.</param>
+        /// <param name="highString">High address string.</param>
+        [Theory]
+        [InlineData("192.168.1.0/24", "192.168.1.0", "192.168.1.255")]
+        [InlineData("192.168.1.8/29", "192.168.1.8", "192.168.1.15")]
+        [InlineData("10.0.0.0/8", "10.0.0.0", "10.255.255.255")]
+        [InlineData("::/112", "::", "::ffff")]
+        [InlineData("feed:beef::/32", "feed:beef::", "feed:beef:ffff:ffff:ffff:ffff:ffff:ffff")]
+        public void Ctor_FromLowHigh_ComputesPrefixAndNetmask_Test(string subnetString, string lowString, string highString)
+        {
+            // Arrange
+            var expected = Subnet.Parse(subnetString);
+            var low = IPAddress.Parse(lowString);
+            var high = IPAddress.Parse(highString);
+
+            // Act
+            var subnet = new Subnet(low, high);
+
+            // Assert
+            Assert.Equal(expected.RoutingPrefix, subnet.RoutingPrefix);
+            Assert.Equal(expected.NetworkPrefixAddress, subnet.NetworkPrefixAddress);
+            Assert.Equal(expected.BroadcastAddress, subnet.BroadcastAddress);
+            Assert.Equal(expected.Netmask, subnet.Netmask);
+        }
+
+        #endregion // end: Ctor refactoring verification
+
         internal class SubnetEqualityComparer : IEqualityComparer<Subnet>
         {
             public static readonly SubnetEqualityComparer Instance = new();

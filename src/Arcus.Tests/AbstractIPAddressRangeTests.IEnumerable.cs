@@ -175,6 +175,48 @@ namespace Arcus.Tests
             Assert.Equal(ipAddress, addresses.Single());
         }
 
+        /// <summary>Verifies that enumerating across a byte-boundary (address rollover) produces correct results.</summary>
+        [Fact]
+        public void Enumerable_ByteBoundaryCrossing_Test()
+        {
+            // Arrange - IPv4 range crossing the 255.255.255.255 → 0.0.0.0 boundary is invalid,
+            // but we can test a range that exercises the span-based path near a byte boundary.
+            var head = IPAddress.Parse("192.168.1.254");
+            var tail = IPAddress.Parse("192.168.2.2");
+            var iPAddressRange = CreateSubstituteIPAddressRange(head, tail);
+
+            // Act
+            var result = iPAddressRange.ToList();
+
+            // Assert
+            Assert.Equal(5, result.Count);
+            Assert.Equal(head, result[0]);
+            Assert.Equal(IPAddress.Parse("192.168.1.255"), result[1]);
+            Assert.Equal(IPAddress.Parse("192.168.2.0"), result[2]);
+            Assert.Equal(IPAddress.Parse("192.168.2.1"), result[3]);
+            Assert.Equal(tail, result[4]);
+        }
+
+        /// <summary>Verifies that enumerating a small IPv6 range that spans a 16-bit boundary produces correct results.</summary>
+        [Fact]
+        public void Enumerable_IPv6_BoundaryCrossing_Test()
+        {
+            // Arrange - IPv6 range crossing ::ffff → ::1:0000
+            var head = IPAddress.Parse("::fffe");
+            var tail = IPAddress.Parse("::1:0001");
+            var iPAddressRange = CreateSubstituteIPAddressRange(head, tail);
+
+            // Act
+            var result = iPAddressRange.ToList();
+
+            // Assert
+            Assert.Equal(4, result.Count);
+            Assert.Equal(head, result[0]);
+            Assert.Equal(IPAddress.Parse("::ffff"), result[1]);
+            Assert.Equal(IPAddress.Parse("::1:0"), result[2]);
+            Assert.Equal(tail, result[3]);
+        }
+
         /// <summary>Verifies that skipping and taking within a huge IPv6 range completes in finite time (lazy enumeration).</summary>
         [Fact]
         public void Enumerable_ReasonableIteration_Test()

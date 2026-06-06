@@ -22,7 +22,7 @@ namespace Arcus
                 return true;
             }
 
-            return Comparers.DefaultIIPAddressRangeComparer.Instance.Compare(this, other) == 0;
+            return this.Head.Equals(other.Head) && this.Tail.Equals(other.Tail);
         }
 
         #endregion

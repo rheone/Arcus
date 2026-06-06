@@ -115,6 +115,42 @@ namespace Arcus.Tests
 
         #endregion // end: GetHashCode
 
+        #region Equals edge cases specific to direct Head/Tail comparison
+
+        /// <summary>Verifies that two ranges with the same Head and Tail are equal regardless of construction path.</summary>
+        /// <param name="headString">The head IP address string for both ranges.</param>
+        /// <param name="tailString">The tail IP address string for both ranges.</param>
+        [Theory]
+        [InlineData("192.168.1.1", "192.168.1.10")]
+        [InlineData("::abcd", "::abcf")]
+        [InlineData("10.0.0.0", "10.0.0.1")]
+        [InlineData("2001:db8::", "2001:db8::ff")]
+        public void Equals_SameHeadTail_RangesEqual_Test(string headString, string tailString)
+        {
+            var head = IPAddress.Parse(headString);
+            var tail = IPAddress.Parse(tailString);
+            var range1 = new IPAddressRange(head, tail);
+            var range2 = new IPAddressRange(head, tail);
+
+            var result = range1.Equals(range2);
+
+            Assert.True(result);
+            Assert.Equal(range1.GetHashCode(), range2.GetHashCode());
+        }
+
+        /// <summary>Verifies that Equals correctly distinguishes ranges with same Head but different Tail.</summary>
+        [Fact]
+        public void Equals_SameHead_DifferentTail_ReturnsFalse_Test()
+        {
+            var head = IPAddress.Parse("192.168.1.0");
+            var range1 = new IPAddressRange(head, IPAddress.Parse("192.168.1.10"));
+            var range2 = new IPAddressRange(head, IPAddress.Parse("192.168.1.20"));
+
+            Assert.False(range1.Equals(range2));
+        }
+
+        #endregion // end: Equals edge cases
+
         #endregion // end: Equals
     }
 }

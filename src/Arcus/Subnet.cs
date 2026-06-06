@@ -256,12 +256,7 @@ namespace Arcus
         /// <param name="lowAddress">a address to be contained within the subnet</param>
         /// <param name="highAddress">another address to be contained within the subnet</param>
         public Subnet(IPAddress lowAddress, IPAddress highAddress)
-            : base(CtorFactory(lowAddress, highAddress))
-        {
-            var result = NormalizeAndCreateNetMask(Head, Tail); // TODO the execution of this call is logically redundant as it is used in the call of the base constructor
-            this.RoutingPrefix = result.Prefix;
-            this.Netmask = IsIPv4 ? result.Mask : null; // only set netmask for IPv4 based subnets
-        }
+            : this(CtorFactory(lowAddress, highAddress)) { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="Subnet" /> class.
@@ -278,11 +273,18 @@ namespace Arcus
         /// <exception cref="ArgumentException">IP Address must be IPv4 or IPv6</exception>
         /// <exception cref="ArgumentException">Routing prefix is out of range</exception>
         public Subnet(IPAddress address, int routingPrefix)
-            : base(CtorFactory(address, routingPrefix))
+            : this(CtorFactory(address, routingPrefix)) { }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Subnet" /> class.
+        ///     Private constructor that receives pre-computed Head/Tail, netmask, and routing prefix.
+        ///     Avoids redundant calls to <see cref="NormalizeAndCreateNetMask(IPAddress, IPAddress)" />.
+        /// </summary>
+        private Subnet(CtorFactoryResult result)
+            : base(result.Tuple)
         {
-            var result = NormalizeAndCreateNetMask(Head, routingPrefix); // TODO the execution of this call is logically redundant as it is used in the call of the base constructor
-            this.RoutingPrefix = routingPrefix;
-            this.Netmask = IsIPv4 ? result.Mask : null; // only set netmask for IPv4 based subnets
+            this.RoutingPrefix = result.RoutingPrefix;
+            this.Netmask = IsIPv4 ? result.Netmask : null;
         }
 
         /// <summary>
@@ -331,7 +333,7 @@ namespace Arcus
             ) { }
 #endif
 
-        private static AddressTuple CtorFactory(IPAddress lowAddress, IPAddress highAddress)
+        private static CtorFactoryResult CtorFactory(IPAddress lowAddress, IPAddress highAddress)
         {
             #region Defense
 
@@ -376,10 +378,10 @@ namespace Arcus
             #endregion // end: Defense
 
             var result = NormalizeAndCreateNetMask(lowAddress, highAddress);
-            return new AddressTuple(result.Head, result.Tail);
+            return new CtorFactoryResult(new AddressTuple(result.Head, result.Tail), result.Mask, result.Prefix);
         }
 
-        private static AddressTuple CtorFactory(IPAddress address, int routingPrefix)
+        private static CtorFactoryResult CtorFactory(IPAddress address, int routingPrefix)
         {
             #region Defense
 
@@ -414,7 +416,21 @@ namespace Arcus
             #endregion // end: Defense
 
             var result = NormalizeAndCreateNetMask(address, routingPrefix);
-            return new AddressTuple(result.Head, result.Tail);
+            return new CtorFactoryResult(new AddressTuple(result.Head, result.Tail), result.Mask, routingPrefix);
+        }
+
+        private readonly struct CtorFactoryResult
+        {
+            public AddressTuple Tuple { get; }
+            public IPAddress Netmask { get; }
+            public int RoutingPrefix { get; }
+
+            public CtorFactoryResult(AddressTuple tuple, IPAddress netmask, int routingPrefix)
+            {
+                Tuple = tuple;
+                Netmask = netmask;
+                RoutingPrefix = routingPrefix;
+            }
         }
 
         #endregion // end: Ctor
