@@ -261,6 +261,72 @@ namespace Arcus
             this.Netmask = IsIPv4 ? result.Mask : null; // only set netmask for IPv4 based subnets
         }
 
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Subnet" /> class.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Constructs a subnet from an address and CIDR prefix length per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///         The network prefix address is derived by AND-ing <paramref name="address"/> with the prefix mask.
+        ///     </para>
+        /// </remarks>
+        /// <param name="address">the ip address</param>
+        /// <param name="routingPrefix">the routing prefix</param>
+        /// <exception cref="ArgumentException">IP Address must be IPv4 or IPv6</exception>
+        /// <exception cref="ArgumentException">Routing prefix is out of range</exception>
+        public Subnet(IPAddress address, int routingPrefix)
+            : base(CtorFactory(address, routingPrefix))
+        {
+            var result = NormalizeAndCreateNetMask(Head, routingPrefix); // TODO the execution of this call is logically redundant as it is used in the call of the base constructor
+            this.RoutingPrefix = routingPrefix;
+            this.Netmask = IsIPv4 ? result.Mask : null; // only set netmask for IPv4 based subnets
+        }
+
+        /// <summary>
+        ///     Initializes a new instance of the <see cref="Subnet" /> class.
+        ///     contains only a single ip address
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Creates a host route: /32 for IPv4 per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>,
+        ///         or /128 for IPv6 per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
+        ///     </para>
+        /// </remarks>
+        /// <param name="address">the ip address</param>
+        public Subnet(IPAddress address)
+            : base(address, address)
+        {
+            this.RoutingPrefix = IsIPv4 ? IPAddressUtilities.IPv4BitCount : IPAddressUtilities.IPv6BitCount;
+
+            if (IsIPv6)
+            {
+                return;
+            }
+
+            var netmaskBytes = Enumerable.Repeat((byte)0xff, IPAddressUtilities.IPv4ByteCount).ToArray();
+
+            this.Netmask = new IPAddress(netmaskBytes);
+        }
+
+        /// <summary>Initializes a new instance of the <see cref="Subnet"/> class.</summary>
+        /// <param name="info">serialization info</param>
+        /// <param name="context">serialization context</param>
+        /// <exception cref="ArgumentNullException"><paramref name="info"/> is <see langword="null"/></exception>
+        protected Subnet(SerializationInfo info, StreamingContext context)
+            : this(
+                new IPAddress(
+                    (byte[])
+                        (info ?? throw new ArgumentNullException(nameof(info))).GetValue(
+                            nameof(BroadcastAddress),
+                            typeof(byte[])
+                        )
+                ),
+                (int)info.GetValue(nameof(RoutingPrefix), typeof(int))
+            ) { }
+
         private static AddressTuple CtorFactory(IPAddress lowAddress, IPAddress highAddress)
         {
             #region Defense
@@ -309,28 +375,6 @@ namespace Arcus
             return new AddressTuple(result.Head, result.Tail);
         }
 
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Subnet" /> class.
-        /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         Constructs a subnet from an address and CIDR prefix length per
-        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
-        ///         The network prefix address is derived by AND-ing <paramref name="address"/> with the prefix mask.
-        ///     </para>
-        /// </remarks>
-        /// <param name="address">the ip address</param>
-        /// <param name="routingPrefix">the routing prefix</param>
-        /// <exception cref="ArgumentException">IP Address must be IPv4 or IPv6</exception>
-        /// <exception cref="ArgumentException">Routing prefix is out of range</exception>
-        public Subnet(IPAddress address, int routingPrefix)
-            : base(CtorFactory(address, routingPrefix))
-        {
-            var result = NormalizeAndCreateNetMask(Head, routingPrefix); // TODO the execution of this call is logically redundant as it is used in the call of the base constructor
-            this.RoutingPrefix = routingPrefix;
-            this.Netmask = IsIPv4 ? result.Mask : null; // only set netmask for IPv4 based subnets
-        }
-
         private static AddressTuple CtorFactory(IPAddress address, int routingPrefix)
         {
             #region Defense
@@ -368,50 +412,6 @@ namespace Arcus
             var result = NormalizeAndCreateNetMask(address, routingPrefix);
             return new AddressTuple(result.Head, result.Tail);
         }
-
-        /// <summary>
-        ///     Initializes a new instance of the <see cref="Subnet" /> class.
-        ///     contains only a single ip address
-        /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         Creates a host route: /32 for IPv4 per
-        ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>,
-        ///         or /128 for IPv6 per
-        ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
-        ///     </para>
-        /// </remarks>
-        /// <param name="address">the ip address</param>
-        public Subnet(IPAddress address)
-            : base(address, address)
-        {
-            this.RoutingPrefix = IsIPv4 ? IPAddressUtilities.IPv4BitCount : IPAddressUtilities.IPv6BitCount;
-
-            if (IsIPv6)
-            {
-                return;
-            }
-
-            var netmaskBytes = Enumerable.Repeat((byte)0xff, IPAddressUtilities.IPv4ByteCount).ToArray();
-
-            this.Netmask = new IPAddress(netmaskBytes);
-        }
-
-        /// <summary>Initializes a new instance of the <see cref="Subnet"/> class.</summary>
-        /// <param name="info">serialization info</param>
-        /// <param name="context">serialization context</param>
-        /// <exception cref="ArgumentNullException"><paramref name="info"/> is <see langword="null"/></exception>
-        protected Subnet(SerializationInfo info, StreamingContext context)
-            : this(
-                new IPAddress(
-                    (byte[])
-                        (info ?? throw new ArgumentNullException(nameof(info))).GetValue(
-                            nameof(BroadcastAddress),
-                            typeof(byte[])
-                        )
-                ),
-                (int)info.GetValue(nameof(RoutingPrefix), typeof(int))
-            ) { }
 
         #endregion // end: Ctor
 
@@ -574,8 +574,6 @@ namespace Arcus
 
         #region Parse / TryParse
 
-        #region subnet string
-
         /// <summary>
         ///     Unsafe parsing of a string into a subnet
         /// </summary>
@@ -651,30 +649,6 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Attempt to parse a string into a subnet
-        /// </summary>
-        /// <param name="subnetString">the string to parse</param>
-        /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
-        /// <returns><see langword="true" /> on success</returns>
-        public static bool TryParse(string subnetString, out Subnet subnet)
-        {
-            try
-            {
-                subnet = Parse(subnetString);
-                return true;
-            }
-            catch
-            {
-                subnet = null;
-                return false;
-            }
-        }
-
-        #endregion // end: subnet string
-
-        #region address, routing prefix
-
-        /// <summary>
         ///     Unsafe parsing of a string address and routing prefix into a subnet
         /// </summary>
         /// <remarks>
@@ -739,32 +713,6 @@ namespace Arcus
                 throw new FormatException(CouldNotInstantiateSubnetMessage, e);
             }
         }
-
-        /// <summary>
-        ///     Try to parse <paramref name="addressString" /> as an <see cref="IPAddress" /> for a Subnet with the given routing
-        ///     prefix
-        /// </summary>
-        /// <param name="addressString">the address string</param>
-        /// <param name="routingPrefix">the subnet routing prefix</param>
-        /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
-        /// <returns><see langword="true" /> on success</returns>
-        public static bool TryParse(string addressString, int routingPrefix, out Subnet subnet)
-        {
-            try
-            {
-                subnet = Parse(addressString, routingPrefix);
-                return true;
-            }
-            catch
-            {
-                subnet = null;
-                return false;
-            }
-        }
-
-        #endregion // end: address, routing prefix
-
-        #region string string
 
         /// <summary>
         ///     Unsafe parsing of two string as a new subnet
@@ -835,6 +783,48 @@ namespace Arcus
         }
 
         /// <summary>
+        ///     Attempt to parse a string into a subnet
+        /// </summary>
+        /// <param name="subnetString">the string to parse</param>
+        /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
+        /// <returns><see langword="true" /> on success</returns>
+        public static bool TryParse(string subnetString, out Subnet subnet)
+        {
+            try
+            {
+                subnet = Parse(subnetString);
+                return true;
+            }
+            catch
+            {
+                subnet = null;
+                return false;
+            }
+        }
+
+        /// <summary>
+        ///     Try to parse <paramref name="addressString" /> as an <see cref="IPAddress" /> for a Subnet with the given routing
+        ///     prefix
+        /// </summary>
+        /// <param name="addressString">the address string</param>
+        /// <param name="routingPrefix">the subnet routing prefix</param>
+        /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
+        /// <returns><see langword="true" /> on success</returns>
+        public static bool TryParse(string addressString, int routingPrefix, out Subnet subnet)
+        {
+            try
+            {
+                subnet = Parse(addressString, routingPrefix);
+                return true;
+            }
+            catch
+            {
+                subnet = null;
+                return false;
+            }
+        }
+
+        /// <summary>
         ///     Try parse two strings as addresses
         /// </summary>
         /// <param name="lowAddressString">the low address string</param>
@@ -855,8 +845,6 @@ namespace Arcus
                 return false;
             }
         }
-
-        #endregion // end: string string
 
         #region From Partial
 
@@ -1206,6 +1194,24 @@ namespace Arcus
             public int Prefix { get; }
         }
 
+        private readonly struct AddressAndMaskTuple(IPAddress head, IPAddress tail, IPAddress mask)
+        {
+            /// <summary>
+            ///     Gets head
+            /// </summary>
+            public IPAddress Head { get; } = head ?? throw new ArgumentNullException(nameof(head));
+
+            /// <summary>
+            ///     Gets tail
+            /// </summary>
+            public IPAddress Tail { get; } = tail ?? throw new ArgumentNullException(nameof(tail));
+
+            /// <summary>
+            ///     Gets mask
+            /// </summary>
+            public IPAddress Mask { get; } = mask ?? throw new ArgumentNullException(nameof(mask));
+        }
+
         private static AddressMaskAndPrefixTuple NormalizeAndCreateNetMask(IPAddress head, IPAddress tail)
         {
             var headBytes = head.GetAddressBytes();
@@ -1232,24 +1238,6 @@ namespace Arcus
 
                 return bitCount; // all match, return length
             }
-        }
-
-        private readonly struct AddressAndMaskTuple(IPAddress head, IPAddress tail, IPAddress mask)
-        {
-            /// <summary>
-            ///     Gets head
-            /// </summary>
-            public IPAddress Head { get; } = head ?? throw new ArgumentNullException(nameof(head));
-
-            /// <summary>
-            ///     Gets tail
-            /// </summary>
-            public IPAddress Tail { get; } = tail ?? throw new ArgumentNullException(nameof(tail));
-
-            /// <summary>
-            ///     Gets mask
-            /// </summary>
-            public IPAddress Mask { get; } = mask ?? throw new ArgumentNullException(nameof(mask));
         }
 
         private static AddressAndMaskTuple NormalizeAndCreateNetMask(IPAddress head, int routingPrefix)
