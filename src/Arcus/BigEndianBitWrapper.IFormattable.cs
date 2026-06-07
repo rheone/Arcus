@@ -1,4 +1,7 @@
 ﻿using System;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Arcus
 {
@@ -31,7 +34,15 @@ namespace Arcus
         /// <param name="formatProvider">Ignored; present to satisfy <see cref="IFormattable" />.</param>
         /// <returns>The formatted string.</returns>
         /// <exception cref="FormatException">An unrecognised format specifier was supplied.</exception>
-        public string ToString(string format, IFormatProvider formatProvider)
+        public string ToString(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            string format,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            IFormatProvider formatProvider)
         {
             return string.IsNullOrEmpty(format) || format == "G"
                 ? ToHexString()

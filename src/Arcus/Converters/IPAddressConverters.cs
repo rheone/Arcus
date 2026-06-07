@@ -4,6 +4,9 @@ using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using Arcus.Utilities;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Arcus.Converters
 {
@@ -81,6 +84,9 @@ namespace Arcus.Converters
         /// </remarks>
         /// <param name="ipAddress">the ip address to convert</param>
         /// <returns>Ascii85/Base85 representation of IPv6 Address, or an empty string on failure</returns>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        [return: MaybeNull]
+#endif
         public static string ToBase85String(this IPAddress ipAddress)
         {
             if (ipAddress?.IsIPv6() != true)
@@ -147,6 +153,9 @@ namespace Arcus.Converters
         /// <param name="ipAddress">the ip address to convert</param>
         /// <returns>dotted quad version of the given address</returns>
         /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        [return: NotNullIfNotNull(nameof(ipAddress))]
+#endif
         public static string ToDottedQuadString(this IPAddress ipAddress)
         {
             if (ipAddress == null)
@@ -285,6 +294,9 @@ namespace Arcus.Converters
         /// <param name="ipAddress">the ip address to convert</param>
         /// <returns>Hex version of the given IP Address</returns>
         /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        [return: NotNullIfNotNull(nameof(ipAddress))]
+#endif
         public static string ToHexString(this IPAddress ipAddress)
         {
             return ipAddress == null ? null : BigEndianBitWrapper.FromBytes(ipAddress.GetAddressBytes()).ToHexString();
@@ -296,6 +308,9 @@ namespace Arcus.Converters
         /// <param name="ipAddress">The ip address to convert</param>
         /// <returns>an integral representation of the IP address</returns>
         /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        [return: NotNullIfNotNull(nameof(ipAddress))]
+#endif
         public static string ToNumericString(this IPAddress ipAddress)
         {
             return ipAddress == null ? null : BigEndianBitWrapper.FromBytes(ipAddress.GetAddressBytes()).ToDecimalString();
@@ -316,6 +331,9 @@ namespace Arcus.Converters
         /// <param name="ipAddress">the address to expand</param>
         /// <returns>the expanded for of IPv4/IPv6, or ToString() otherwise</returns>
         /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        [return: NotNullIfNotNull(nameof(ipAddress))]
+#endif
         public static string ToUncompressedString(this IPAddress ipAddress)
         {
             if (ipAddress == null)

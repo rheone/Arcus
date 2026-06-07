@@ -5,6 +5,10 @@ using System.Net;
 using System.Numerics;
 using Arcus.Math;
 using Arcus.Utilities;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
+
 #if NETSTANDARD2_0
 using System.Runtime.Serialization;
 #endif
@@ -112,7 +116,15 @@ namespace Arcus
         ///         per <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
         ///     </para>
         /// </remarks>
-        public override string ToString(string format, IFormatProvider formatProvider)
+        public override string ToString(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            string format,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            IFormatProvider formatProvider)
         {
             formatProvider ??= CultureInfo.InvariantCulture;
 

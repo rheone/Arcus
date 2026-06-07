@@ -3,6 +3,9 @@ using System.Linq;
 using System.Net;
 using Arcus.Utilities;
 using static System.Net.Sockets.AddressFamily;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Arcus.Math
 {
@@ -85,7 +88,11 @@ namespace Arcus.Math
         /// <param name="address">the resulting <see cref="IPAddress"/> post increment</param>
         /// <param name="delta">the amount to increment by</param>
         /// <returns>true on success</returns>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        public static bool TryIncrement(IPAddress input, [NotNullWhen(true)] out IPAddress address, long delta = 1)
+#else
         public static bool TryIncrement(IPAddress input, out IPAddress address, long delta = 1)
+#endif
         {
             if (input == null)
             {

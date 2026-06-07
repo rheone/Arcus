@@ -2,6 +2,9 @@
 using System.Collections.Generic;
 using System.Net;
 using System.Net.Sockets;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Arcus.Comparers
 {
@@ -42,7 +45,15 @@ namespace Arcus.Comparers
             : this(DefaultAddressFamilyComparer.Instance) { }
 
         /// <inheritdoc />
-        public override int Compare(IPAddress x, IPAddress y)
+        public override int Compare(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            IPAddress x,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            IPAddress y)
         {
             if (ReferenceEquals(x, y))
             {

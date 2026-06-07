@@ -1,5 +1,8 @@
 ﻿using System;
 using Arcus.Comparers;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Arcus
 {
@@ -9,7 +12,11 @@ namespace Arcus
     public partial class Subnet : IComparable<Subnet>, IComparable
     {
         /// <inheritdoc />
-        public int CompareTo(object obj)
+        public int CompareTo(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            object obj)
         {
             if (obj is null)
             {
@@ -25,7 +32,11 @@ namespace Arcus
         }
 
         /// <inheritdoc />
-        public int CompareTo(Subnet other)
+        public int CompareTo(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            Subnet other)
         {
             if (other is null)
             {

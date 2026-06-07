@@ -1,6 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Arcus.Math;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Arcus
 {
@@ -225,7 +228,14 @@ namespace Arcus
         /// <param name="right">the right operand</param>
         /// <param name="mergedRange">the resulting <see cref="IPAddressRange" /></param>
         /// <returns>true on success</returns>
-        public static bool TryMerge(IPAddressRange left, IPAddressRange right, out IPAddressRange mergedRange)
+        public static bool TryMerge(
+            IPAddressRange left,
+            IPAddressRange right,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [NotNullWhen(true)]
+#endif
+            out IPAddressRange mergedRange
+        )
         {
             if (left is null || right is null || left.AddressFamily != right.AddressFamily)
             {

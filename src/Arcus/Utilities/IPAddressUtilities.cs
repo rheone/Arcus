@@ -4,6 +4,9 @@ using System.Linq;
 using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Arcus.Utilities
 {
@@ -350,7 +353,15 @@ namespace Arcus.Utilities
         /// <param name="addressFamily">the desired address family</param>
         /// <param name="address">the address that was parsed</param>
         /// <returns>true on success</returns>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        public static bool TryParseFromHexString(
+            string input,
+            AddressFamily addressFamily,
+            [NotNullWhen(true)] out IPAddress address
+        )
+#else
         public static bool TryParseFromHexString(string input, AddressFamily addressFamily, out IPAddress address)
+#endif
         {
             if (input == null)
             {
@@ -422,7 +433,11 @@ namespace Arcus.Utilities
         /// <param name="input">The string to validate.</param>
         /// <param name="address">The <see cref="System.Net.IPAddress" /> version of the string.</param>
         /// <returns>true if ipString is a valid IP address; otherwise, false.</returns>
-        public static bool TryParseIgnoreOctalInIPv4(string input, out IPAddress address)
+        public static bool TryParseIgnoreOctalInIPv4(string input,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [NotNullWhen(true)]
+#endif
+            out IPAddress address)
         {
             if (input == null)
             {
@@ -490,7 +505,11 @@ namespace Arcus.Utilities
         /// <param name="addressFamily">the desired address family</param>
         /// <param name="address">the address on success</param>
         /// <returns>true on success</returns>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        public static bool TryParse(byte[] input, AddressFamily addressFamily, [NotNullWhen(true)] out IPAddress address)
+#else
         public static bool TryParse(byte[] input, AddressFamily addressFamily, out IPAddress address)
+#endif
         {
             try
             {

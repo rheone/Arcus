@@ -1,5 +1,8 @@
 ﻿using System;
 using System.Globalization;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Arcus
 {
@@ -17,7 +20,15 @@ namespace Arcus
         }
 
         /// <inheritdoc />
-        public virtual string ToString(string format, IFormatProvider formatProvider)
+        public virtual string ToString(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            string format,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            IFormatProvider formatProvider)
         {
             switch (format?.Trim())
             {

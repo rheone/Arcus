@@ -1,5 +1,8 @@
 ﻿using System;
 using Arcus.Comparers;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Arcus
 {
@@ -11,7 +14,11 @@ namespace Arcus
         #region From Interface IComparable
 
         /// <inheritdoc />
-        public int CompareTo(object obj)
+        public int CompareTo(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            object obj)
         {
             if (obj is null)
             {
@@ -31,7 +38,11 @@ namespace Arcus
         #region From Interface IComparable<IPAddressRange>
 
         /// <inheritdoc />
-        public int CompareTo(IPAddressRange other)
+        public int CompareTo(
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [AllowNull]
+#endif
+            IPAddressRange other)
         {
             if (other is null)
             {

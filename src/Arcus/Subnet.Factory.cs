@@ -6,6 +6,9 @@ using System.Text.RegularExpressions;
 using Arcus.Converters;
 using Arcus.Math;
 using Arcus.Utilities;
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+using System.Diagnostics.CodeAnalysis;
+#endif
 
 namespace Arcus
 {
@@ -113,7 +116,11 @@ namespace Arcus
         /// <param name="netmask">the net mask</param>
         /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
         /// <returns><see langword="true" /> on success</returns>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        public static bool TryFromNetMask(IPAddress address, IPAddress netmask, [NotNullWhen(true)] out Subnet subnet)
+#else
         public static bool TryFromNetMask(IPAddress address, IPAddress netmask, out Subnet subnet)
+#endif
         {
             try
             {
@@ -196,7 +203,11 @@ namespace Arcus
         /// <param name="highAddressBytes">the high address <see cref="byte" /> array</param>
         /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
         /// <returns><see langword="true" /> on success</returns>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        public static bool TryFromBytes(byte[] lowAddressBytes, byte[] highAddressBytes, [NotNullWhen(true)] out Subnet subnet)
+#else
         public static bool TryFromBytes(byte[] lowAddressBytes, byte[] highAddressBytes, out Subnet subnet)
+#endif
         {
             try
             {
@@ -429,7 +440,11 @@ namespace Arcus
         /// <param name="subnetString">the string to parse</param>
         /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
         /// <returns><see langword="true" /> on success</returns>
-        public static bool TryParse(string subnetString, out Subnet subnet)
+        public static bool TryParse(string subnetString,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [NotNullWhen(true)]
+#endif
+            out Subnet subnet)
         {
             try
             {
@@ -451,7 +466,11 @@ namespace Arcus
         /// <param name="routingPrefix">the subnet routing prefix</param>
         /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
         /// <returns><see langword="true" /> on success</returns>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        public static bool TryParse(string addressString, int routingPrefix, [NotNullWhen(true)] out Subnet subnet)
+#else
         public static bool TryParse(string addressString, int routingPrefix, out Subnet subnet)
+#endif
         {
             try
             {
@@ -472,7 +491,11 @@ namespace Arcus
         /// <param name="highAddressString">the high address string</param>
         /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
         /// <returns><see langword="true" /> on success</returns>
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+        public static bool TryParse(string lowAddressString, string highAddressString, [NotNullWhen(true)] out Subnet subnet)
+#else
         public static bool TryParse(string lowAddressString, string highAddressString, out Subnet subnet)
+#endif
         {
             try
             {
@@ -502,7 +525,11 @@ namespace Arcus
         /// <param name="input">the partial IP address to parse</param>
         /// <param name="subnet">the subnet created</param>
         /// <returns>true on success</returns>
-        public static bool TryIPv4FromPartial(string input, out Subnet subnet)
+        public static bool TryIPv4FromPartial(string input,
+#if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
+            [NotNullWhen(true)]
+#endif
+            out Subnet subnet)
         {
             if (string.IsNullOrWhiteSpace(input) || !IPv4OctetPartialRegex.IsMatch(input))
             {
