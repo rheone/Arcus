@@ -286,6 +286,7 @@ Including, but not limited to:
 - **Robert H. Engelhardt** - *Primary Developer, Source of Ideas Good and Bad* - [rheone](https://github.com/rheone)
 - **Andrew Steele** - *Review and Suggestions* - [ahsteele](https://github.com/ahsteele)
 - **Nick Bachicha** - *Git Wrangler and DevOps Extraordinaire* - [nicksterx](https://github.com/nicksterx)
+- **Drew Antonich** - *Review and Suggestions* [drewantonich](https://github.com/drewantonich)
 
 ## Copyright
 

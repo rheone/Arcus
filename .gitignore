@@ -205,3 +205,6 @@ docs/_build
 
 # Smoke test local NuGet feed (created by run-smoke-tests scripts)
 smoke-tests/feed/
+
+# Benchmark results (commit manually with git add -f to record a progression snapshot)
+benchmarks/results/
