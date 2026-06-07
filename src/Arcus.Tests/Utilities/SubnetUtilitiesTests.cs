@@ -610,8 +610,8 @@ namespace Arcus.Tests.Utilities
             };
 
         /// <summary>Verifies that <see cref="SubnetUtilities.FewestConsecutiveSubnetsFor"/> throws <see cref="ArgumentNullException"/> when either argument is null.</summary>
-        /// <param name="left">Left bound address, or <c>null</c>.</param>
-        /// <param name="right">Right bound address, or <c>null</c>.</param>
+        /// <param name="left">Left bound address.</param>
+        /// <param name="right">Right bound address.</param>
         [Theory]
         [MemberData(nameof(FewestConsecutiveSubnetsFor_NullArgument_ThrowsArgumentNullException_Test_Data))]
         public void FewestConsecutiveSubnetsFor_NullArgument_ThrowsArgumentNullException_Test(IPAddress left, IPAddress right)

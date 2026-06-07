@@ -20,8 +20,8 @@ namespace Arcus.Tests
         /// <param name="expected">Expected result.</param>
         /// <param name="thisHead">The head address of the range under test.</param>
         /// <param name="thisTail">The tail address of the range under test.</param>
-        /// <param name="thatHead">The head address of the other range, or null.</param>
-        /// <param name="thatTail">The tail address of the other range, or null.</param>
+        /// <param name="thatHead">The head address of the other range.</param>
+        /// <param name="thatTail">The tail address of the other range.</param>
         [Theory]
         [InlineData(false, "192.168.1.0", "255.255.255.255", null, null)]
         [InlineData(false, "192.168.1.0", "255.255.255.255", "::", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:")]
@@ -85,8 +85,8 @@ namespace Arcus.Tests
         /// <param name="expected">Expected result.</param>
         /// <param name="thisHead">The head address of the range under test.</param>
         /// <param name="thisTail">The tail address of the range under test.</param>
-        /// <param name="thatHead">The head address of the other range, or null.</param>
-        /// <param name="thatTail">The tail address of the other range, or null.</param>
+        /// <param name="thatHead">The head address of the other range.</param>
+        /// <param name="thatTail">The tail address of the other range.</param>
         [Theory]
         [InlineData(false, "0.0.0.0", "192.168.1.0", null, null)]
         [InlineData(false, "0.0.0.0", "192.168.1.0", "::", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:")]

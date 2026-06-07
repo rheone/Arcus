@@ -164,7 +164,7 @@ namespace Arcus.Tests
         /// <summary>Verifies that <see cref="Subnet.Overlaps(Subnet)"/> returns the expected result for various subnet pairs.</summary>
         /// <param name="expected">Expected overlap result.</param>
         /// <param name="subnetAString">CIDR string for the first subnet.</param>
-        /// <param name="subnetBString">CIDR string for the second subnet, or null.</param>
+        /// <param name="subnetBString">CIDR string for the second subnet.</param>
         [Theory]
         [InlineData(true, "0.0.0.0/0", "0.0.0.0/0")]
         [InlineData(true, "::/0", "::/0")]
@@ -339,7 +339,7 @@ namespace Arcus.Tests
         /// <summary>Verifies that <see cref="AbstractIPAddressRange.Contains(System.Net.IPAddress)"/> returns the expected result for various address inputs.</summary>
         /// <param name="expected">Expected result.</param>
         /// <param name="subnetString">CIDR string for the subnet under test.</param>
-        /// <param name="containsIPAddressString">The IP address string to test containment, or null.</param>
+        /// <param name="containsIPAddressString">The IP address string to test containment.</param>
         [Theory]
         [InlineData(true, "192.168.0.0/16", "192.168.0.0")]
         [InlineData(true, "192.168.0.0/16", "192.168.0.16")]
@@ -371,7 +371,7 @@ namespace Arcus.Tests
         /// <summary>Verifies that <see cref="Subnet.Contains(Subnet)"/> returns the expected result for various subnet inputs.</summary>
         /// <param name="expected">Expected result.</param>
         /// <param name="subnetString">CIDR string for the outer subnet.</param>
-        /// <param name="containsSubnetString">CIDR string for the inner subnet to test, or null.</param>
+        /// <param name="containsSubnetString">CIDR string for the inner subnet to test.</param>
         [Theory]
         [InlineData(true, "192.168.0.0/16", "192.168.0.0/16")]
         [InlineData(true, "192.168.0.0/16", "192.168.0.0/32")]
@@ -602,8 +602,8 @@ namespace Arcus.Tests
         }
 
         /// <summary>Verifies that constructing a <see cref="Subnet"/> with a null address argument throws <see cref="ArgumentNullException"/>.</summary>
-        /// <param name="primary">Primary address string, or null.</param>
-        /// <param name="secondary">Secondary address string, or null.</param>
+        /// <param name="primary">Primary address string.</param>
+        /// <param name="secondary">Secondary address string.</param>
         [Theory]
         [InlineData("192.168.3.25", null)]
         [InlineData(null, "192.168.3.25")]

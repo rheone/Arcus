@@ -120,7 +120,7 @@ namespace Arcus.Tests.Utilities
 
         /// <summary>Verifies that <see cref="IPAddressUtilities.IsIPv4"/> returns the expected result for the given input.</summary>
         /// <param name="expected">Expected result of the <see cref="IPAddressUtilities.IsIPv4"/> call.</param>
-        /// <param name="input">String representation of the IP address to test, or <c>null</c>.</param>
+        /// <param name="input">String representation of the IP address to test.</param>
         [Theory]
         [MemberData(nameof(IsIPv4_Test_Data))]
         public void IsIPv4_ReturnsExpected_Test(bool expected, string input)
@@ -155,7 +155,7 @@ namespace Arcus.Tests.Utilities
 
         /// <summary>Verifies that <see cref="IPAddressUtilities.IsIPv4MappedIPv6"/> returns the expected result for the given input.</summary>
         /// <param name="expected">Expected result of the <see cref="IPAddressUtilities.IsIPv4MappedIPv6"/> call.</param>
-        /// <param name="input">String representation of the IP address to test, or <c>null</c>.</param>
+        /// <param name="input">String representation of the IP address to test.</param>
         [Theory]
         [MemberData(nameof(IsIPv4MappedIPv6_Test_Data))]
         public void IsIPv4MappedIPv6_ReturnsExpected_Test(bool expected, string input)
@@ -188,7 +188,7 @@ namespace Arcus.Tests.Utilities
 
         /// <summary>Verifies that <see cref="IPAddressUtilities.IsIPv6"/> returns the expected result for the given input.</summary>
         /// <param name="expected">Expected result of the <see cref="IPAddressUtilities.IsIPv6"/> call.</param>
-        /// <param name="input">String representation of the IP address to test, or <c>null</c>.</param>
+        /// <param name="input">String representation of the IP address to test.</param>
         [Theory]
         [MemberData(nameof(IsIPv6_Test_Data))]
         public void IsIPv6_ReturnsExpected_Test(bool expected, string input)
@@ -297,7 +297,7 @@ namespace Arcus.Tests.Utilities
 
         /// <summary>Verifies that <see cref="IPAddressUtilities.IsValidNetMask"/> returns the expected result for the given input.</summary>
         /// <param name="expected">Expected result of the <see cref="IPAddressUtilities.IsValidNetMask"/> call.</param>
-        /// <param name="input">IP address to test, or <c>null</c>.</param>
+        /// <param name="input">IP address to test.</param>
         [Theory]
         [MemberData(nameof(IsValidNetMask_Test_Data))]
         public void IsValidNetMask_ReturnsExpected_Test(bool expected, IPAddress input)

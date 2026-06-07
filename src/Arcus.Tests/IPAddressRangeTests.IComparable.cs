@@ -83,7 +83,7 @@
         }
 
         /// <summary>Verifies CompareTo returns the expected result for all ordered range pairs.</summary>
-        /// <param name="expected">Expected comparison result (-1, 0, or 1).</param>
+        /// <param name="expected">Expected comparison result.</param>
         /// <param name="left">The left operand range.</param>
         /// <param name="right">The right operand range.</param>
         [Theory]

@@ -11,11 +11,11 @@ namespace Arcus.Tests
         #region TryMerge
 
         /// <summary>Verifies TryMerge produces the expected merged range (or null) for touching, overlapping, non-adjacent, and null range pairs.</summary>
-        /// <param name="expected">The expected Head-Tail string of the merged range, or null if merge should fail.</param>
-        /// <param name="alphaHead">The head address of the first range, or null.</param>
-        /// <param name="alphaTail">The tail address of the first range, or null.</param>
-        /// <param name="betaHead">The head address of the second range, or null.</param>
-        /// <param name="betaTail">The tail address of the second range, or null.</param>
+        /// <param name="expected">The expected Head-Tail string of the merged range when the ranges merge; null when they do not.</param>
+        /// <param name="alphaHead">The head address of the first range.</param>
+        /// <param name="alphaTail">The tail address of the first range.</param>
+        /// <param name="betaHead">The head address of the second range.</param>
+        /// <param name="betaTail">The tail address of the second range.</param>
         [Theory]
         [InlineData(null, null, null, null, null)]
         [InlineData(null, "192.168.1.1", "192.168.1.9", "::", "::")]

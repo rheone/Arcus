@@ -8,7 +8,7 @@ namespace Arcus.Tests
         /// <summary>Verifies IPAddress.TryParse returns the expected success/failure and parsed string for a wide range of IPv4, IPv6, and invalid inputs.</summary>
         /// <param name="expected">Whether TryParse is expected to succeed.</param>
         /// <param name="input">The input string to parse.</param>
-        /// <param name="expectedParseResult">The expected ToString() of the parsed address, or null when parsing fails.</param>
+        /// <param name="expectedParseResult">The expected ToString() of the parsed address when parsing succeeds.</param>
         [Theory]
         // IPv4 Addresses
 

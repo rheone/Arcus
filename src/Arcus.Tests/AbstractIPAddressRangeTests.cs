@@ -149,8 +149,8 @@ namespace Arcus.Tests
         }
 
         /// <summary>Verifies the constructor throws ArgumentNullException when either address is null.</summary>
-        /// <param name="headString">The head IP address string, or null.</param>
-        /// <param name="tailString">The tail IP address string, or null.</param>
+        /// <param name="headString">The head IP address string.</param>
+        /// <param name="tailString">The tail IP address string.</param>
         [Theory]
         [InlineData("192.168.1.1", null)]
         [InlineData(null, "192.168.1.5")]

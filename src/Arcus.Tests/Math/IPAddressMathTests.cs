@@ -934,8 +934,8 @@ namespace Arcus.Tests.Math
 
         /// <summary>Verifies that <c>TryIncrement</c> returns the expected success flag and resulting address for various inputs including null, overflow, underflow, and valid deltas.</summary>
         /// <param name="expectedSuccess">The expected return value indicating whether the increment succeeded.</param>
-        /// <param name="expectedResultString">The expected resulting IP address string, or <see langword="null"/> when the operation is expected to fail.</param>
-        /// <param name="inputString">The input IP address string, or <see langword="null"/> to test a null input.</param>
+        /// <param name="expectedResultString">The expected resulting IP address string.</param>
+        /// <param name="inputString">The input IP address string.</param>
         /// <param name="delta">The signed integer delta to apply.</param>
         [Theory]
         [InlineData(false, null, null, 0)]

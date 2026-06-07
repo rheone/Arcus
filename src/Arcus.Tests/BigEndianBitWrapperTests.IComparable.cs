@@ -28,7 +28,7 @@
         /// <summary>Verifies CompareTo returns the correct sign for ordered pairs of IPv4 addresses.</summary>
         /// <param name="leftStr">The left IPv4 address string.</param>
         /// <param name="rightStr">The right IPv4 address string.</param>
-        /// <param name="expectedSign">The expected sign of the comparison result (-1, 0, or 1).</param>
+        /// <param name="expectedSign">The expected comparison result.</param>
         [Theory]
         [MemberData(nameof(CompareTo_Test_Data))]
         public void CompareTo_IPv4Values_ReturnsExpectedSign_Test(string leftStr, string rightStr, int expectedSign)

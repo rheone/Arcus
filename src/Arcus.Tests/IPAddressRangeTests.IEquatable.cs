@@ -15,8 +15,8 @@ namespace Arcus.Tests
         /// <param name="expected">Expected result.</param>
         /// <param name="xHead">The head address of the left range.</param>
         /// <param name="xTail">The tail address of the left range.</param>
-        /// <param name="yHead">The head address of the right range, or null.</param>
-        /// <param name="yTail">The tail address of the right range, or null.</param>
+        /// <param name="yHead">The head address of the right range.</param>
+        /// <param name="yTail">The tail address of the right range.</param>
         [Theory]
         [InlineData(true, "192.168.1.1", "192.168.1.10", "192.168.1.1", "192.168.1.10")]
         [InlineData(false, "192.168.1.1", "192.168.1.5", null, null)]
@@ -49,8 +49,8 @@ namespace Arcus.Tests
         /// <param name="expected">Expected result.</param>
         /// <param name="xHead">The head address of the left range.</param>
         /// <param name="xTail">The tail address of the left range.</param>
-        /// <param name="yHead">The head address of the right range, or null.</param>
-        /// <param name="yTail">The tail address of the right range, or null.</param>
+        /// <param name="yHead">The head address of the right range.</param>
+        /// <param name="yTail">The tail address of the right range.</param>
         [Theory]
         [InlineData(true, "192.168.1.1", "192.168.1.10", "192.168.1.1", "192.168.1.10")]
         [InlineData(false, "192.168.1.1", "192.168.1.5", null, null)]

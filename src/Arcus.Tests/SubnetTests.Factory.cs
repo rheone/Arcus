@@ -38,7 +38,7 @@ namespace Arcus.Tests
         }
 
         /// <summary>Verifies that <see cref="Subnet.TryIPv4FromPartial"/> returns the expected subnet for a given partial IPv4 string.</summary>
-        /// <param name="expected">Expected subnet, or null when the parse should fail.</param>
+        /// <param name="expected">Expected subnet when parsing succeeds.</param>
         /// <param name="input">Partial IPv4 address string to parse.</param>
         [Theory]
         [MemberData(nameof(TryIPv4FromPartial_Test_Values))]
@@ -298,8 +298,8 @@ namespace Arcus.Tests
         }
 
         /// <summary>Verifies that <see cref="Subnet.FromBytes(byte[], byte[])"/> throws <see cref="ArgumentNullException"/> for null or empty byte arrays.</summary>
-        /// <param name="lowAddressBytes">Low address byte array, or null.</param>
-        /// <param name="highAddressBytes">High address byte array, or null.</param>
+        /// <param name="lowAddressBytes">Low address byte array.</param>
+        /// <param name="highAddressBytes">High address byte array.</param>
         [Theory]
         [InlineData(null, new byte[] { 0x01, 0x01, 0xA8, 0xC0 })]
         [InlineData(new byte[] { 0x01, 0x01, 0xA8, 0xC0 }, null)]
@@ -413,7 +413,7 @@ namespace Arcus.Tests
 
         /// <summary>Verifies that <see cref="Subnet.TryFromBytes(byte[], byte[], out Subnet)"/> returns the expected success flag and subnet.</summary>
         /// <param name="expectedSuccess">Expected return value of the try method.</param>
-        /// <param name="expectedSubnet">Expected subnet output, or null on failure.</param>
+        /// <param name="expectedSubnet">Expected subnet output when parsing succeeds.</param>
         /// <param name="lowAddressBytes">Byte array for the low address.</param>
         /// <param name="highAddressBytes">Byte array for the high address.</param>
         [Theory]
@@ -653,7 +653,7 @@ namespace Arcus.Tests
         }
 
         /// <summary>Verifies that <see cref="Subnet.TryParse(string, out Subnet)"/> returns the expected success flag and subnet.</summary>
-        /// <param name="expected">Expected subnet output, or null on failure.</param>
+        /// <param name="expected">Expected subnet output when parsing succeeds.</param>
         /// <param name="input">CIDR string to parse.</param>
         [Theory]
         [MemberData(nameof(TryParse_String_Test_Values))]
@@ -822,7 +822,7 @@ namespace Arcus.Tests
 
         /// <summary>Verifies that <see cref="Subnet.TryParse(string, int, out Subnet)"/> returns the expected success flag and subnet.</summary>
         /// <param name="expectedSuccess">Expected return value of the try method.</param>
-        /// <param name="expectedSubnet">Expected subnet output, or null on failure.</param>
+        /// <param name="expectedSubnet">Expected subnet output when parsing succeeds.</param>
         /// <param name="addressString">IP address string.</param>
         /// <param name="routePrefix">Routing prefix length.</param>
         [Theory]
@@ -912,8 +912,8 @@ namespace Arcus.Tests
         }
 
         /// <summary>Verifies that <see cref="Subnet.Parse(string, string)"/> throws <see cref="ArgumentNullException"/> when either address string is null.</summary>
-        /// <param name="low">Low address string, or null.</param>
-        /// <param name="high">High address string, or null.</param>
+        /// <param name="low">Low address string.</param>
+        /// <param name="high">High address string.</param>
         [Theory]
         [InlineData("::", null)]
         [InlineData(null, "::")]
@@ -1035,7 +1035,7 @@ namespace Arcus.Tests
         }
 
         /// <summary>Verifies that <see cref="Subnet.TryParse(string, string, out Subnet)"/> returns the expected success flag and subnet.</summary>
-        /// <param name="expected">Expected subnet output, or null on failure.</param>
+        /// <param name="expected">Expected subnet output when parsing succeeds.</param>
         /// <param name="low">Low address string.</param>
         /// <param name="high">High address string.</param>
         [Theory]
@@ -1161,7 +1161,7 @@ namespace Arcus.Tests
 
         /// <summary>Verifies that <see cref="Subnet.TryFromNetMask(IPAddress, IPAddress, out Subnet)"/> returns the expected success flag and subnet.</summary>
         /// <param name="expectedSuccess">Expected return value of the try method.</param>
-        /// <param name="expectedSubnet">Expected subnet output, or null on failure.</param>
+        /// <param name="expectedSubnet">Expected subnet output when parsing succeeds.</param>
         /// <param name="networkPrefix">Network prefix address.</param>
         /// <param name="netmask">Netmask address.</param>
         [Theory]

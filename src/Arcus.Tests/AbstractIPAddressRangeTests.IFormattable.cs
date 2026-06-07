@@ -14,7 +14,7 @@ namespace Arcus.Tests
         /// <summary>Verifies ToString with a general format specifier returns the Head-dash-Tail representation.</summary>
         /// <param name="headString">Head address string.</param>
         /// <param name="tailString">Tail address string.</param>
-        /// <param name="format">Format specifier (null, empty, "g", or "G").</param>
+        /// <param name="format">Format string for the output representation.</param>
         /// <param name="expected">Expected formatted string.</param>
         [Theory]
         [InlineData("192.168.1.1", "192.168.1.5", null, "192.168.1.1 - 192.168.1.5")]
