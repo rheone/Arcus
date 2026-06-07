@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 #if NETSTANDARD2_0
 using System.Runtime.Serialization;
 #endif
@@ -17,6 +18,7 @@ namespace Arcus
     ///         <see cref="Subnet"/>, ranges are not constrained to power-of-two boundaries or valid network addresses.
     ///     </para>
     /// </remarks>
+    [DebuggerDisplay("{Head} - {Tail} ({Length})")]
     [System.Serializable]
     public partial class IPAddressRange : AbstractIPAddressRange
     {

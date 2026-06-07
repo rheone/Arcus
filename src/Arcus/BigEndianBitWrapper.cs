@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 #if !NET8_0_OR_GREATER
@@ -20,6 +21,7 @@ namespace Arcus
     ///         is bounded by <see cref="ByteWidth" />, not by the full 128-bit range.
     ///     </para>
     /// </remarks>
+    [DebuggerDisplay("{DebuggerDisplay}")]
     internal readonly partial struct BigEndianBitWrapper
         : IComparable<BigEndianBitWrapper>,
             IEquatable<BigEndianBitWrapper>,
@@ -397,6 +399,17 @@ namespace Arcus
         /// <summary>Returns the hex compact representation (same as <see cref="ToHexString" />).</summary>
         /// <returns>An uppercase hex string of length <c>ByteWidth × 2</c>.</returns>
         public override string ToString() => ToHexString();
+
+        [DebuggerBrowsable(DebuggerBrowsableState.Never)]
+        private string DebuggerDisplay
+        {
+            get
+            {
+                var bytes = ToBytes();
+                var hex = string.Join("_", Array.ConvertAll(bytes, b => b.ToString("X2", CultureInfo.InvariantCulture)));
+                return $"0x{hex} ({ByteWidth} bytes)";
+            }
+        }
 
         #endregion // end: Formatting
     }

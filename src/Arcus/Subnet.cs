@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
 using System.Net;
@@ -30,6 +31,7 @@ namespace Arcus
     ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
     ///     </para>
     /// </remarks>
+    [DebuggerDisplay("{ToString()}")]
     [Serializable]
     public partial class Subnet : AbstractIPAddressRange
     {

@@ -145,6 +145,9 @@
     <Compile Update="Subnet.ISerializable.cs">
       <DependentUpon>Subnet.cs</DependentUpon>
     </Compile>
+    <Compile Update="Subnet.Factory.cs">
+      <DependentUpon>Subnet.cs</DependentUpon>
+    </Compile>
     <Compile Update="Subnet.Operators.cs">
       <DependentUpon>Subnet.cs</DependentUpon>
     </Compile>
