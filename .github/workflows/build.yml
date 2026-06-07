@@ -45,3 +45,62 @@ jobs:
 
       - name: Test
         run: dotnet test ./src --no-build --verbosity normal
+
+  smoke-test:
+    name: Smoke Test (${{ matrix.os }} / ${{ matrix.framework }})
+    runs-on: ${{ matrix.os }}
+    needs: build
+    env:
+      HUSKY: 0
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # netstandard2.0 asset — must run on Windows (.NET Framework)
+          - os: windows-latest
+            framework: net48
+          # dedicated net8/9/10 assets — run on Linux for OS coverage
+          - os: ubuntu-latest
+            framework: net8.0
+          - os: ubuntu-latest
+            framework: net9.0
+          - os: ubuntu-latest
+            framework: net10.0
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v6
+
+      - name: Setup .NET SDKs
+        uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Pack Arcus into local feed
+        shell: bash
+        run: |
+          mkdir -p smoke-tests/feed
+          dotnet pack src/Arcus/Arcus.csproj \
+            --configuration Release \
+            --output smoke-tests/feed \
+            -p:VersionFromCI=99.0.0-smoke \
+            --verbosity quiet
+
+      - name: Restore SmokeTests consumer
+        run: dotnet restore smoke-tests/SmokeTests/SmokeTests.csproj -p:ArcusVersion=99.0.0-smoke --verbosity quiet
+
+      - name: Build SmokeTests consumer
+        run: dotnet build smoke-tests/SmokeTests/SmokeTests.csproj --no-restore --configuration Release -p:ArcusVersion=99.0.0-smoke --verbosity quiet
+
+      - name: Run smoke tests (${{ matrix.framework }})
+        run: >
+          dotnet run
+          --project smoke-tests/SmokeTests/SmokeTests.csproj
+          --framework ${{ matrix.framework }}
+          --configuration Release
+          --no-build
+          -p:ArcusVersion=99.0.0-smoke
