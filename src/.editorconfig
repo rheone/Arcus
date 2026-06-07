@@ -1,4 +1,4 @@
-﻿# .NET project .editorconfig as of 2025-02-03
+﻿# .NET project .editorconfig as of 2026-06-07
 
 root = false
 
@@ -17,7 +17,6 @@ indent_size = 2
 
 # Indentation and spacing
 indent_size = 4
-tab_width = 4
 
 # New line preferences
 end_of_line = crlf
@@ -114,7 +113,6 @@ csharp_prefer_simple_using_statement = true:suggestion
 csharp_prefer_simple_default_expression = true:suggestion
 csharp_style_deconstructed_variable_declaration = true:suggestion
 csharp_style_inlined_variable_declaration = true:suggestion
-csharp_style_pattern_local_over_anonymous_function = true:suggestion
 csharp_style_prefer_index_operator = true:suggestion
 csharp_style_prefer_range_operator = true:suggestion
 csharp_style_throw_expression = true:suggestion
@@ -596,6 +594,5 @@ dotnet_diagnostic.VSTHRD200.severity = None # Use Async suffix for async methods
 
 # Misc
 dotnet_diagnostic.CS1591.severity = None	 # Missing XML comment for publicly visible type or member 'Type_or_Member'
-dotnet_diagnostic.SA1600.severity = None	 # Elements should be documented
 dotnet_diagnostic.CA1707.severity = None     # Identifiers should not contain underscores
 dotnet_diagnostic.RCS1192.severity = Warning # RCS1192: Unnecessary usage of verbatim string literal.
