@@ -204,7 +204,13 @@ docs/_build
 
 
 # Smoke test local NuGet feed (created by run-smoke-tests scripts)
-smoke-tests/feed/
+Arcus.SmokeTests/feed/
 
 # Benchmark results (commit manually with git add -f to record a progression snapshot)
-benchmarks/results/
+src/results/
+
+# Planning and working documents
+PRD*.md
+RELEASE-*.md
+future.todo.md
+skills-lock.json

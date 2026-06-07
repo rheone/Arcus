@@ -19,8 +19,8 @@ from a separate consumer project — exactly as an end-user would.
 ## Structure
 
 ```
-smoke-tests/
-├── nuget.config              # adds smoke-tests/feed/ as a local NuGet source
+Arcus.SmokeTests/
+├── nuget.config              # adds Arcus.SmokeTests/feed/ as a local NuGet source
 ├── run-smoke-tests.sh        # Linux / macOS (net8.0, net9.0, net10.0)
 ├── run-smoke-tests.ps1       # Windows     (net48, net8.0, net9.0, net10.0)
 └── SmokeTests/
@@ -28,7 +28,7 @@ smoke-tests/
     └── Program.cs            # exercises the full public API surface
 ```
 
-`smoke-tests/feed/` is git-ignored; the run scripts create it on demand.
+`Arcus.SmokeTests/feed/` is git-ignored; the run scripts create it on demand.
 
 ## Running locally
 
@@ -36,10 +36,10 @@ smoke-tests/
 
 ```bash
 # From the repo root:
-./smoke-tests/run-smoke-tests.sh
+./Arcus.SmokeTests/run-smoke-tests.sh
 
 # With an explicit version:
-./smoke-tests/run-smoke-tests.sh 4.0.0-preview
+./Arcus.SmokeTests/run-smoke-tests.sh 4.0.0-preview
 ```
 
 Covers **net8.0**, **net9.0**, **net10.0**.
@@ -48,10 +48,10 @@ Covers **net8.0**, **net9.0**, **net10.0**.
 
 ```powershell
 # From the repo root:
-.\smoke-tests\run-smoke-tests.ps1
+.\Arcus.SmokeTests\run-smoke-tests.ps1
 
 # With an explicit version:
-.\smoke-tests\run-smoke-tests.ps1 -Version 4.0.0-preview
+.\Arcus.SmokeTests\run-smoke-tests.ps1 -Version 4.0.0-preview
 ```
 
 Covers **net48** (→ `netstandard2.0` asset), **net8.0**, **net9.0**, **net10.0**.

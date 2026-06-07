@@ -83,23 +83,23 @@ jobs:
       - name: Pack Arcus into local feed
         shell: bash
         run: |
-          mkdir -p smoke-tests/feed
+          mkdir -p Arcus.SmokeTests/feed
           dotnet pack src/Arcus/Arcus.csproj \
             --configuration Release \
-            --output smoke-tests/feed \
+            --output Arcus.SmokeTests/feed \
             -p:VersionFromCI=99.0.0-smoke \
             --verbosity quiet
 
       - name: Restore SmokeTests consumer
-        run: dotnet restore smoke-tests/SmokeTests/SmokeTests.csproj -p:ArcusVersion=99.0.0-smoke --verbosity quiet
+        run: dotnet restore Arcus.SmokeTests/SmokeTests/SmokeTests.csproj -p:ArcusVersion=99.0.0-smoke --verbosity quiet
 
       - name: Build SmokeTests consumer
-        run: dotnet build smoke-tests/SmokeTests/SmokeTests.csproj --no-restore --configuration Release -p:ArcusVersion=99.0.0-smoke --verbosity quiet
+        run: dotnet build Arcus.SmokeTests/SmokeTests/SmokeTests.csproj --no-restore --configuration Release -p:ArcusVersion=99.0.0-smoke --verbosity quiet
 
       - name: Run smoke tests (${{ matrix.framework }})
         run: >
           dotnet run
-          --project smoke-tests/SmokeTests/SmokeTests.csproj
+          --project Arcus.SmokeTests/SmokeTests/SmokeTests.csproj
           --framework ${{ matrix.framework }}
           --configuration Release
           --no-build
