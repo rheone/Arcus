@@ -34,8 +34,5 @@ namespace Arcus
 
             return false;
         }
-
-        /// <inheritdoc />
-        public override int GetHashCode() => HashCode.Combine(AddressFamily, Head, RoutingPrefix);
     }
 }

@@ -26,7 +26,7 @@ namespace Arcus.Utilities
         ///         <b>Breaking change (readonly):</b> This field is now <see langword="readonly" />.
         ///         Prior to this version the field reference could be reassigned by external code.
         ///         Code that assigned to <c>SubnetUtilities.PrivateIPAddressRangesList = ...</c>
-        ///         will no longer compile. The <see cref="IReadOnlyList{T}" /> contract already
+        ///         will no longer compile. The <see cref="IReadOnlyList{Subnet}" /> contract already
         ///         prevented mutation of the list contents; this change extends that guarantee to
         ///         the field reference itself.
         ///     </para>

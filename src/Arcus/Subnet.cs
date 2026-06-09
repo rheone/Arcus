@@ -152,20 +152,15 @@ namespace Arcus
         /// </summary>
         /// <param name="subnet">the subnet to test</param>
         /// <returns>true if the passed subnet is contained within this</returns>
-        public bool Contains(Subnet subnet)
-        {
-            return subnet != null && Contains(subnet.NetworkPrefixAddress) && Contains(subnet.BroadcastAddress);
-        }
+        public bool Contains(Subnet subnet) =>
+            subnet != null && Contains(subnet.NetworkPrefixAddress) && Contains(subnet.BroadcastAddress);
 
         /// <summary>
         ///     check if the given subnets overlaps this
         /// </summary>
         /// <param name="subnet">the subnet to check the overlap of</param>
         /// <returns>true if there is an overlap</returns>
-        public bool Overlaps(Subnet subnet)
-        {
-            return subnet != null && (subnet.Contains(this) || this.Contains(subnet));
-        }
+        public bool Overlaps(Subnet subnet) => subnet != null && (subnet.Contains(this) || this.Contains(subnet));
 
         #endregion // end: set based operations
 
@@ -350,11 +345,7 @@ namespace Arcus
             return new CtorFactoryResult(new AddressTuple(result.Head, result.Tail), result.Mask, routingPrefix);
         }
 
-        private readonly struct CtorFactoryResult(
-            AbstractIPAddressRange.AddressTuple tuple,
-            IPAddress netmask,
-            int routingPrefix
-        )
+        private readonly struct CtorFactoryResult(AddressTuple tuple, IPAddress netmask, int routingPrefix)
         {
             public AddressTuple Tuple { get; } = tuple;
             public IPAddress Netmask { get; } = netmask;

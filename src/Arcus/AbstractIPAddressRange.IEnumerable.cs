@@ -7,7 +7,7 @@ using Arcus.Utilities;
 namespace Arcus
 {
     /// <content>
-    ///     <see cref="AbstractIPAddressRange"/> implementation of <see cref="IEnumerable{T}"/>
+    ///     <see cref="AbstractIPAddressRange"/> implementation of <see cref="IEnumerable{IPAddress}"/>
     /// </content>
     public abstract partial class AbstractIPAddressRange
     {
@@ -50,10 +50,7 @@ namespace Arcus
         }
 
         /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return this.GetEnumerator();
-        }
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
         #endregion // end: IEnumerable
     }

@@ -17,7 +17,7 @@ namespace Arcus
     ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
     ///         IPv6 addresses are represented as 128-bit unsigned integers per
     ///         <see href="https://www.rfc-editor.org/info/rfc4291/#section-2">RFC 4291 §2</see>;
-    ///         <see cref="System.Numerics.BigInteger"/> is used throughout because IPv6 ranges can exceed <see cref="long.MaxValue"/>.
+    ///         <see cref="BigInteger"/> is used throughout because IPv6 ranges can exceed <see cref="long.MaxValue"/>.
     ///     </para>
     /// </remarks>
     public abstract partial class AbstractIPAddressRange : IIPAddressRange
@@ -48,12 +48,15 @@ namespace Arcus
         /// <inheritdoc />
         public BigInteger Length { get; }
 
+        /// <inheritdoc />
+        public override int GetHashCode() => HashCode.Combine(Head, Tail);
+
         #region AddressTuple
 
         /// <summary>
         ///     AddressTuple for moving around a pair of <see cref="IPAddress" /> objects as a unit
         /// </summary>
-        protected readonly struct AddressTuple : IEquatable<AddressTuple>
+        private protected readonly struct AddressTuple : IEquatable<AddressTuple>
         {
             /// <summary>
             ///     Initializes a new instance of the <see cref="AddressTuple" /> struct.
@@ -83,16 +86,10 @@ namespace Arcus
             public IPAddress Tail { get; }
 
             /// <inheritdoc />
-            public bool Equals(AddressTuple other)
-            {
-                return this.Head.Equals(other.Head) && this.Tail.Equals(other.Tail);
-            }
+            public bool Equals(AddressTuple other) => this.Head.Equals(other.Head) && this.Tail.Equals(other.Tail);
 
             /// <inheritdoc />
-            public override bool Equals(object obj)
-            {
-                return obj is AddressTuple other && this.Equals(other);
-            }
+            public override bool Equals(object obj) => obj is AddressTuple other && this.Equals(other);
 
             /// <inheritdoc />
             public override int GetHashCode() => HashCode.Combine(Head, Tail);
@@ -187,7 +184,7 @@ namespace Arcus
         ///     Initializes a new instance of the <see cref="AbstractIPAddressRange"/> class.
         /// </summary>
         /// <param name="addressTuple">an <see cref="AddressTuple"/> representing two addresses</param>
-        protected AbstractIPAddressRange(AddressTuple addressTuple)
+        private protected AbstractIPAddressRange(AddressTuple addressTuple)
             : this(addressTuple.Head, addressTuple.Tail)
         {
             // nothing additional to do

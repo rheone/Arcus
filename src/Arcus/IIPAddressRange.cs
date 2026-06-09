@@ -16,7 +16,7 @@ namespace Arcus
     ///         Covers both the IPv4 32-bit address space per
     ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see> and the IPv6 128-bit address
     ///         space per <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
-    ///         <see cref="Length"/> uses <see cref="System.Numerics.BigInteger"/> because the IPv6 space (2<sup>128</sup>
+    ///         <see cref="Length"/> uses <see cref="BigInteger"/> because the IPv6 space (2<sup>128</sup>
     ///         addresses) exceeds <see cref="long.MaxValue"/>.
     ///     </para>
     /// </remarks>
@@ -42,7 +42,7 @@ namespace Arcus
         /// </value>
         /// <remarks>
         ///     <para>
-        ///         Typed as <see cref="System.Numerics.BigInteger"/> because the IPv6 address space contains 2<sup>128</sup>
+        ///         Typed as <see cref="BigInteger"/> because the IPv6 address space contains 2<sup>128</sup>
         ///         addresses per <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>,
         ///         which exceeds <see cref="long.MaxValue"/>.
         ///     </para>
