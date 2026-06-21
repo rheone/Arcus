@@ -42,9 +42,8 @@ namespace Arcus
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
             [AllowNull]
 #endif
-            IFormatProvider formatProvider)
-        {
-            return string.IsNullOrEmpty(format) || format == "G"
+            IFormatProvider formatProvider) =>
+            string.IsNullOrEmpty(format) || format == "G"
                 ? ToHexString()
                 : format switch
                 {
@@ -53,6 +52,5 @@ namespace Arcus
                     "b" => ToBinaryString(),
                     _ => throw new FormatException($"Unknown format specifier '{format}' for {nameof(BigEndianBitWrapper)}."),
                 };
-        }
     }
 }

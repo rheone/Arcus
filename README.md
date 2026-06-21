@@ -4,14 +4,62 @@
 [![nuget Version](https://img.shields.io/nuget/v/Arcus)](https://www.nuget.org/packages/Arcus)
 [![GitHub Release](https://img.shields.io/github/v/release/sandialabs/Arcus)](https://github.com/sandialabs/Arcus/releases)
 [![GitHub Tag](https://img.shields.io/github/v/tag/sandialabs/Arcus)](https://github.com/sandialabs/Arcus/tags)
-![Targets](https://img.shields.io/badge/.NET%20Standard%202.0%20|%20.NET%208.0%20|%20.NET%209.0|%20.NET%2010.0-blue)
+![Targets](https://img.shields.io/badge/.NET%20Standard%202.0%20|%20.NET%208.0%20|%20.NET%209.0%20|%20.NET%2010.0-blue)
 [![Apache 2.0 License](https://img.shields.io/github/license/sandialabs/Arcus?logo=apache)](https://github.com/sandialabs/Arcus/blob/main/LICENSE)
 
 ## About the Project
 
 Arcus is a C# manipulation library for calculating, parsing, formatting, converting, and comparing both IPv4 and IPv6 addresses and subnets. It accounts for 128-bit numbers on 32-bit platforms.
 
-## ❗Breaking Changes in v4.0.0
+## ❗Breaking Changes in v5.0.0
+
+### Enumeration cap via `maxEnumerationExponent` and `DefaultMaxEnumerationExponent`
+
+Every range type now stores a `MaxEnumerationExponent` property (0–128). Enumeration via `ToIPAddresses()` (and `foreach` / `IEnumerable<T>` for backwards compatibility) yields at most **2<sup>MaxEnumerationExponent</sup>** addresses.
+
+- The **default** is `DefaultMaxEnumerationExponent` = 12 (2<sup>12</sup> = 4096 addresses).
+- If a range contains more than 2<sup>MaxEnumerationExponent</sup> addresses, `InvalidOperationException` is thrown at the point the limit is exceeded.
+- This prevents accidental enumeration of enormous address spaces (e.g., a `/8` IPv4 subnet has 16,777,216 addresses).
+
+**Why:** Previously, `foreach` on an arbitrary range would silently enumerate every address — potentially trillions of iterations for large ranges. The cap forces developers to consciously opt into large enumeration by specifying a higher exponent. A value of `0` disables enumeration entirely; `128` allows enumeration up to the full IPv6 space (though practically impossible).
+
+**How to increase the cap:** Pass `maxEnumerationExponent` to constructors:
+
+```csharp
+// Default cap: 4096 addresses
+var subnet = new Subnet(IPAddress.Parse("10.0.0.0"), 8);
+
+// This will throw InvalidOperationException (> 4096 addresses)
+foreach (var addr in subnet) { /* throws */ }
+
+// Raise cap to 24 (16,777,216 addresses — enough for /8)
+var large = new Subnet(IPAddress.Parse("10.0.0.0"), 8, maxEnumerationExponent: 24);
+foreach (var addr in large) { /* OK */ }
+```
+
+The exponent parameter is available on all range constructors (`Subnet`, `IPAddressRange`, `AbstractIPAddressRange`), static factory methods (`Subnet.Parse`, `Subnet.FromNetMask`, `IPAddressRange.TryCollapseAll`, `IPAddressRange.TryExcludeAll`, `IPAddressRange.TryMerge`), and `SubnetUtilities.FewestConsecutiveSubnetsFor`.
+
+**Migration:**
+
+| Old pattern | New pattern |
+|---|---|
+| `subnet.Enumerate()` | `foreach (var addr in subnet)` (uses constructor cap; default 4096) |
+| `subnet.Enumerate(20)` | Construct with `maxEnumerationExponent: 20` and use `foreach` |
+| unlimited `foreach` on large ranges | Throws `InvalidOperationException` by default; increase exponent or use explicit arithmetic operations |
+
+### New `ToIPAddresses()` method
+
+A new method `IEnumerable<IPAddress> ToIPAddresses()` has been added to the `IIPAddressRange` interface and implemented on `AbstractIPAddressRange`. It returns an enumerable of the addresses in the range, capped by `MaxEnumerationExponent`.
+
+The existing `GetEnumerator()` is now `[Obsolete("Use ToIPAddresses() instead")]`. It still works (delegating to `ToIPAddresses()`), but produces a compile-time warning.
+
+```csharp
+// Current (warning-free):
+foreach (var addr in range.ToIPAddresses()) { ... }
+
+// Old style (produces obsolete warning in v5, will break in v6):
+foreach (var addr in range) { ... }
+```
 
 ### Removed types and members
 
@@ -22,15 +70,11 @@ The following previously `[Obsolete]` types and members have been removed.
 | `MacAddress` (entire type) | `Arcus` | No direct replacement in this library |
 | `DefaultIPAddressRangeComparer` (entire type) | `Arcus.Comparers` | Use `DefaultIIPAddressRangeComparer` |
 
----
-
 ### `SubnetUtilities` static fields are now `readonly`
 
 `SubnetUtilities.PrivateIPAddressRangesList` and `SubnetUtilities.LinkLocalIPAddressRangesList` are now declared `readonly`. Previously the field *reference* could be replaced by external code (e.g., `SubnetUtilities.PrivateIPAddressRangesList = myList`). That pattern will no longer compile. The `IReadOnlyList<Subnet>` type already prevented mutation of the list *contents*; `readonly` now also prevents replacement of the list itself.
 
 **Migration:** If you were replacing these fields to customize private-address detection, extract that logic into a separate variable and pass it explicitly to your own helper methods.
-
----
 
 ### Behavior corrections (non-breaking for correct usage)
 
@@ -43,8 +87,6 @@ The following bugs have been fixed. If your code was intentionally relying on th
 | `AbstractIPAddressRange.ContainsAllPublicAddresses()` | Checked only endpoints; returned `true` for ranges whose endpoints are public but whose interior spans a private block | Uses range-overlap detection |
 | `IPAddressRange.TryExcludeAll` | Threw `InvalidOperationException` when an exclusion ended at the family maximum address | Returns `(true, leading segment)` or `(true, [])` as appropriate |
 
----
-
 ### IP Address Parsing across .NET Targets
 
 In .NET versions up to and including .NET 4.8 (which corresponds to .NET Standard 2.0), stricter parsing rules are enforced for `IPAddress` according to the IPv6 specification. Specifically, the presence of a terminal '%' character without a valid zone index is considered invalid in these versions. As a result, the input `abcd::%` fails to parse, leading to a null or failed address parsing depending on `Parse`/`TryParse`.
@@ -52,6 +94,22 @@ In .NET versions up to and including .NET 4.8 (which corresponds to .NET Standar
 In newer versions of .NET, including .NET 8, .NET 9, and .NET 10, the parsing rules have been relaxed. The trailing '%' character is now ignored during parsing, allowing for inputs that would have previously failed.
 
 It is important to note that this scenario appears to be an extreme edge case. If in doubt, sanitize IP address user input to meet your development needs.
+
+### Anticipated future breaking change: `IEnumerable<IPAddress>` removal from `IIPAddressRange`
+
+In a future major version, `IIPAddressRange` (and its inheritors `Subnet` and `IPAddressRange`) will **no longer implement `IEnumerable<IPAddress>`**. The `GetEnumerator()` method will be removed entirely.
+
+**Why:** The `IEnumerable<IPAddress>` interface makes it too easy to accidentally enumerate astronomically large address spaces (e.g., a full IPv4 `/0` has ~4 billion addresses). The enumeration cap via `MaxEnumerationExponent` mitigates this at runtime, but the interface contract itself encourages direct `foreach` usage that is semantically misleading — iterating over billions of items is rarely the intent.
+
+**Migration strategy:** Replace all `foreach (var addr in range)` patterns with `foreach (var addr in range.ToIPAddresses())` now. This produces no warnings in v5 and will be required in the future version.
+
+```csharp
+// v5 (warning-free, will continue to work):
+foreach (var addr in range.ToIPAddresses()) { ... }
+
+// v5 (produces obsolete warning, will break in v6):
+foreach (var addr in range) { ... }
+```
 
 ## Getting Started
 
@@ -78,6 +136,12 @@ Console.WriteLine($"Usable addresses: {subnet.UsableHostAddressCount}");
 var testAddress = IPAddress.Parse("192.168.1.50");
 Console.WriteLine(subnet.Contains(testAddress)); // True
 
+// Enumerate (capped at 2^MaxEnumerationExponent = 4096 by default)
+foreach (var addr in subnet.ToIPAddresses().Take(5))
+{
+    Console.WriteLine(addr);
+}
+
 // IP math
 var nextAddress = testAddress.Increment(); // 192.168.1.51
 var prevAddress = testAddress.Increment(-2); // 192.168.1.48
@@ -100,6 +164,24 @@ Console.WriteLine($"Range length: {range.Length}");
 var covering = SubnetUtilities.FewestConsecutiveSubnetsFor(
     IPAddress.Parse("128.64.20.3"),
     IPAddress.Parse("128.64.20.12"));
+```
+
+#### Enumeration safety
+
+All range types enforce an enumeration cap via `MaxEnumerationExponent`. Use `ToIPAddresses()` to enumerate explicitly:
+
+```csharp
+// Safe enumeration (throws if range exceeds cap)
+foreach (var addr in range.ToIPAddresses())
+{
+    Process(addr);
+}
+
+// Check if enumeration would succeed
+if (range.Length <= (BigInteger.One << range.MaxEnumerationExponent))
+{
+    foreach (var addr in range.ToIPAddresses()) { ... }
+}
 ```
 
 #### `Subnet`
@@ -130,9 +212,18 @@ var subnet = Subnet.FromNetMask(
 var single = new Subnet(IPAddress.Parse("192.168.1.1")); // 192.168.1.1/32
 ```
 
-**Properties:** `Head`, `Tail`, `RoutingPrefix`, `Netmask` (IPv4 only), `BroadcastAddress`, `NetworkPrefixAddress`, `UsableHostAddressCount`, `Length`.
+All constructors and factory methods accept an optional `maxEnumerationExponent` parameter to control enumeration limits.
+
+**Properties:** `Head`, `Tail`, `RoutingPrefix`, `Netmask` (IPv4 only), `BroadcastAddress`, `NetworkPrefixAddress`, `UsableHostAddressCount`, `Length`, `MaxEnumerationExponent`.
 
 **Set operations:** `Contains(Subnet)`, `Overlaps(Subnet)`, `Touches(IIPAddressRange)`.
+
+**Public constants:**
+
+| Constant | Description |
+|---|---|
+| `Ipv4OctetPartialPattern` | Regex pattern matching partial IPv4 octet strings |
+| `RoughSubnetStringPattern` | Regex pattern matching rough subnet string shape |
 
 #### `IPAddressRange`
 
@@ -148,6 +239,22 @@ IPAddressRange.TryCollapseAll(ranges, out var collapsed);
 IPAddressRange.TryExcludeAll(initial, exclusions, out var remaining);
 IPAddressRange.TryMerge(left, right, out var merged);
 ```
+
+All static utility methods accept an optional `maxEnumerationExponent` parameter.
+
+#### `IIPAddressRange`
+
+The core interface implemented by both `Subnet` and `IPAddressRange`. Provides:
+
+- `Head`, `Tail`, `Length`, `AddressFamily`
+- `IsSingleIP`, `IsIPv4`, `IsIPv6`
+- `Contains(IIPAddressRange)`, `Contains(IPAddress)`
+- `Overlaps(IIPAddressRange)`, `Touches(IIPAddressRange)`
+- `HeadOverlappedBy(IIPAddressRange)`, `TailOverlappedBy(IIPAddressRange)`
+- `ContainsAnyPrivateAddresses()`, `ContainsAllPrivateAddresses()`
+- `ContainsAnyPublicAddresses()`, `ContainsAllPublicAddresses()`
+- `ToIPAddresses()` — enumerate addresses capped at `MaxEnumerationExponent`
+- `MaxEnumerationExponent` — the exponent controlling the enumeration cap
 
 #### Comparers
 
@@ -214,6 +321,20 @@ IPAddressUtilities.ParseIgnoreOctalInIPv4("010.000.001.001");
 IPAddressUtilities.TryParse(bigInteger, family, out address);
 ```
 
+**Public constants:**
+
+| Constant | Description |
+|---|---|
+| `DottedQuadLeadingZerosPattern` | Regex pattern matching leading zeros in dotted-quad octets |
+| `DottedQuadRegularExpressionPattern` | Regex pattern checking dotted-quad format |
+| `HexLikePattern` | Regex pattern matching hexadecimal digit strings |
+| `IPv4BitCount` | 32 |
+| `IPv4ByteCount` | 4 |
+| `IPv4OctetCount` | 4 |
+| `IPv6BitCount` | 128 |
+| `IPv6ByteCount` | 16 |
+| `IPv6HextetCount` | 8 |
+
 #### `SubnetUtilities`
 
 ```csharp
@@ -230,8 +351,6 @@ SubnetUtilities.SmallestSubnet(subnets);
 SubnetUtilities.PrivateIPAddressRangesList;
 SubnetUtilities.LinkLocalIPAddressRangesList;
 ```
-
-### Developer Notes
 
 ## Built With
 

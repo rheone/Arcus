@@ -20,6 +20,8 @@ namespace Arcus
 
             info.AddValue(nameof(this.BroadcastAddress), this.BroadcastAddress.GetAddressBytes());
             info.AddValue(nameof(this.RoutingPrefix), this.RoutingPrefix);
+            info.AddValue("SerVersion", 2);
+            info.AddValue(nameof(this.MaxEnumerationExponent), this.MaxEnumerationExponent);
         }
     }
 }

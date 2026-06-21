@@ -1013,6 +1013,18 @@ namespace Arcus.Tests
 
         #endregion // end: Ctor refactoring verification
 
+        #region maxEnumerationExponent propagation
+
+        /// <summary>Verifies that <see cref="Subnet(IPAddress, int, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void Ctor_IPAddress_ExponentPropagates_Test()
+        {
+            var subnet = new Subnet(IPAddress.Parse("10.0.0.1"), 32, maxEnumerationExponent: 4);
+            Assert.Equal(4, subnet.MaxEnumerationExponent);
+        }
+
+        #endregion // end: maxEnumerationExponent propagation
+
         internal class SubnetEqualityComparer : IEqualityComparer<Subnet>
         {
             public static readonly SubnetEqualityComparer Instance = new();

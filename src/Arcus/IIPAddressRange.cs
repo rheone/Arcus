@@ -22,7 +22,12 @@ namespace Arcus
     /// </remarks>
     public interface IIPAddressRange : IFormattable, IEnumerable<IPAddress>
     {
-        // TODO future versions of IIPAddressRange should not directly implement IEnumerable<IPAddress> and instead a spawn an IEnumerable on demand
+        /// <summary>
+        ///     Returns an <see cref="IEnumerable{T}"/> of the <see cref="IPAddress"/> values in this range, from
+        ///     <see cref="Head"/> to <see cref="Tail"/>, up to the cap defined by <c>MaxEnumerationExponent</c>.
+        /// </summary>
+        /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="IPAddress"/> values in the range.</returns>
+        IEnumerable<IPAddress> ToIPAddresses();
 
         /// <summary>
         ///     Gets the address family of the Address Range

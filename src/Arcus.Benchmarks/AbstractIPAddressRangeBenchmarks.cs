@@ -42,11 +42,25 @@ namespace Arcus.Benchmarks
             };
         }
 
-        [Benchmark]
-        public int Enumerate()
+        [Benchmark(Baseline = true)]
+#pragma warning disable CS0618 // Type or member is obsolete — intentionally testing backwards-compat path
+        public int Enumerate_Foreach()
         {
             var count = 0;
             foreach (var _ in _subnet)
+            {
+                count++;
+            }
+
+            return count;
+        }
+#pragma warning restore CS0618
+
+        [Benchmark]
+        public int Enumerate_Enumerate()
+        {
+            var count = 0;
+            foreach (var _ in _subnet.ToIPAddresses())
             {
                 count++;
             }

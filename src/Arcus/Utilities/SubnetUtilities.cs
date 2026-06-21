@@ -77,12 +77,17 @@ namespace Arcus.Utilities
         /// </remarks>
         /// <param name="left">lowest order IP Address</param>
         /// <param name="right">highest order IP Address</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns>an enumerable of Subnet</returns>
         /// <exception cref="ArgumentNullException"><paramref name="left"/> is <see langword="null"/>.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="right"/> is <see langword="null"/>.</exception>
         /// <exception cref="InvalidOperationException">Address families must match</exception>
         /// <exception cref="InvalidOperationException">Address families must be InterNetwork or InternetworkV6</exception>
-        public static IEnumerable<Subnet> FewestConsecutiveSubnetsFor(IPAddress left, IPAddress right)
+        public static IEnumerable<Subnet> FewestConsecutiveSubnetsFor(
+            IPAddress left,
+            IPAddress right,
+            int maxEnumerationExponent = AbstractIPAddressRange.DefaultMaxEnumerationExponent
+        )
         {
             #region defense
 
@@ -122,13 +127,18 @@ namespace Arcus.Utilities
             var minHead = IPAddressMath.Min(left, right);
             var maxTail = IPAddressMath.Max(left, right);
 
-            return FilledSubnets(minHead, maxTail, new Subnet(minHead, maxTail));
+            return FilledSubnets(
+                minHead,
+                maxTail,
+                new Subnet(minHead, maxTail, maxEnumerationExponent),
+                maxEnumerationExponent
+            );
 
             // recursive function call
             // Works by verifying that passed subnet isn't bounded by head, tail IP Addresses
             // if not breaks subnet in half and recursively tests, building in essence a binary tree of testable subnet paths
 
-            static IEnumerable<Subnet> FilledSubnets(IPAddress head, IPAddress tail, Subnet subnet)
+            static IEnumerable<Subnet> FilledSubnets(IPAddress head, IPAddress tail, Subnet subnet, int exponent)
             {
                 var networkPrefixAddress = subnet.NetworkPrefixAddress;
                 var broadcastAddress = subnet.BroadcastAddress;
@@ -152,7 +162,7 @@ namespace Arcus.Utilities
                 }
 
                 // build head subnet
-                var headSubnet = new Subnet(networkPrefixAddress, nextSmallestRoutePrefix);
+                var headSubnet = new Subnet(networkPrefixAddress, nextSmallestRoutePrefix, exponent);
 
                 // use the next address after the end of the head subnet as the first address for the tail subnet
                 if (!IPAddressMath.TryIncrement(headSubnet.BroadcastAddress, out var tailStartingAddress))
@@ -160,10 +170,10 @@ namespace Arcus.Utilities
                     throw new InvalidOperationException($"unable to increment {headSubnet.BroadcastAddress}");
                 }
 
-                var tailSubnet = new Subnet(tailStartingAddress, nextSmallestRoutePrefix);
+                var tailSubnet = new Subnet(tailStartingAddress, nextSmallestRoutePrefix, exponent);
 
                 // break into binary search tree, searching both head subnet and tail subnet for ownership of head and tail ip
-                return FilledSubnets(head, tail, headSubnet).Concat(FilledSubnets(head, tail, tailSubnet));
+                return FilledSubnets(head, tail, headSubnet, exponent).Concat(FilledSubnets(head, tail, tailSubnet, exponent));
             }
         }
 

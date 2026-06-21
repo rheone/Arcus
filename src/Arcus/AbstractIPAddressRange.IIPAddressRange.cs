@@ -91,11 +91,7 @@ namespace Arcus
             || Equals(this, addressRange)
             || (
                 addressRange != null
-                && (
-                    this.Contains(addressRange.Head)
-                    || this.Contains(addressRange.Tail)
-                    || addressRange.Contains(this)
-                )
+                && (this.Contains(addressRange.Head) || this.Contains(addressRange.Tail) || addressRange.Contains(this))
             );
 
         /// <inheritdoc />
@@ -168,9 +164,7 @@ namespace Arcus
         ///     </para>
         /// </remarks>
         public bool ContainsAnyPublicAddresses() =>
-            !SubnetUtilities.PrivateIPAddressRangesList.Any(subnet =>
-                subnet.Contains(this)
-            );
+            !SubnetUtilities.PrivateIPAddressRangesList.Any(subnet => subnet.Contains(this));
 
         /// <inheritdoc/>
         /// <remarks>

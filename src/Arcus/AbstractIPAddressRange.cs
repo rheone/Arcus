@@ -23,6 +23,20 @@ namespace Arcus
     public abstract partial class AbstractIPAddressRange : IIPAddressRange
     {
         /// <summary>
+        ///     The default maximum enumeration exponent (12), limiting enumeration to 4096 addresses.
+        /// </summary>
+        internal const int DefaultMaxEnumerationExponent = 12;
+
+        /// <summary>
+        ///     Gets the maximum enumeration exponent for this range. Enumeration via <see cref="ToIPAddresses"/> (and <c>foreach</c> /
+        ///     <see cref="System.Collections.Generic.IEnumerable{T}"/> for backwards compatibility) yields at most
+        ///     2<sup>MaxEnumerationExponent</sup> addresses. Defaults to <see cref="DefaultMaxEnumerationExponent"/>
+        ///     (2<sup>12</sup> = 4096) to prevent accidental enumeration of enormous address spaces.
+        /// </summary>
+        /// <value>The maximum enumeration exponent (0–128).</value>
+        public int MaxEnumerationExponent { get; }
+
+        /// <summary>
         ///     <see langword="true" /> Gets a value indicating whether if the subnet describes a single ip address
         /// </summary>
         /// <value>
@@ -47,9 +61,6 @@ namespace Arcus
 
         /// <inheritdoc />
         public BigInteger Length { get; }
-
-        /// <inheritdoc />
-        public override int GetHashCode() => HashCode.Combine(Head, Tail);
 
         #region AddressTuple
 
@@ -91,9 +102,6 @@ namespace Arcus
             /// <inheritdoc />
             public override bool Equals(object obj) => obj is AddressTuple other && this.Equals(other);
 
-            /// <inheritdoc />
-            public override int GetHashCode() => HashCode.Combine(Head, Tail);
-
             /// <summary>
             ///     Equals operation
             /// </summary>
@@ -115,6 +123,12 @@ namespace Arcus
             {
                 return !(left == right);
             }
+
+            /// <inheritdoc />
+            public override int GetHashCode()
+            {
+                throw new NotImplementedException();
+            }
         }
 
         #endregion // end: AddressTuple
@@ -126,10 +140,13 @@ namespace Arcus
         /// </summary>
         /// <param name="head">the range head (lowest valued <see cref="IPAddress" />)</param>
         /// <param name="tail">the range tail (highest valued <see cref="IPAddress" />)</param>
-        protected AbstractIPAddressRange(IPAddress head, IPAddress tail)
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128); enumeration yields at most 2<sup>maxEnumerationExponent</sup> addresses</param>
+        protected AbstractIPAddressRange(
+            IPAddress head,
+            IPAddress tail,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
         {
-            #region defense
-
             if (head == null)
             {
                 throw new ArgumentNullException(nameof(head));
@@ -139,6 +156,13 @@ namespace Arcus
             {
                 throw new ArgumentNullException(nameof(tail));
             }
+
+            if (maxEnumerationExponent < 0 || maxEnumerationExponent > 128)
+            {
+                throw new ArgumentOutOfRangeException(nameof(maxEnumerationExponent));
+            }
+
+            #region defense
 
             if (!IPAddressUtilities.ValidAddressFamilies.Contains(head.AddressFamily))
             {
@@ -168,6 +192,7 @@ namespace Arcus
 
             #endregion // end: defense
 
+            this.MaxEnumerationExponent = maxEnumerationExponent;
             this.Head = head;
             this.Tail = tail;
             this.Length = CalculateLength();
@@ -184,8 +209,12 @@ namespace Arcus
         ///     Initializes a new instance of the <see cref="AbstractIPAddressRange"/> class.
         /// </summary>
         /// <param name="addressTuple">an <see cref="AddressTuple"/> representing two addresses</param>
-        private protected AbstractIPAddressRange(AddressTuple addressTuple)
-            : this(addressTuple.Head, addressTuple.Tail)
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128)</param>
+        private protected AbstractIPAddressRange(
+            AddressTuple addressTuple,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
+            : this(addressTuple.Head, addressTuple.Tail, maxEnumerationExponent)
         {
             // nothing additional to do
         }

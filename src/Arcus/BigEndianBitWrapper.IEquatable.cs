@@ -2,7 +2,7 @@
 
 namespace Arcus
 {
-    /// <content><see cref="BigEndianBitWrapper"/> implementation of <see cref="System.IEquatable{T}"/></content>
+    /// <content><see cref="BigEndianBitWrapper"/> implementation of <see cref="IEquatable{BigEndianBitWrapper}"/></content>
     internal readonly partial struct BigEndianBitWrapper
     {
         /// <summary>
@@ -11,26 +11,22 @@ namespace Arcus
         /// </summary>
         /// <param name="other">The value to compare.</param>
         /// <returns><see langword="true" /> if equal.</returns>
-        public bool Equals(BigEndianBitWrapper other)
-        {
+        public bool Equals(BigEndianBitWrapper other) =>
 #if NET8_0_OR_GREATER
-            return _value == other._value && ByteWidth == other.ByteWidth;
+            _value == other._value && ByteWidth == other.ByteWidth;
 #else
-            return _hi == other._hi && _lo == other._lo && ByteWidth == other.ByteWidth;
+            _hi == other._hi && _lo == other._lo && ByteWidth == other.ByteWidth;
 #endif
-        }
 
         /// <inheritdoc />
         public override bool Equals(object obj) => obj is BigEndianBitWrapper other && Equals(other);
 
         /// <inheritdoc />
-        public override int GetHashCode()
-        {
+        public override int GetHashCode() =>
 #if NET8_0_OR_GREATER
-            return HashCode.Combine(_value, ByteWidth);
+            HashCode.Combine(_value, ByteWidth);
 #else
-            return HashCode.Combine(_hi, _lo, ByteWidth);
+            HashCode.Combine(_hi, _lo, ByteWidth);
 #endif
-        }
     }
 }

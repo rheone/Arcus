@@ -170,7 +170,7 @@ namespace Arcus.Tests
             for (var hextetCount = 1; hextetCount <= 8; hextetCount++)
             {
                 var subnets = new List<Subnet>();
-                for (var i = 8 - hextetCount; i >= 0; i--)
+                for (var i = 0; i <= 8 - hextetCount; i++)
                 {
                     var enumerable = hextets.Take(hextetCount).Select(s => new string([.. s.SkipWhile(c => c == '0')]));
                     var trimmedLeadingZero = string.Join(":", enumerable);
@@ -190,18 +190,193 @@ namespace Arcus.Tests
                     data.Add(subnets, $"{inputString}:");
                 }
 
-                // A bare hextet without any ':' is not treated as a valid partial IPv6 address
+                // A bare hextet pair without any trailing colon is treated as a partial address.
+                // A single bare hextet (hextets[0]) is handled separately via the bare-hex path.
                 if (!string.IsNullOrEmpty(inputString) && inputString != hextets[0])
                 {
                     data.Add(subnets, inputString);
                 }
             }
 
+            // edge cases — CIDR boundary values
+            data.Add(Enumerable.Empty<Subnet>(), "::/129"); // prefix exceeds 128
+            data.Add(new[] { Subnet.Parse("::/0") }, "::/0"); // prefix of zero
+            data.Add(Enumerable.Empty<Subnet>(), "::/"); // CIDR with missing prefix number
+            data.Add(Enumerable.Empty<Subnet>(), "::/abc"); // CIDR with non-numeric prefix
+
+            // edge cases — collapse in middle of address
+            data.Add(
+                [
+                    Subnet.Parse("2001:db8:0:0:0:0:0:1/128"),
+                    Subnet.Parse("2001:db8:0:0:0:0:1::/112"),
+                    Subnet.Parse("2001:db8:0:0:0:1::/96"),
+                    Subnet.Parse("2001:db8:0:0:1::/80"),
+                    Subnet.Parse("2001:db8:0:1::/64"),
+                    Subnet.Parse("2001:db8:1::/48"),
+                ],
+                "2001:db8::1"
+            );
+
+            // edge cases — uppercase hex (IPv6 is case-insensitive)
+            data.Add(
+                [
+                    Subnet.Parse("2001:db8:0:0:0:0:0:0/128"),
+                    Subnet.Parse("2001:db8:0:0:0:0:0::/112"),
+                    Subnet.Parse("2001:db8:0:0:0:0::/96"),
+                    Subnet.Parse("2001:db8:0:0:0::/80"),
+                    Subnet.Parse("2001:db8:0:0::/64"),
+                    Subnet.Parse("2001:db8:0::/48"),
+                    Subnet.Parse("2001:db8::/32"),
+                ],
+                "2001:DB8::"
+            );
+
+            // edge cases — IPv4 mapped IPv6 should be treated as an exact /128
+            data.Add(new[] { Subnet.Parse("::ffff:192.168.0.1/128") }, "::ffff:192.168.0.1/128");
+
+            // edge cases — valid but incomplete, 6 hextets without "::"
+            data.Add(
+                [
+                    Subnet.Parse("2001:db8:0:0:0:0:0:0/128"),
+                    Subnet.Parse("2001:db8:0:0:0:0:0::/112"),
+                    Subnet.Parse("2001:db8:0:0:0:0::/96"),
+                ],
+                "2001:db8:0:0:0:0:"
+            );
+
+            // edge cases — single non-zero hextet with trailing "::"
+            data.Add(
+                [
+                    Subnet.Parse("abba:0:0:0:0:0:0:0/128"),
+                    Subnet.Parse("abba:0:0:0:0:0:0::/112"),
+                    Subnet.Parse("abba:0:0:0:0:0::/96"),
+                    Subnet.Parse("abba:0:0:0:0::/80"),
+                    Subnet.Parse("abba:0:0:0::/64"),
+                    Subnet.Parse("abba:0:0::/48"),
+                    Subnet.Parse("abba:0::/32"),
+                    Subnet.Parse("abba::/16"),
+                ],
+                "abba::"
+            );
+
+            // edge cases — bare hextet pair without trailing "::"
+            data.Add(
+                [
+                    Subnet.Parse("2001:db8:0:0:0:0:0:0/128"),
+                    Subnet.Parse("2001:db8:0:0:0:0:0::/112"),
+                    Subnet.Parse("2001:db8:0:0:0:0::/96"),
+                    Subnet.Parse("2001:db8:0:0:0::/80"),
+                    Subnet.Parse("2001:db8:0:0::/64"),
+                    Subnet.Parse("2001:db8:0::/48"),
+                    Subnet.Parse("2001:db8::/32"),
+                ],
+                "2001:db8:"
+            );
+
+            // edge cases — IPv6 input that looks like a valid complete address without hextet count of 8
+            data.Add(new[] { Subnet.Parse("::1/128") }, "::1/128");
+            data.Add(new[] { Subnet.Parse("fe80::1/128") }, "fe80::1/128");
+
+            // bare hex word (no colons) — treated as single hextet with implicit "::"
+            data.Add(
+                [
+                    Subnet.Parse("2001:0:0:0:0:0:0:0/128"),
+                    Subnet.Parse("2001:0:0:0:0:0:0::/112"),
+                    Subnet.Parse("2001:0:0:0:0:0::/96"),
+                    Subnet.Parse("2001:0:0:0:0::/80"),
+                    Subnet.Parse("2001:0:0:0::/64"),
+                    Subnet.Parse("2001:0:0::/48"),
+                    Subnet.Parse("2001:0::/32"),
+                    Subnet.Parse("2001::/16"),
+                ],
+                "2001"
+            );
+
+            // bare hex word same as trailing "::" variant
+            data.Add(
+                [
+                    Subnet.Parse("abba:0:0:0:0:0:0:0/128"),
+                    Subnet.Parse("abba:0:0:0:0:0:0::/112"),
+                    Subnet.Parse("abba:0:0:0:0:0::/96"),
+                    Subnet.Parse("abba:0:0:0:0::/80"),
+                    Subnet.Parse("abba:0:0:0::/64"),
+                    Subnet.Parse("abba:0:0::/48"),
+                    Subnet.Parse("abba:0::/32"),
+                    Subnet.Parse("abba::/16"),
+                ],
+                "abba"
+            );
+
+            // whitespace trimming — leading/trailing spaces
+            data.Add(new[] { Subnet.Parse("::/128") }, "  ::/128");
+            data.Add(new[] { Subnet.Parse("::/128") }, "::/128  ");
+            data.Add(new[] { Subnet.Parse("::/128") }, "  ::/128  ");
+
+            // whitespace trimming with partial
+            data.Add(
+                [
+                    Subnet.Parse("2001:db8:0:0:0:0:0:0/128"),
+                    Subnet.Parse("2001:db8:0:0:0:0:0::/112"),
+                    Subnet.Parse("2001:db8:0:0:0:0::/96"),
+                    Subnet.Parse("2001:db8:0:0:0::/80"),
+                    Subnet.Parse("2001:db8:0:0::/64"),
+                    Subnet.Parse("2001:db8:0::/48"),
+                    Subnet.Parse("2001:db8::/32"),
+                ],
+                "  2001:db8::  "
+            );
+
+            // URL-bracketed address (brackets are stripped; result matches the unbracketed case)
+            data.Add(
+                [
+                    Subnet.Parse("2001:db8:0:0:0:0:0:1/128"),
+                    Subnet.Parse("2001:db8:0:0:0:0:1::/112"),
+                    Subnet.Parse("2001:db8:0:0:0:1::/96"),
+                    Subnet.Parse("2001:db8:0:0:1::/80"),
+                    Subnet.Parse("2001:db8:0:1::/64"),
+                    Subnet.Parse("2001:db8:1::/48"),
+                ],
+                "[2001:db8::1]"
+            );
+
+            // URL-bracketed with CIDR
+            data.Add(new[] { Subnet.Parse("2001:db8::/32") }, "[2001:db8::/32]");
+
+            // URL-bracketed with whitespace
+            data.Add(new[] { Subnet.Parse("::/0") }, "  [::/0]  ");
+
+            // bracketed partial
+            data.Add(
+                [
+                    Subnet.Parse("2001:db8:0:0:0:0:0:0/128"),
+                    Subnet.Parse("2001:db8:0:0:0:0:0::/112"),
+                    Subnet.Parse("2001:db8:0:0:0:0::/96"),
+                    Subnet.Parse("2001:db8:0:0:0::/80"),
+                    Subnet.Parse("2001:db8:0:0::/64"),
+                    Subnet.Parse("2001:db8:0::/48"),
+                    Subnet.Parse("2001:db8::/32"),
+                ],
+                "[2001:db8::]"
+            );
+
+            // invalid — unclosed bracket (no matching "]")
+            data.Add(Enumerable.Empty<Subnet>(), "[2001:db8::");
+
+            // invalid — unopened bracket (no matching "[")
+            data.Add(Enumerable.Empty<Subnet>(), "2001:db8::]");
+
+            // invalid — bare hex with colon is ambiguous
+            data.Add(Enumerable.Empty<Subnet>(), "xyz::");
+
+            // invalid — hex with invalid characters
+            data.Add(Enumerable.Empty<Subnet>(), "2001:db8::zzzz");
+
             return data;
         }
 
-        /// <summary>Verifies that <see cref="Subnet.TryIPv6FromPartial"/> returns the expected subnets for a given partial IPv6 string.</summary>
-        /// <param name="expected">Expected subnets, or an empty enumerable when the parse should fail.</param>
+        /// <summary>Verifies that <see cref="Subnet.TryIPv6FromPartial"/> returns the expected subnets
+        /// for a given partial IPv6 string, in the correct order (most-specific prefix first).</summary>
+        /// <param name="expected">Expected subnets in order, or an empty enumerable when the parse should fail.</param>
         /// <param name="input">Partial IPv6 address string to parse.</param>
         [Theory]
         [MemberData(nameof(TryIPv6FromPartial_Test_Values))]
@@ -213,13 +388,17 @@ namespace Arcus.Tests
             var success = Subnet.TryIPv6FromPartial(input, out var subnets);
 #pragma warning restore CS0618
 
-            // Assert
+            // Assert: verify count, content, AND order (most-specific prefix first)
             var expectedList = expected.ToList();
             var subnetList = subnets.ToList();
 
             Assert.Equal(expectedList.Any(), success);
+
             Assert.Equal(expectedList.Count, subnetList.Count);
-            Assert.All(subnetList, subnet => Assert.Contains(subnet, expectedList));
+            for (var i = 0; i < expectedList.Count; i++)
+            {
+                Assert.True(expectedList[i].Equals(subnetList[i]));
+            }
         }
 
         #endregion // end: TryIPv6FromPartial
@@ -281,7 +460,7 @@ namespace Arcus.Tests
             }
         }
 
-        /// <summary>Verifies that <see cref="Subnet.FromBytes(byte[], byte[])"/> produces the expected subnet from address byte arrays.</summary>
+        /// <summary>Verifies that <see cref="Subnet.FromBytes(byte[], byte[], int)"/> produces the expected subnet from address byte arrays.</summary>
         /// <param name="expected">Expected subnet.</param>
         /// <param name="lowAddressBytes">Byte array for the low address.</param>
         /// <param name="highAddressBytes">Byte array for the high address.</param>
@@ -297,7 +476,7 @@ namespace Arcus.Tests
             Assert.Equal(expected, subnet);
         }
 
-        /// <summary>Verifies that <see cref="Subnet.FromBytes(byte[], byte[])"/> throws <see cref="ArgumentNullException"/> for null or empty byte arrays.</summary>
+        /// <summary>Verifies that <see cref="Subnet.FromBytes(byte[], byte[], int)"/> throws <see cref="ArgumentNullException"/> for null or empty byte arrays.</summary>
         /// <param name="lowAddressBytes">Low address byte array.</param>
         /// <param name="highAddressBytes">High address byte array.</param>
         [Theory]
@@ -311,7 +490,7 @@ namespace Arcus.Tests
             Assert.Throws<ArgumentNullException>(() => Subnet.FromBytes(lowAddressBytes, highAddressBytes));
         }
 
-        /// <summary>Verifies that <see cref="Subnet.FromBytes(byte[], byte[])"/> throws <see cref="ArgumentException"/> for invalid byte array lengths.</summary>
+        /// <summary>Verifies that <see cref="Subnet.FromBytes(byte[], byte[], int)"/> throws <see cref="ArgumentException"/> for invalid byte array lengths.</summary>
         /// <param name="lowAddressBytes">Low address byte array with invalid length.</param>
         /// <param name="highAddressBytes">High address byte array with invalid length.</param>
         [Theory]
@@ -329,7 +508,7 @@ namespace Arcus.Tests
             Assert.IsType<ArgumentException>(exception.InnerException);
         }
 
-        /// <summary>Verifies that <see cref="Subnet.FromBytes(byte[], byte[])"/> throws <see cref="InvalidOperationException"/> when the high address is lower than the low address.</summary>
+        /// <summary>Verifies that <see cref="Subnet.FromBytes(byte[], byte[], int)"/> throws <see cref="InvalidOperationException"/> when the high address is lower than the low address.</summary>
         [Fact]
         public void FromBytes_HighAddressLowerThanLowAddress_Throws_InvalidOperationException_Test()
         {
@@ -411,7 +590,7 @@ namespace Arcus.Tests
             }
         }
 
-        /// <summary>Verifies that <see cref="Subnet.TryFromBytes(byte[], byte[], out Subnet)"/> returns the expected success flag and subnet.</summary>
+        /// <summary>Verifies that <see cref="Subnet.TryFromBytes(byte[], byte[], out Subnet, int)"/> returns the expected success flag and subnet.</summary>
         /// <param name="expectedSuccess">Expected return value of the try method.</param>
         /// <param name="expectedSubnet">Expected subnet output when parsing succeeds.</param>
         /// <param name="lowAddressBytes">Byte array for the low address.</param>
@@ -671,7 +850,7 @@ namespace Arcus.Tests
 
         #endregion // end: TryParse(string)
 
-        #region Parse(string, int)
+        #region Parse(string, int, int)
 
         /// <summary>Gets theory data for <see cref="Parse_String_Int_Test"/>.</summary>
         /// <returns>Parameters: expected subnet (<see cref="Subnet"/>), address string, routing prefix (int).</returns>
@@ -715,7 +894,7 @@ namespace Arcus.Tests
             }
         }
 
-        /// <summary>Verifies that <see cref="Subnet.Parse(string, int)"/> returns the expected subnet for an address string and routing prefix.</summary>
+        /// <summary>Verifies that <see cref="Subnet.Parse(string, int, int)"/> returns the expected subnet for an address string and routing prefix.</summary>
         /// <param name="expected">Expected subnet.</param>
         /// <param name="addressString">IP address string.</param>
         /// <param name="routePrefix">Routing prefix length.</param>
@@ -731,7 +910,7 @@ namespace Arcus.Tests
             Assert.Equal(expected, subnet);
         }
 
-        /// <summary>Verifies that <see cref="Subnet.Parse(string, int)"/> throws <see cref="ArgumentNullException"/> for a null address string.</summary>
+        /// <summary>Verifies that <see cref="Subnet.Parse(string, int, int)"/> throws <see cref="ArgumentNullException"/> for a null address string.</summary>
         [Fact]
         public void Parse_String_Int_NullAddressString_Throws_ArgumentNullException_Test()
         {
@@ -740,7 +919,7 @@ namespace Arcus.Tests
             Assert.Throws<ArgumentNullException>(() => Subnet.Parse((string)null, 24));
         }
 
-        /// <summary>Verifies that <see cref="Subnet.Parse(string, int)"/> throws <see cref="FormatException"/> for a badly formatted address string.</summary>
+        /// <summary>Verifies that <see cref="Subnet.Parse(string, int, int)"/> throws <see cref="FormatException"/> for a badly formatted address string.</summary>
         [Fact]
         public void Parse_String_Int_BadAddressFormat_Throws_FormatException_Test()
         {
@@ -749,7 +928,7 @@ namespace Arcus.Tests
             Assert.Throws<FormatException>(() => Subnet.Parse("potato", 24));
         }
 
-        /// <summary>Verifies that <see cref="Subnet.Parse(string, int)"/> throws <see cref="ArgumentOutOfRangeException"/> when the routing prefix is out of range.</summary>
+        /// <summary>Verifies that <see cref="Subnet.Parse(string, int, int)"/> throws <see cref="ArgumentOutOfRangeException"/> when the routing prefix is out of range.</summary>
         /// <param name="addressString">IP address string.</param>
         /// <param name="routingPrefix">The out-of-range routing prefix.</param>
         [Theory]
@@ -767,9 +946,9 @@ namespace Arcus.Tests
             Assert.Throws<ArgumentOutOfRangeException>(() => Subnet.Parse(addressString, routingPrefix));
         }
 
-        #endregion // end: Parse(string, int)
+        #endregion // end: Parse(string, int, int)
 
-        #region TryParse(string, int)
+        #region TryParse(string, int, int)
 
         /// <summary>Gets theory data for <see cref="TryParse_String_Int_Test"/>.</summary>
         /// <returns>Parameters: expected success (bool), expected subnet (<see cref="Subnet"/> or null), address string, routing prefix (int).</returns>
@@ -820,7 +999,7 @@ namespace Arcus.Tests
             }
         }
 
-        /// <summary>Verifies that <see cref="Subnet.TryParse(string, int, out Subnet)"/> returns the expected success flag and subnet.</summary>
+        /// <summary>Verifies that <see cref="Subnet.TryParse(string, int, out Subnet, int)"/> returns the expected success flag and subnet.</summary>
         /// <param name="expectedSuccess">Expected return value of the try method.</param>
         /// <param name="expectedSubnet">Expected subnet output when parsing succeeds.</param>
         /// <param name="addressString">IP address string.</param>
@@ -838,9 +1017,9 @@ namespace Arcus.Tests
             Assert.Equal(expectedSubnet, subnet);
         }
 
-        #endregion // end: TryParse(string, int)
+        #endregion // end: TryParse(string, int, int)
 
-        #region Parse(string, string)
+        #region Parse(string, string, int)
 
         /// <summary>Gets theory data for <see cref="Parse_String_String_Test"/>.</summary>
         /// <returns>Parameters: expected subnet (<see cref="Subnet"/>), low address string, high address string.</returns>
@@ -895,7 +1074,7 @@ namespace Arcus.Tests
             }
         }
 
-        /// <summary>Verifies that <see cref="Subnet.Parse(string, string)"/> returns the expected subnet for low and high address strings.</summary>
+        /// <summary>Verifies that <see cref="Subnet.Parse(string, string, int)"/> returns the expected subnet for low and high address strings.</summary>
         /// <param name="expected">Expected subnet.</param>
         /// <param name="low">Low address string.</param>
         /// <param name="high">High address string.</param>
@@ -911,7 +1090,7 @@ namespace Arcus.Tests
             Assert.Equal(expected, subnet);
         }
 
-        /// <summary>Verifies that <see cref="Subnet.Parse(string, string)"/> throws <see cref="ArgumentNullException"/> when either address string is null.</summary>
+        /// <summary>Verifies that <see cref="Subnet.Parse(string, string, int)"/> throws <see cref="ArgumentNullException"/> when either address string is null.</summary>
         /// <param name="low">Low address string.</param>
         /// <param name="high">High address string.</param>
         [Theory]
@@ -927,7 +1106,7 @@ namespace Arcus.Tests
             Assert.Throws<ArgumentNullException>(() => Subnet.Parse(low, high));
         }
 
-        /// <summary>Verifies that <see cref="Subnet.Parse(string, string)"/> throws <see cref="FormatException"/> for badly formatted address strings.</summary>
+        /// <summary>Verifies that <see cref="Subnet.Parse(string, string, int)"/> throws <see cref="FormatException"/> for badly formatted address strings.</summary>
         /// <param name="low">Low address string.</param>
         /// <param name="high">High address string.</param>
         [Theory]
@@ -942,7 +1121,7 @@ namespace Arcus.Tests
             Assert.Throws<FormatException>(() => Subnet.Parse(low, high));
         }
 
-        /// <summary>Verifies that <see cref="Subnet.Parse(string, string)"/> throws <see cref="ArgumentException"/> when the address strings are from different address families.</summary>
+        /// <summary>Verifies that <see cref="Subnet.Parse(string, string, int)"/> throws <see cref="ArgumentException"/> when the address strings are from different address families.</summary>
         /// <param name="low">Low address string.</param>
         /// <param name="high">High address string of a different family.</param>
         [Theory]
@@ -955,7 +1134,7 @@ namespace Arcus.Tests
             Assert.Throws<ArgumentException>(() => Subnet.Parse(low, high));
         }
 
-        /// <summary>Verifies that <see cref="Subnet.Parse(string, string)"/> throws <see cref="InvalidOperationException"/> when the low address is greater than the high address.</summary>
+        /// <summary>Verifies that <see cref="Subnet.Parse(string, string, int)"/> throws <see cref="InvalidOperationException"/> when the low address is greater than the high address.</summary>
         /// <param name="low">Low address string that is actually higher.</param>
         /// <param name="high">High address string that is actually lower.</param>
         [Theory]
@@ -968,9 +1147,9 @@ namespace Arcus.Tests
             Assert.Throws<InvalidOperationException>(() => Subnet.Parse(low, high));
         }
 
-        #endregion // end: Parse(string, string)
+        #endregion // end: Parse(string, string, int)
 
-        #region TryParse(string, string)
+        #region TryParse(string, string, int)
 
         /// <summary>Gets theory data for <see cref="TryParse_String_String_Test"/>.</summary>
         /// <returns>Parameters: expected subnet (<see cref="Subnet"/> or null), low address string, high address string.</returns>
@@ -1034,7 +1213,7 @@ namespace Arcus.Tests
             }
         }
 
-        /// <summary>Verifies that <see cref="Subnet.TryParse(string, string, out Subnet)"/> returns the expected success flag and subnet.</summary>
+        /// <summary>Verifies that <see cref="Subnet.TryParse(string, string, out Subnet, int)"/> returns the expected success flag and subnet.</summary>
         /// <param name="expected">Expected subnet output when parsing succeeds.</param>
         /// <param name="low">Low address string.</param>
         /// <param name="high">High address string.</param>
@@ -1052,7 +1231,7 @@ namespace Arcus.Tests
             Assert.Equal(expected, subnet);
         }
 
-        #endregion // end: TryParse(string, string)
+        #endregion // end: TryParse(string, string, int)
 
         #endregion // end: Static Factory Methods
 
@@ -1079,7 +1258,7 @@ namespace Arcus.Tests
             return data;
         }
 
-        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress)"/> returns the expected subnet for a network prefix and netmask.</summary>
+        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress, int)"/> returns the expected subnet for a network prefix and netmask.</summary>
         /// <param name="expected">Expected subnet.</param>
         /// <param name="networkPrefix">Network prefix address.</param>
         /// <param name="netmask">Netmask address.</param>
@@ -1096,7 +1275,7 @@ namespace Arcus.Tests
             Assert.Equal(netmask, result.Netmask);
         }
 
-        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress)"/> throws <see cref="ArgumentNullException"/> when the address is null.</summary>
+        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress, int)"/> throws <see cref="ArgumentNullException"/> when the address is null.</summary>
         [Fact]
         public void FromNetMask_NullAddress_Throws_ArgumentNullException_Test()
         {
@@ -1105,7 +1284,7 @@ namespace Arcus.Tests
             Assert.Throws<ArgumentNullException>(() => Subnet.FromNetMask(null, IPAddress.Any));
         }
 
-        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress)"/> throws <see cref="ArgumentNullException"/> when the netmask is null.</summary>
+        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress, int)"/> throws <see cref="ArgumentNullException"/> when the netmask is null.</summary>
         [Fact]
         public void FromNetMask_NullNetMask_Throws_ArgumentNullException_Test()
         {
@@ -1114,7 +1293,7 @@ namespace Arcus.Tests
             Assert.Throws<ArgumentNullException>(() => Subnet.FromNetMask(IPAddress.Any, null));
         }
 
-        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress)"/> throws <see cref="ArgumentException"/> when the netmask is invalid.</summary>
+        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress, int)"/> throws <see cref="ArgumentException"/> when the netmask is invalid.</summary>
         [Fact]
         public void FromNetMask_InvalidNetMask_Throws_ArgumentException_Test()
         {
@@ -1123,7 +1302,7 @@ namespace Arcus.Tests
             Assert.Throws<ArgumentException>(() => Subnet.FromNetMask(IPAddress.Any, IPAddress.IPv6Any));
         }
 
-        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress)"/> throws <see cref="ArgumentException"/> when the address is IPv6.</summary>
+        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress, int)"/> throws <see cref="ArgumentException"/> when the address is IPv6.</summary>
         [Fact]
         public void FromNetMask_IPv6Address_Throws_ArgumentException_Test()
         {
@@ -1159,7 +1338,7 @@ namespace Arcus.Tests
             return data;
         }
 
-        /// <summary>Verifies that <see cref="Subnet.TryFromNetMask(IPAddress, IPAddress, out Subnet)"/> returns the expected success flag and subnet.</summary>
+        /// <summary>Verifies that <see cref="Subnet.TryFromNetMask(IPAddress, IPAddress, out Subnet, int)"/> returns the expected success flag and subnet.</summary>
         /// <param name="expectedSuccess">Expected return value of the try method.</param>
         /// <param name="expectedSubnet">Expected subnet output when parsing succeeds.</param>
         /// <param name="networkPrefix">Network prefix address.</param>
@@ -1178,5 +1357,107 @@ namespace Arcus.Tests
         }
 
         #endregion // end: FromNetMask
+
+        #region maxEnumerationExponent propagation
+
+        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void FromNetMask_ExponentPropagates_Test()
+        {
+            var subnet = Subnet.FromNetMask(
+                IPAddress.Parse("192.168.0.0"),
+                IPAddress.Parse("255.255.0.0"),
+                maxEnumerationExponent: 4
+            );
+            Assert.Equal(4, subnet.MaxEnumerationExponent);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.TryFromNetMask(IPAddress, IPAddress, out Subnet, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void TryFromNetMask_ExponentPropagates_Test()
+        {
+            Subnet.TryFromNetMask(
+                IPAddress.Parse("192.168.0.0"),
+                IPAddress.Parse("255.255.0.0"),
+                out var subnet,
+                maxEnumerationExponent: 4
+            );
+            Assert.Equal(4, subnet.MaxEnumerationExponent);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.FromBytes(byte[], byte[], int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void FromBytes_ExponentPropagates_Test()
+        {
+            var low = new byte[] { 10, 0, 0, 0 };
+            var high = new byte[] { 10, 0, 0, 255 };
+            var subnet = Subnet.FromBytes(low, high, maxEnumerationExponent: 4);
+            Assert.Equal(4, subnet.MaxEnumerationExponent);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.TryFromBytes(byte[], byte[], out Subnet, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void TryFromBytes_ExponentPropagates_Test()
+        {
+            var low = new byte[] { 10, 0, 0, 0 };
+            var high = new byte[] { 10, 0, 0, 255 };
+            Subnet.TryFromBytes(low, high, out var subnet, maxEnumerationExponent: 4);
+            Assert.Equal(4, subnet.MaxEnumerationExponent);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.Parse(string, int, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void Parse_StringInt_ExponentPropagates_Test()
+        {
+            var subnet = Subnet.Parse("10.0.0.0", 24, maxEnumerationExponent: 4);
+            Assert.Equal(4, subnet.MaxEnumerationExponent);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.Parse(string, string, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void Parse_StringString_ExponentPropagates_Test()
+        {
+            var subnet = Subnet.Parse("10.0.0.0", "10.0.0.255", maxEnumerationExponent: 4);
+            Assert.Equal(4, subnet.MaxEnumerationExponent);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.TryParse(string, int, out Subnet, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void TryParse_StringInt_ExponentPropagates_Test()
+        {
+            Subnet.TryParse("10.0.0.0", 24, out var subnet, maxEnumerationExponent: 4);
+            Assert.Equal(4, subnet.MaxEnumerationExponent);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.TryParse(string, string, out Subnet, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void TryParse_StringString_ExponentPropagates_Test()
+        {
+            Subnet.TryParse("10.0.0.0", "10.0.0.255", out var subnet, maxEnumerationExponent: 4);
+            Assert.Equal(4, subnet.MaxEnumerationExponent);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.TryIPv4FromPartial(string, out Subnet, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void TryIPv4FromPartial_ExponentPropagates_Test()
+        {
+            Subnet.TryIPv4FromPartial("192.168", out var subnet, maxEnumerationExponent: 4);
+            Assert.Equal(4, subnet.MaxEnumerationExponent);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.TryIPv6FromPartial(string, out IEnumerable{Subnet}, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void TryIPv6FromPartial_ExponentPropagates_Test()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            Subnet.TryIPv6FromPartial("2001:db8::", out var subnets, maxEnumerationExponent: 4);
+#pragma warning restore CS0618
+            foreach (var subnet in subnets)
+            {
+                Assert.Equal(4, subnet.MaxEnumerationExponent);
+            }
+        }
+
+        #endregion // end: maxEnumerationExponent propagation
     }
 }

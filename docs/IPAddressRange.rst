@@ -5,7 +5,7 @@ IPAddress Range
 
 ``IPAddressRange`` is a very basic implementation of an :ref:`AbstractIPAddressRange` used to represent an inclusive range of arbitrary IP Addresses of the same address family. It isn't restricted to a `CIDR <https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing>`_ representation like a :ref:`Subnet` is, allowing for non-power of two range sizes.
 
-The ``IPAddressRange`` class extends :ref:`AbstractIPAddressRange` and implements :ref:`IIPAddressRange`, ``IEquatable<IPAddressRange>``, ``IComparable<IPAddressRange>``, ``IFormattable``, ``IEnumerable<IPAddress>``, and ``ISerializable``.
+The ``IPAddressRange`` class extends :ref:`AbstractIPAddressRange` and implements :ref:`IIPAddressRange`, ``IEquatable<IPAddressRange>``, ``IComparable<IPAddressRange>``, ``IFormattable``, ``IEnumerable<IPAddress>`` (deprecated — see :ref:`ToIPAddresses`), and ``ISerializable``.
 
 Creation
 --------
@@ -19,7 +19,9 @@ Addresses *MUST* be the same address family (either ``InterNetwork`` or ``InterN
 
 .. code-block:: c#
 
-   public IPAddressRange(IPAddress head, IPAddress tail)
+   public IPAddressRange(IPAddress head, IPAddress tail, int maxEnumerationExponent = 12)
+
+The optional ``maxEnumerationExponent`` parameter controls the enumeration cap: ``ToIPAddresses()`` will yield at most ``2^maxEnumerationExponent`` addresses (default 4096).
 
 constructor ``IPAddress address``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -28,7 +30,7 @@ On the rare occasion it may be desirable to make a ``IPAddressRange`` comprised 
 
 .. code-block:: c#
 
-   public IPAddressRange(IPAddress address)
+   public IPAddressRange(IPAddress address, int maxEnumerationExponent = 12)
 
 Static Functionality
 --------------------
@@ -44,7 +46,9 @@ The function call will return ``true`` if it could collapse two or more ranges. 
 
 .. code-block:: c#
 
-   public static bool TryCollapseAll(IEnumerable<IPAddressRange> ranges, out IEnumerable<IPAddressRange> result)
+   public static bool TryCollapseAll(IEnumerable<IPAddressRange> ranges, out IEnumerable<IPAddressRange> result, int maxEnumerationExponent = 12)
+
+The optional ``maxEnumerationExponent`` parameter controls the enumeration cap for any ranges created during collapse.
 
 The following example shows that the three touching ranges of ``192.168.1.0 - 192.168.1.5``, ``192.168.1.6 - 192.168.1.7``, and ``192.168.1.8 - 192.168.1.20`` were collapsed into the new ``IPAddressRange`` of ``192.168.1.0 - 192.168.1.20``.
 
@@ -92,7 +96,7 @@ TryExcludeAll
 
 .. code-block:: c#
 
-   public static bool TryExcludeAll(IPAddressRange initialRange, IEnumerable<IPAddressRange> excludedRanges, out IEnumerable<IPAddressRange> result)
+   public static bool TryExcludeAll(IPAddressRange initialRange, IEnumerable<IPAddressRange> excludedRanges, out IEnumerable<IPAddressRange> result, int maxEnumerationExponent = 12)
 
 TryMerge
 ^^^^^^^^
@@ -101,4 +105,4 @@ TryMerge
 
 .. code-block:: c#
 
-   public static bool TryMerge(IPAddressRange left, IPAddressRange right, out IPAddressRange mergedRange)
+   public static bool TryMerge(IPAddressRange left, IPAddressRange right, out IPAddressRange mergedRange, int maxEnumerationExponent = 12)

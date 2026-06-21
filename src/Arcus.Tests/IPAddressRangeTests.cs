@@ -153,6 +153,18 @@ namespace Arcus.Tests
 
         #endregion
 
+        #region maxEnumerationExponent propagation
+
+        /// <summary>Verifies that <see cref="IPAddressRange(IPAddress, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void Ctor_SingleAddress_ExponentPropagates_Test()
+        {
+            var range = new IPAddressRange(IPAddress.Parse("10.0.0.1"), maxEnumerationExponent: 4);
+            Assert.Equal(4, range.MaxEnumerationExponent);
+        }
+
+        #endregion
+
         #region Head set
 
         /// <summary>Verifies constructing with head greater than tail throws InvalidOperationException.</summary>

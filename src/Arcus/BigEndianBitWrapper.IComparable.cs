@@ -1,6 +1,6 @@
 ﻿namespace Arcus
 {
-    /// <content><see cref="BigEndianBitWrapper"/> implementation of <see cref="System.IComparable{T}"/></content>
+    /// <content><see cref="BigEndianBitWrapper"/> implementation of <see cref="System.IComparable{BigEndianBitWrapper}"/></content>
     internal readonly partial struct BigEndianBitWrapper
     {
         /// <summary>

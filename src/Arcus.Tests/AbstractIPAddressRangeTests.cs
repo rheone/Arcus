@@ -18,7 +18,7 @@ namespace Arcus.Tests
 
         #region other members
 
-        private static IPAddressRange CreateSubstituteIPAddressRange(IPAddress head, IPAddress tail)
+        private static IPAddressRange CreateIPAddressRange(IPAddress head, IPAddress tail)
         {
             return new IPAddressRange(head, tail);
         }
@@ -40,43 +40,37 @@ namespace Arcus.Tests
                 return new TheoryData<BigInteger, IPAddressRange>
                 {
                     // single address
-                    { new BigInteger(1), CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Any) },
-                    { new BigInteger(1), CreateSubstituteIPAddressRange(IPAddress.IPv6Any, IPAddress.IPv6Any) },
+                    { new BigInteger(1), CreateIPAddressRange(IPAddress.Any, IPAddress.Any) },
+                    { new BigInteger(1), CreateIPAddressRange(IPAddress.IPv6Any, IPAddress.IPv6Any) },
                     // maximum length ipv4
                     {
                         BigInteger.Pow(2, 32),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("0.0.0.0"), IPAddress.Parse("255.255.255.255"))
+                        CreateIPAddressRange(IPAddress.Parse("0.0.0.0"), IPAddress.Parse("255.255.255.255"))
                     },
                     // maximum length ipv6
                     {
                         BigInteger.Pow(2, 128),
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.Parse("::"),
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        )
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"))
                     },
                     // ipv6 length at int.MaxValue
                     {
                         new BigInteger(int.MaxValue),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::").Increment(int.MaxValue - 1))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::").Increment(int.MaxValue - 1))
                     },
                     // ipv6 length at long.MaxValue
                     {
                         new BigInteger(long.MaxValue),
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.Parse("::"),
-                            IPAddress.Parse("::").Increment(long.MaxValue - 1)
-                        )
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::").Increment(long.MaxValue - 1))
                     },
                     // ipv6 length at int.MaxValue + 1
                     {
                         new BigInteger(int.MaxValue) + 1,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::").Increment(int.MaxValue))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::").Increment(int.MaxValue))
                     },
                     // ipv6 length at long.MaxValue + 1
                     {
                         new BigInteger(long.MaxValue) + 1,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::").Increment(long.MaxValue))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::").Increment(long.MaxValue))
                     },
                 };
             }
@@ -141,7 +135,7 @@ namespace Arcus.Tests
             var tail = IPAddress.Parse(tailString);
 
             // Act
-            var iPAddressRange = CreateSubstituteIPAddressRange(head, tail);
+            var iPAddressRange = CreateIPAddressRange(head, tail);
 
             // Assert
             Assert.Equal(head, iPAddressRange.Head);
@@ -164,7 +158,7 @@ namespace Arcus.Tests
 
             // Act
             // Assert
-            Assert.Throws<System.ArgumentNullException>(() => CreateSubstituteIPAddressRange(head, tail));
+            Assert.Throws<System.ArgumentNullException>(() => CreateIPAddressRange(head, tail));
         }
 
         /// <summary>Verifies the constructor throws InvalidOperationException when head and tail are from different address families.</summary>
@@ -181,7 +175,7 @@ namespace Arcus.Tests
 
             // Act
             // Assert
-            var exception = Assert.Throws<System.InvalidOperationException>(() => CreateSubstituteIPAddressRange(head, tail));
+            var exception = Assert.Throws<System.InvalidOperationException>(() => CreateIPAddressRange(head, tail));
             Assert.Contains("matching address families", exception.Message, System.StringComparison.OrdinalIgnoreCase);
         }
 
@@ -199,7 +193,7 @@ namespace Arcus.Tests
 
             // Act
             // Assert
-            var exception = Assert.Throws<System.InvalidOperationException>(() => CreateSubstituteIPAddressRange(head, tail));
+            var exception = Assert.Throws<System.InvalidOperationException>(() => CreateIPAddressRange(head, tail));
             Assert.Contains("greater or equal", exception.Message, System.StringComparison.OrdinalIgnoreCase);
         }
 
@@ -218,7 +212,7 @@ namespace Arcus.Tests
             var head = IPAddress.Parse(headString);
             var tail = IPAddress.Parse(tailString);
 
-            var iPAddressRange = CreateSubstituteIPAddressRange(head, tail);
+            var iPAddressRange = CreateIPAddressRange(head, tail);
 
             // Act
             // Assert
@@ -238,7 +232,7 @@ namespace Arcus.Tests
             var head = IPAddress.Parse(headString);
             var tail = IPAddress.Parse(tailString);
 
-            var iPAddressRange = CreateSubstituteIPAddressRange(head, tail);
+            var iPAddressRange = CreateIPAddressRange(head, tail);
 
             // Act
             // Assert

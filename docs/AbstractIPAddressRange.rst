@@ -7,9 +7,13 @@ The ``AbstractIPAddressRange`` is an abstract implementation of :ref:`IIPAddress
 
 .. note::
 
+   **Enumeration cap:** Every range now stores a ``MaxEnumerationExponent`` (default 12). Enumeration via ``ToIPAddresses()`` yields at most ``2^MaxEnumerationExponent`` addresses (4096 by default). If exceeded, ``InvalidOperationException`` is thrown. Pass a larger ``maxEnumerationExponent`` at construction time to enumerate larger ranges.
+
    **Overlaps — symmetry fix:** ``Overlaps(IIPAddressRange)`` now returns ``true`` in both directions when one range is wholly contained inside the other. Previously, calling ``inner.Overlaps(outer)`` returned ``false`` when ``inner`` was wholly inside ``outer``.
 
    **ContainsAnyPrivateAddresses / ContainsAllPublicAddresses — range-overlap fix:** these methods previously used an endpoint heuristic that produced incorrect results when both endpoints of a range were public but the range's interior spanned a private subnet (e.g., ``11.0.0.0 – 173.0.0.0`` spans ``172.16.0.0/12``). All four ``ContainsAny/AllPrivate/PublicAddresses`` methods now use range-overlap detection against ``SubnetUtilities.PrivateIPAddressRangesList``.
+
+   **TryExcludeAll — boundary guards:** when an exclusion ends at the family maximum address (e.g., ``255.255.255.255``) the method returns ``(true, leading segment)`` or ``(true, [])`` instead of throwing ``InvalidOperationException``. The trailing-segment path is guarded symmetrically for family-minimum exclusions.
 
 Functionality Implementation
 ----------------------------

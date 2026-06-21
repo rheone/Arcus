@@ -480,5 +480,48 @@ namespace Arcus.Tests
         }
 
         #endregion // end: TryExcludeAll
+
+        #region maxEnumerationExponent propagation
+
+        /// <summary>Verifies that <see cref="IPAddressRange.TryMerge(IPAddressRange, IPAddressRange, out IPAddressRange, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void TryMerge_ExponentPropagates_Test()
+        {
+            var left = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("10.0.0.99"));
+            var right = new IPAddressRange(IPAddress.Parse("10.0.0.100"), IPAddress.Parse("10.0.0.255"));
+            IPAddressRange.TryMerge(left, right, out var merged, maxEnumerationExponent: 4);
+            Assert.Equal(4, merged.MaxEnumerationExponent);
+        }
+
+        /// <summary>Verifies that <see cref="IPAddressRange.TryCollapseAll"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void TryCollapseAll_ExponentPropagates_Test()
+        {
+            var ranges = new[]
+            {
+                new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("10.0.0.99")),
+                new IPAddressRange(IPAddress.Parse("10.0.0.100"), IPAddress.Parse("10.0.0.255")),
+            };
+            IPAddressRange.TryCollapseAll(ranges, out var results, maxEnumerationExponent: 4);
+            foreach (var r in results)
+            {
+                Assert.Equal(4, r.MaxEnumerationExponent);
+            }
+        }
+
+        /// <summary>Verifies that <see cref="IPAddressRange.TryExcludeAll"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void TryExcludeAll_ExponentPropagates_Test()
+        {
+            var initial = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("10.0.0.255"));
+            var exclusion = new IPAddressRange(IPAddress.Parse("10.0.0.100"), IPAddress.Parse("10.0.0.199"));
+            IPAddressRange.TryExcludeAll(initial, [exclusion], out var results, maxEnumerationExponent: 4);
+            foreach (var r in results)
+            {
+                Assert.Equal(4, r.MaxEnumerationExponent);
+            }
+        }
+
+        #endregion // end: maxEnumerationExponent propagation
     }
 }

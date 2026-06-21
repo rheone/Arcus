@@ -1,6 +1,8 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Net;
+using System.Numerics;
 using Arcus.Math;
 using Arcus.Utilities;
 
@@ -14,7 +16,20 @@ namespace Arcus
         #region IEnumerable / IEnumerable<IPAddress>
 
         /// <inheritdoc />
-        public IEnumerator<IPAddress> GetEnumerator()
+        public IEnumerable<IPAddress> ToIPAddresses() => EnumerateCore(BigInteger.One << this.MaxEnumerationExponent);
+
+        /// <inheritdoc />
+#pragma warning disable S1133 // Do not forget to remove this deprecated code someday
+        [Obsolete("Use ToIPAddresses() instead")]
+#pragma warning restore S1133
+        public IEnumerator<IPAddress> GetEnumerator() => ToIPAddresses().GetEnumerator();
+
+        /// <inheritdoc />
+#pragma warning disable CS0618 // Type or member is obsolete
+        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+#pragma warning restore CS0618
+
+        private IEnumerable<IPAddress> EnumerateCore(BigInteger maxCount)
         {
             var limitWrap = BigEndianBitWrapper.FromBytes(
                 IPAddressMath
@@ -25,14 +40,21 @@ namespace Arcus
             var current = BigEndianBitWrapper.FromBytes(this.Head.GetAddressBytes());
 
 #if NET8_0_OR_GREATER
-            // Reuse a pre-allocated buffer to avoid one allocation per yielded address.
-            // On NET8+ ToBytes(Span<byte>) writes in-place; IPAddress(ReadOnlySpan<byte>)
-            // copies internally so one allocation per iteration is unavoidable.
             var buffer = new byte[current.ByteWidth];
 #endif
 
+            BigInteger count = 0;
             while (current.CompareTo(limitWrap) <= 0)
             {
+                if (count >= maxCount)
+                {
+                    throw new InvalidOperationException(
+                        $"Enumeration limit of {maxCount} addresses (2^{this.MaxEnumerationExponent}) reached. "
+                            + $"The range contains {this.Length} addresses, which exceeds this limit. "
+                            + "Construct with a larger maxEnumerationExponent (0–128) to enumerate more."
+                    );
+                }
+
 #if NET8_0_OR_GREATER
                 current.ToBytes(buffer);
                 yield return new IPAddress(buffer);
@@ -46,11 +68,9 @@ namespace Arcus
                 }
 
                 current = next;
+                count++;
             }
         }
-
-        /// <inheritdoc />
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
 
         #endregion // end: IEnumerable
     }

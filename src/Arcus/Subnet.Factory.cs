@@ -67,17 +67,22 @@ namespace Arcus
         ///     <para>
         ///         The netmask must be a valid IPv4 subnet mask (contiguous leading 1-bits) per
         ///         <see href="https://www.rfc-editor.org/rfc/rfc950#section-2">RFC 950 §2</see>.
-        ///         IPv4 only; use <see cref="Subnet(IPAddress, int)"/> for IPv6.
+        ///         IPv4 only; use <see cref="Subnet.Subnet(IPAddress, int, int)"/> for IPv6.
         ///     </para>
         /// </remarks>
         /// <param name="address">the ip address</param>
         /// <param name="netmask">the net mask</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns>The created subnet</returns>
         /// <exception cref="ArgumentNullException">ipAddress</exception>
         /// <exception cref="ArgumentNullException">netmask</exception>
         /// <exception cref="InvalidOperationException">the given IP Address is not IPv4</exception>
         /// <exception cref="InvalidOperationException">the given netmask is invalid</exception>
-        public static Subnet FromNetMask(IPAddress address, IPAddress netmask)
+        public static Subnet FromNetMask(
+            IPAddress address,
+            IPAddress netmask,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
         {
             if (address is null)
             {
@@ -101,7 +106,7 @@ namespace Arcus
 
             try
             {
-                return new Subnet(address, netmask.NetmaskToCidrRoutePrefix());
+                return new Subnet(address, netmask.NetmaskToCidrRoutePrefix(), maxEnumerationExponent);
             }
             catch (Exception e)
             {
@@ -115,16 +120,27 @@ namespace Arcus
         /// <param name="address">the ip address</param>
         /// <param name="netmask">the net mask</param>
         /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns><see langword="true" /> on success</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-        public static bool TryFromNetMask(IPAddress address, IPAddress netmask, [NotNullWhen(true)] out Subnet subnet)
+        public static bool TryFromNetMask(
+            IPAddress address,
+            IPAddress netmask,
+            [NotNullWhen(true)] out Subnet subnet,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
 #else
-        public static bool TryFromNetMask(IPAddress address, IPAddress netmask, out Subnet subnet)
+        public static bool TryFromNetMask(
+            IPAddress address,
+            IPAddress netmask,
+            out Subnet subnet,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
 #endif
         {
             try
             {
-                subnet = FromNetMask(address, netmask);
+                subnet = FromNetMask(address, netmask, maxEnumerationExponent);
                 return true;
             }
             catch
@@ -143,8 +159,13 @@ namespace Arcus
         /// </summary>
         /// <param name="lowAddressBytes">the lower address <see cref="byte" /> array</param>
         /// <param name="highAddressBytes">the high address <see cref="byte" /> array</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns>The created <see cref="Subnet"/></returns>
-        public static Subnet FromBytes(byte[] lowAddressBytes, byte[] highAddressBytes)
+        public static Subnet FromBytes(
+            byte[] lowAddressBytes,
+            byte[] highAddressBytes,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
         {
             if (lowAddressBytes is null)
             {
@@ -186,7 +207,7 @@ namespace Arcus
 
             try
             {
-                return new Subnet(lowAddress, highAddress);
+                return new Subnet(lowAddress, highAddress, maxEnumerationExponent);
             }
             catch (Exception e)
             {
@@ -202,16 +223,27 @@ namespace Arcus
         /// <param name="lowAddressBytes">the lower address <see cref="byte" /> array</param>
         /// <param name="highAddressBytes">the high address <see cref="byte" /> array</param>
         /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns><see langword="true" /> on success</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-        public static bool TryFromBytes(byte[] lowAddressBytes, byte[] highAddressBytes, [NotNullWhen(true)] out Subnet subnet)
+        public static bool TryFromBytes(
+            byte[] lowAddressBytes,
+            byte[] highAddressBytes,
+            [NotNullWhen(true)] out Subnet subnet,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
 #else
-        public static bool TryFromBytes(byte[] lowAddressBytes, byte[] highAddressBytes, out Subnet subnet)
+        public static bool TryFromBytes(
+            byte[] lowAddressBytes,
+            byte[] highAddressBytes,
+            out Subnet subnet,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
 #endif
         {
             try
             {
-                subnet = FromBytes(lowAddressBytes, highAddressBytes);
+                subnet = FromBytes(lowAddressBytes, highAddressBytes, maxEnumerationExponent);
                 return true;
             }
             catch
@@ -307,6 +339,7 @@ namespace Arcus
         /// </remarks>
         /// <param name="addressString">the address string</param>
         /// <param name="routingPrefix">the subnet routing prefix</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <exception cref="ArgumentException">
         /// <paramref name="addressString" /> has an invalid <see cref="System.Net.Sockets.AddressFamily" />
         /// </exception>
@@ -321,7 +354,11 @@ namespace Arcus
         /// <see cref="System.Net.Sockets.AddressFamily" />
         /// </exception>
         /// <returns>The parsed <see cref="Subnet"/></returns>
-        public static Subnet Parse(string addressString, int routingPrefix)
+        public static Subnet Parse(
+            string addressString,
+            int routingPrefix,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
         {
             if (addressString is null)
             {
@@ -358,7 +395,7 @@ namespace Arcus
 
             try
             {
-                return new Subnet(address, routingPrefix);
+                return new Subnet(address, routingPrefix, maxEnumerationExponent);
             }
             catch (Exception e)
             {
@@ -371,8 +408,13 @@ namespace Arcus
         /// </summary>
         /// <param name="lowAddressString">the low address string</param>
         /// <param name="highAddressString">the high address string</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns>The parsed <see cref="Subnet"/></returns>
-        public static Subnet Parse(string lowAddressString, string highAddressString)
+        public static Subnet Parse(
+            string lowAddressString,
+            string highAddressString,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
         {
             if (lowAddressString is null)
             {
@@ -426,7 +468,7 @@ namespace Arcus
 
             try
             {
-                return new Subnet(lowAddress, highAddress);
+                return new Subnet(lowAddress, highAddress, maxEnumerationExponent);
             }
             catch (Exception e)
             {
@@ -465,16 +507,27 @@ namespace Arcus
         /// <param name="addressString">the address string</param>
         /// <param name="routingPrefix">the subnet routing prefix</param>
         /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns><see langword="true" /> on success</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-        public static bool TryParse(string addressString, int routingPrefix, [NotNullWhen(true)] out Subnet subnet)
+        public static bool TryParse(
+            string addressString,
+            int routingPrefix,
+            [NotNullWhen(true)] out Subnet subnet,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
 #else
-        public static bool TryParse(string addressString, int routingPrefix, out Subnet subnet)
+        public static bool TryParse(
+            string addressString,
+            int routingPrefix,
+            out Subnet subnet,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
 #endif
         {
             try
             {
-                subnet = Parse(addressString, routingPrefix);
+                subnet = Parse(addressString, routingPrefix, maxEnumerationExponent);
                 return true;
             }
             catch
@@ -490,16 +543,27 @@ namespace Arcus
         /// <param name="lowAddressString">the low address string</param>
         /// <param name="highAddressString">the high address string</param>
         /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns><see langword="true" /> on success</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
-        public static bool TryParse(string lowAddressString, string highAddressString, [NotNullWhen(true)] out Subnet subnet)
+        public static bool TryParse(
+            string lowAddressString,
+            string highAddressString,
+            [NotNullWhen(true)] out Subnet subnet,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
 #else
-        public static bool TryParse(string lowAddressString, string highAddressString, out Subnet subnet)
+        public static bool TryParse(
+            string lowAddressString,
+            string highAddressString,
+            out Subnet subnet,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
 #endif
         {
             try
             {
-                subnet = Parse(lowAddressString, highAddressString);
+                subnet = Parse(lowAddressString, highAddressString, maxEnumerationExponent);
 
                 return true;
             }
@@ -524,12 +588,16 @@ namespace Arcus
         /// </remarks>
         /// <param name="input">the partial IP address to parse</param>
         /// <param name="subnet">the subnet created</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns>true on success</returns>
-        public static bool TryIPv4FromPartial(string input,
+        public static bool TryIPv4FromPartial(
+            string input,
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
             [NotNullWhen(true)]
 #endif
-            out Subnet subnet)
+            out Subnet subnet,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
         {
             if (string.IsNullOrWhiteSpace(input) || !IPv4OctetPartialRegex.IsMatch(input))
             {
@@ -543,7 +611,7 @@ namespace Arcus
 
             try
             {
-                subnet = Parse(addressString, octetCount * 8);
+                subnet = Parse(addressString, octetCount * 8, maxEnumerationExponent);
                 return true;
             }
             catch
@@ -554,139 +622,471 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Given a IPv6 cidr-like or IPv6 like string build a collection of all possible valid subnets that could be intended
-        ///     by the input
+        ///     Given a partial IPv6 address (with or without CIDR notation), enumerate all possible
+        ///     valid subnets the input could represent, ordered from most-specific to broadest
+        ///     (descending prefix length).
         /// </summary>
         /// <remarks>
+        ///     <para>
+        ///         This method handles several distinct input patterns, each delegated to a dedicated
+        ///         handler. See the individual handler documentation for details.
+        ///     </para>
+        ///     <list type="table">
+        ///         <listheader><term>Input pattern</term><description>Example</description></listheader>
+        ///         <item><term>Exact CIDR</term><description><c>"2001:db8::/32"</c> — returned as-is.</description></item>
+        ///         <item><term>Bare hex word</term><description><c>"2001"</c> or <c>"abba"</c> — treated as a single hextet with implicit <c>::</c>.</description></item>
+        ///         <item><term>Colon-separated partial</term><description><c>"2001:db8::"</c>, <c>"2001:db8:"</c>, <c>"2001:db8:0:0:0:0:"</c> — all possible prefix-length expansions.</description></item>
+        ///         <item><term>Bracketed</term><description><c>"[2001:db8::1]"</c> — brackets are stripped before processing.</description></item>
+        ///         <item><term>Whitespace-wrapped</term><description><c>" 2001:db8:: "</c> — leading/trailing whitespace is trimmed.</description></item>
+        ///     </list>
+        ///     <para>
+        ///         The permutation-based disambiguation treats each specified hextet as part of the
+        ///         routing prefix. For each possible count of zero hextets the <c>::</c> collapse
+        ///         could expand to (0 through the remaining hextet slots), a subnet is generated.
+        ///         Results are returned in descending prefix length order so the most specific
+        ///         (tightest) match appears first.
+        ///     </para>
+        ///     <para>
+        ///         For example, <c>"2001:db8::"</c> has 2 specified hextets and one <c>::</c> collapse.
+        ///         The collapse can expand to consume 0 through 5 hextet positions, producing
+        ///         subnets at prefix lengths /128, /112, /96, /80, /64, /48, /32.
+        ///     </para>
         ///     <para>
         ///         IPv6 colon-hex notation with <c>::</c> zero-group collapse per
         ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.2">RFC 4291 §2.2</see>.
         ///     </para>
+        ///     <para>
+        ///         This method is <see cref="ObsoleteAttribute"/> because the permutation-based
+        ///         disambiguation is a very specific behaviour that may not match the caller's
+        ///         intent. It is likely to be replaced by more explicit factory methods.
+        ///     </para>
         /// </remarks>
-        /// <param name="input">the partial ipv6 cidr or address</param>
-        /// <param name="subnets">a collection of all possible matching subnets on success, or an empty collection on failure</param>
-        /// <returns><see langword="true" /> on success</returns>
+        /// <param name="input">
+        ///     A partial IPv6 address string. The following forms are accepted:
+        ///     <list type="bullet">
+        ///         <item>
+        ///             <description>Exact CIDR notation — <c>"2001:db8::/32"</c>, <c>"::/0"</c>.</description>
+        ///         </item>
+        ///         <item>
+        ///             <description>Fully-qualified address — <c>"2001:db8::1"</c>, <c>"2001:db8:0:0:0:0:0:1"</c>.</description>
+        ///         </item>
+        ///         <item>
+        ///             <description>Partial hextets with trailing <c>::</c> — <c>"2001:db8::"</c>, <c>"abba::"</c>.</description>
+        ///         </item>
+        ///         <item>
+        ///             <description>Partial hextets with trailing <c>:</c> — <c>"2001:db8:"</c>, <c>"2001:db8:0:0:0:0:"</c>.</description>
+        ///         </item>
+        ///         <item>
+        ///             <description>Bare hex word (no colons) — <c>"2001"</c>, <c>"abba"</c>.</description>
+        ///         </item>
+        ///         <item>
+        ///             <description>URL-bracketed — <c>"[2001:db8::1]"</c>.</description>
+        ///         </item>
+        ///     </list>
+        ///     Leading/trailing whitespace is automatically trimmed.
+        /// </param>
+        /// <param name="subnets">
+        ///     When this method returns <see langword="true" />, a collection of all possible
+        ///     matching subnets ordered from most-specific (largest prefix) to broadest (smallest
+        ///     prefix); when <see langword="false" />, an empty collection.
+        /// </param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
+        /// <returns><see langword="true" /> when at least one valid subnet interpretation was found.</returns>
+#pragma warning disable S1133 // Do not forget to remove this deprecated code someday
         [Obsolete(
             "the needs for this method are very specialized and may not be what the developer is expecting; this is likely to be replaced by a host of other more explicit and useful methods"
         )]
-        public static bool TryIPv6FromPartial(string input, out IEnumerable<Subnet> subnets)
+#pragma warning restore S1133
+        public static bool TryIPv6FromPartial(
+            string input,
+            out IEnumerable<Subnet> subnets,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
         {
-            // try to discover possible garbage or incomplete input
-            int hextetCount;
-            if (
-                string.IsNullOrWhiteSpace(input)
-                || input.Equals(":", StringComparison.OrdinalIgnoreCase)
-                || input.Contains(":::")
-                || DoubleColonsAppearsMultipleTimes(input)
-                || (hextetCount = input.Split([':'], StringSplitOptions.RemoveEmptyEntries).Length)
-                    > IPAddressUtilities.IPv6HextetCount
-                || (
-                    hextetCount >= IPAddressUtilities.IPv6HextetCount && input.EndsWith(":", StringComparison.OrdinalIgnoreCase)
-                )
-            ) // too many hextets
+            subnets = [];
+
+            if (string.IsNullOrWhiteSpace(input))
             {
-                subnets = [];
                 return false;
             }
 
-            // parseable as a well defined IPv6 subnet already
-            if (input.Contains('/')
-#if NETSTANDARD2_0
-                && !input.EndsWith("/")
-#else
-                && !input.EndsWith('/')
-#endif
+            input = NormalizeIPv6PartialInput(input);
 
-                && TryParse(input, out var subnet) && subnet.IsIPv6)
+            if (!IsPotentiallyValidIPv6Partial(input))
+            {
+                return false;
+            }
+
+            if (TryParseExactCidr(input, out subnets))
+            {
+                return true;
+            }
+
+            if (ContainsOnlyHexChars(input))
+            {
+                return TryParseBareHextet(input, out subnets, maxEnumerationExponent);
+            }
+
+            return TryParseAmbiguousHextets(input, out subnets, maxEnumerationExponent);
+        }
+
+        /// <summary>
+        ///     Normalizes a raw user input string for partial IPv6 parsing.
+        ///     Trims leading/trailing whitespace and removes URL-style square brackets.
+        /// </summary>
+        /// <param name="input">The raw input string (must not be null).</param>
+        /// <returns>The normalized input string.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         Non-developer users may inadvertently include whitespace or wrap the
+        ///         address in brackets (e.g. from copying a URL). Normalizing upfront
+        ///         prevents these from causing spurious parse failures.
+        ///     </para>
+        /// </remarks>
+        private static string NormalizeIPv6PartialInput(string input)
+        {
+            input = input.Trim();
+
+            if (input.Length >= 2 && input[0] == '[' && input[input.Length - 1] == ']')
+            {
+                input = input.Substring(1, input.Length - 2).Trim();
+            }
+
+            return input;
+        }
+
+        /// <summary>
+        ///     Fast validation to reject inputs that cannot possibly be a valid IPv6 partial.
+        /// </summary>
+        /// <param name="input">The normalized input string.</param>
+        /// <returns><see langword="true" /> if the input <em>could</em> be a valid IPv6 partial.</returns>
+        /// <remarks>
+        ///     Rejects:
+        ///     <list type="bullet">
+        ///         <item>Lone <c>":"</c> — meaningless.</item>
+        ///         <item>Triple-colon <c>":::"</c> — invalid syntax.</item>
+        ///         <item>Multiple discrete <c>"::"</c> occurrences — RFC 4291 §2.2 allows at most one zero-collapse.</item>
+        ///         <item>More than 8 non-empty hextets — exceeds IPv6 address width.</item>
+        ///         <item>8+ hextets with trailing colon — over-full; no room for a collapse.</item>
+        ///     </list>
+        ///     Does NOT validate individual hextet values (hex format is checked by downstream parsers).
+        /// </remarks>
+        private static bool IsPotentiallyValidIPv6Partial(string input)
+        {
+            if (input.Equals(":", StringComparison.OrdinalIgnoreCase))
+            {
+                return false;
+            }
+
+            if (input.Contains(":::"))
+            {
+                return false;
+            }
+
+            if (DoubleColonsAppearsMultipleTimes(input))
+            {
+                return false;
+            }
+
+            var nonEmptyHextetCount = input.Split([':'], StringSplitOptions.RemoveEmptyEntries).Length;
+
+            if (nonEmptyHextetCount > IPAddressUtilities.IPv6HextetCount)
+            {
+                return false;
+            }
+
+            return nonEmptyHextetCount < IPAddressUtilities.IPv6HextetCount
+                || !input.EndsWith(":", StringComparison.OrdinalIgnoreCase);
+        }
+
+        /// <summary>
+        ///     Checks if a string contains only hexadecimal characters (0-9, a-f, A-F).
+        /// </summary>
+        /// <param name="input">The string to check.</param>
+        /// <returns><see langword="true" /> if the string is non-empty and contains only hex chars.</returns>
+        /// <remarks>
+        ///     Used to detect bare hextet inputs like <c>"2001"</c> or <c>"abba"</c>
+        ///     that lack colons entirely. Without this check, such inputs would be
+        ///     misinterpreted by <c>IPAddress.TryParse</c> as IPv4 addresses
+        ///     (e.g. <c>"2001"</c> is parsed as decimal 2001 = <c>0.0.7.209</c>).
+        ///     <para>
+        ///         This helper is intentionally permissive (any length of hex), allowing
+        ///         future input patterns to flow through to the permutation engine.
+        ///     </para>
+        /// </remarks>
+        private static bool ContainsOnlyHexChars(string input)
+        {
+            if (string.IsNullOrEmpty(input))
+            {
+                return false;
+            }
+
+            return input.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F');
+        }
+
+        /// <summary>
+        ///     Attempts to parse the input as an exact IPv6 CIDR subnet.
+        /// </summary>
+        /// <param name="input">The normalized input string.</param>
+        /// <param name="subnets">
+        ///     When successful, a single-element collection with the parsed subnet;
+        ///     when unsuccessful, an empty collection.
+        /// </param>
+        /// <returns><see langword="true" /> if the input is a valid IPv6 CIDR subnet.</returns>
+        /// <remarks>
+        ///     Handles inputs containing a <c>/</c> character, e.g. <c>"2001:db8::/32"</c>
+        ///     or <c>"::/0"</c>.  The input must not end with <c>/</c> (missing prefix)
+        ///     and must not be an IPv4 CIDR (filtered via <c>Subnet.IsIPv6</c>).
+        ///     <para>
+        ///         This is the least-ambiguous input pattern — the user explicitly states
+        ///         the route prefix length. A single result is returned.
+        ///     </para>
+        /// </remarks>
+        private static bool TryParseExactCidr(string input, out IEnumerable<Subnet> subnets)
+        {
+            subnets = [];
+
+            if (!input.Contains('/'))
+            {
+                return false;
+            }
+
+#if NETSTANDARD2_0
+            if (input.EndsWith("/"))
+#else
+            if (input.EndsWith('/'))
+#endif
+            {
+                return false;
+            }
+
+            if (TryParse(input, out var subnet) && subnet.IsIPv6)
             {
                 subnets = [subnet];
                 return true;
             }
 
-            // TODO this could probably be done more cleanly, and provide a more expected result
+            return false;
+        }
 
-            // a IPv6 cidr partial is provided
+        /// <summary>
+        ///     Attempts to parse a bare hex word (no colons) as a single-hextet IPv6 partial.
+        /// </summary>
+        /// <param name="input">A string containing only hexadecimal characters.</param>
+        /// <param name="subnets">
+        ///     When successful, all possible subnet interpretations for the hextet,
+        ///     ordered from most-specific to broadest; when unsuccessful, an empty collection.
+        /// </param>
+        /// <param name="exponent">the maximum enumeration exponent</param>
+        /// <returns><see langword="true" /> when the bare hextet produced at least one valid subnet.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         A bare hex word like <c>"2001"</c> is treated as a single IPv6 hextet
+        ///         with an implicit <c>::</c> collapse appended. The method delegates to
+        ///         <see cref="ExpandHextetPermutations"/> which generates all valid prefix-length
+        ///         expansions.
+        ///     </para>
+        ///     <para>
+        ///         This handler exists because <c>IPAddress.TryParse</c> would
+        ///         misinterpret bare hex strings as IPv4 addresses (e.g. <c>"2001"</c> as
+        ///         decimal 2001 = <c>0.0.7.209</c>).
+        ///     </para>
+        ///     <para>
+        ///         <strong>Future:</strong> This method is a strong candidate for public exposure
+        ///         (e.g. <c>TryParseBareHextet</c>) for users who explicitly want to resolve
+        ///         a single hex value to all covering subnets.
+        ///     </para>
+        /// </remarks>
+        private static bool TryParseBareHextet(
+            string input,
+            out IEnumerable<Subnet> subnets,
+            int exponent = DefaultMaxEnumerationExponent
+        )
+        {
+            return ExpandHextetPermutations(input, out subnets, exponent);
+        }
+
+        /// <summary>
+        ///     Attempts to parse a colon-separated partial IPv6 string and enumerate all
+        ///     possible subnet interpretations.
+        /// </summary>
+        /// <param name="input">The normalized input string (must contain colons).</param>
+        /// <param name="subnets">
+        ///     When successful, all possible subnet interpretations in descending prefix
+        ///     length order; when unsuccessful, an empty collection.
+        /// </param>
+        /// <param name="exponent">the maximum enumeration exponent</param>
+        /// <returns><see langword="true" /> when at least one valid subnet was found.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         Uses a three-stage fallback to coerce the input into a form that
+        ///         <c>IPAddress.TryParse</c> can accept:
+        ///     </para>
+        ///     <list type="number">
+        ///         <item>Parse the input as-is (succeeds for valid addresses like <c>"2001:db8::1"</c>).</item>
+        ///         <item>If input contains <c>"::"</c>, trim trailing colons and retry
+        ///             (handles edge cases where <c>::</c> is followed by extra colons).</item>
+        ///         <item>Append <c>"::"</c> to the colon-trimmed input
+        ///             (handles incomplete forms like <c>"2001:db8:"</c> → <c>"2001:db8::"</c>).</item>
+        ///     </list>
+        ///     <para>
+        ///         On success, delegates to <see cref="ExpandHextetPermutations"/>.
+        ///     </para>
+        ///     <para>
+        ///         <strong>Future:</strong> This method is a strong candidate for public exposure
+        ///         (e.g. <c>TryParseAmbiguousHextets</c>) for users who want to resolve
+        ///         colon-separated partials without the CIDR or bare-hexet paths.
+        ///     </para>
+        /// </remarks>
+        private static bool TryParseAmbiguousHextets(
+            string input,
+            out IEnumerable<Subnet> subnets,
+            int exponent = DefaultMaxEnumerationExponent
+        )
+        {
+            subnets = [];
+
             if (
-                (
-                    IPAddress.TryParse(input, out var address) // treat as a complete address, may contain a '::' or not
+                !(
+                    IPAddress.TryParse(input, out var address)
                     || (input.Contains("::") && IPAddress.TryParse(input.TrimEnd(':'), out address))
                     || IPAddress.TryParse(input.TrimEnd(':') + "::", out address)
-                ) && address.IsIPv6()
-            ) // no collapse, but incomplete address
+                ) || !address.IsIPv6()
+            )
             {
-                var trimmedPartial = input.TrimEnd(':'); // remove trailing ":" or "::" if exists
+                return false;
+            }
 
-                // break up entry on hextets, an empty hextet implies a collapse
-                var hextets = trimmedPartial
-                    .Split([':'], StringSplitOptions.None) // DO NOT remove empty splits
-                    .ToList();
+            return ExpandHextetPermutations(input, out subnets, exponent);
+        }
 
-                // should contain an empty, pump the first with appropriate values
+        /// <summary>
+        ///     Core permutation engine. Given a partial IPv6 address string, finds or synthesises
+        ///     the <c>::</c> collapse point and generates all valid prefix-length interpretations.
+        /// </summary>
+        /// <param name="input">A colon-separated partial IPv6 address.</param>
+        /// <param name="subnets">
+        ///     All possible subnet interpretations in descending prefix length order
+        ///     (most-specific first), or an empty collection on failure.
+        /// </param>
+        /// <param name="exponent">the maximum enumeration exponent</param>
+        /// <returns><see langword="true" /> when at least one valid subnet was generated.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         The algorithm:
+        ///     </para>
+        ///     <list type="number">
+        ///         <item>Split the colon-trimmed input on <c>':'</c> to obtain individual hextets.
+        ///             An empty-string entry marks the <c>::</c> collapse position.</item>
+        ///         <item>If no collapse is found and fewer than 8 hextets are present, an implicit
+        ///             collapse is added at the end (the partial is assumed to omit trailing zeros).</item>
+        ///         <item>For each possible expansion of the collapse (replacing it with 0 through the
+        ///             remaining slots), construct a full address and compute the route prefix as
+        ///             <c>(expandedHextets) * 16</c>.</item>
+        ///     </list>
+        ///     <para>
+        ///         Results are emitted in <strong>descending</strong> prefix length order so the
+        ///         most specific (largest prefix) match appears first in the output collection.
+        ///     </para>
+        ///     <para>
+        ///         Example: input <c>"2001:db8::"</c>.
+        ///         Hextets after trim: <c>["2001", "db8"]</c>, no collapse → add implicit end collapse:
+        ///         <c>["2001", "db8", ""]</c>.  Three hextets → 7 permutations:
+        ///     </para>
+        ///     <list type="table">
+        ///         <listheader><term>Permutation</term><description>Address</description><term>Prefix</term></listheader>
+        ///         <item><term>6</term><description><c>2001:db8:0:0:0:0:0:0</c></description><term>/128</term></item>
+        ///         <item><term>5</term><description><c>2001:db8:0:0:0:0:0::</c></description><term>/112</term></item>
+        ///         <item><term>...</term><description>...</description><term>...</term></item>
+        ///         <item><term>0</term><description><c>2001:db8::</c></description><term>/32</term></item>
+        ///     </list>
+        /// </remarks>
+        private static bool ExpandHextetPermutations(
+            string input,
+            out IEnumerable<Subnet> subnets,
+            int exponent = DefaultMaxEnumerationExponent
+        )
+        {
+            subnets = [];
 
-                // get the index of the collapse
-                var collapse = hextets
-                    .Select((value, index) => new { value, index })
-                    .FirstOrDefault(pair => string.IsNullOrWhiteSpace(pair.value));
+            var trimmedPartial = input.TrimEnd(':');
 
-                int collapseIndex;
-                if (collapse is null && hextets.Count == 8) // no collapse - fully fledged address, all 8 hextets present
-                {
-                    subnets = [Parse(input, IPAddressUtilities.IPv6BitCount)];
-                    return true;
-                }
+            var hextets = trimmedPartial.Split([':'], StringSplitOptions.None).ToList();
 
-                // introduce a collapse at the end if one does not exist
-                if (collapse is null) // not fully fledged, add a collapse to the end
-                {
-                    hextets.Add(string.Empty);
-                    collapseIndex = hextets.Count - 1;
-                }
-                else // a collapse is present
-                {
-                    collapseIndex = collapse.index;
-                }
+            var collapse = hextets
+                .Select((value, index) => new { value, index })
+                .FirstOrDefault(pair => string.IsNullOrWhiteSpace(pair.value));
 
-                var subnetsList = new List<Subnet>();
-
-                hextetCount = hextets.Count;
-                var permutationLimit = (IPAddressUtilities.IPv6HextetCount + 1) - hextetCount; // number of permutations of IP partial, every hextet available removes a permutation
-                for (var permutation = 0; permutation <= permutationLimit; permutation++)
-                {
-                    var hextetsCopy = hextets.ToList();
-                    hextetsCopy.RemoveAt(collapseIndex); // collapsed empty item
-                    hextetsCopy.InsertRange(collapseIndex, Enumerable.Repeat("0", permutation)); // add zeros as appropriate
-
-                    var addressString = string.Join(":", hextetsCopy); // re join string
-
-                    if (
-                        !IPAddress.TryParse(addressString + "::", out var subnetAddress)
-                        && !IPAddress.TryParse(addressString, out subnetAddress)
-                    )
-                    {
-                        subnets = [];
-                        return false;
-                    }
-
-                    var routePrefix = ((permutation + hextetCount) - 1) * 16;
-                    subnetsList.Add(new Subnet(subnetAddress, routePrefix));
-                }
-
-                subnets = subnetsList;
+            int collapseIndex;
+            if (collapse is null && hextets.Count == 8)
+            {
+                subnets = [Parse(input, IPAddressUtilities.IPv6BitCount, exponent)];
                 return true;
             }
 
-            // fail; could not parse anything useful from the input
-            subnets = [];
-            return false;
-
-            // checks input for multiple occurrences of discrete "::" substrings
-
-            static bool DoubleColonsAppearsMultipleTimes(string @in)
+            if (collapse is null)
             {
-                const string colons = "::";
-                var firstIndex = @in.IndexOf(colons, StringComparison.Ordinal);
-                return firstIndex >= 0 && @in.IndexOf(colons, firstIndex + colons.Length, StringComparison.Ordinal) >= 0;
+                hextets.Add(string.Empty);
+                collapseIndex = hextets.Count - 1;
             }
+            else
+            {
+                collapseIndex = collapse.index;
+            }
+
+            var hextetCount = hextets.Count;
+            var permutationLimit = (IPAddressUtilities.IPv6HextetCount + 1) - hextetCount;
+            var subnetsList = new List<Subnet>(permutationLimit + 1);
+
+            // Iterate in DESCENDING order so the most-specific (largest prefix) result
+            // appears first — this matches user expectations when scanning the output list.
+            for (var permutation = permutationLimit; permutation >= 0; permutation--)
+            {
+                var hextetsCopy = hextets.ToList();
+                hextetsCopy.RemoveAt(collapseIndex);
+                hextetsCopy.InsertRange(collapseIndex, Enumerable.Repeat("0", permutation));
+
+                var addressString = string.Join(":", hextetsCopy);
+
+                if (
+                    !IPAddress.TryParse(addressString + "::", out var subnetAddress)
+                    && !IPAddress.TryParse(addressString, out subnetAddress)
+                )
+                {
+                    return false;
+                }
+
+                var routePrefix = ((permutation + hextetCount) - 1) * 16;
+                subnetsList.Add(new Subnet(subnetAddress, routePrefix, exponent));
+            }
+
+            subnets = subnetsList;
+            return true;
+        }
+
+        /// <summary>
+        ///     Checks if a string contains multiple discrete <c>"::"</c> substrings,
+        ///     which is syntactically invalid in IPv6 (RFC 4291 §2.2 allows at most one
+        ///     zero-group collapse).
+        /// </summary>
+        /// <param name="input">The string to check.</param>
+        /// <returns>
+        ///     <see langword="true" /> if two or more independent <c>"::"</c> occurrences
+        ///     are found.
+        /// </returns>
+        /// <remarks>
+        ///     <para>
+        ///         Note that <c>":::"</c> is caught earlier by <see cref="IsPotentiallyValidIPv6Partial"/>
+        ///         via <see cref="string.Contains(string)"/>. However, inputs like <c>"::1::2"</c>
+        ///         pass the triple-colon check while having two discrete <c>"::"</c> occurrences
+        ///         that must be rejected.
+        ///     </para>
+        /// </remarks>
+        private static bool DoubleColonsAppearsMultipleTimes(string input)
+        {
+            const string colons = "::";
+            var firstIndex = input.IndexOf(colons, StringComparison.Ordinal);
+            return firstIndex >= 0 && input.IndexOf(colons, firstIndex + colons.Length, StringComparison.Ordinal) >= 0;
         }
 
         #endregion // end: From Partial

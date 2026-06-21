@@ -14,10 +14,7 @@ namespace Arcus
         #region Formatting
 
         /// <inheritdoc />
-        public override string ToString()
-        {
-            return this.ToString("G", CultureInfo.InvariantCulture);
-        }
+        public override string ToString() => this.ToString("G", CultureInfo.InvariantCulture);
 
         /// <inheritdoc />
         public virtual string ToString(
@@ -28,21 +25,12 @@ namespace Arcus
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
             [AllowNull]
 #endif
-            IFormatProvider formatProvider)
-        {
-            switch (format?.Trim())
+            IFormatProvider formatProvider) =>
+            format?.Trim() switch
             {
-                case null:
-                case "":
-
-                // general formats
-                case "g":
-                case "G":
-                    return $"{this.Head} - {this.Tail}";
-                default:
-                    throw new FormatException($"The format \"{format}\" is not supported.");
-            }
-        }
+                null or { Length: 0 } or "g" or "G" => $"{this.Head} - {this.Tail}",
+                _ => throw new FormatException($"The format \"{format}\" is not supported."),
+            };
 
         #endregion // end: Formatting
     }

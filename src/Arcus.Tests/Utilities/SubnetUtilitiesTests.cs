@@ -799,5 +799,24 @@ namespace Arcus.Tests.Utilities
         }
 
         #endregion // end: SmallestSubnet
+
+        #region maxEnumerationExponent propagation
+
+        /// <summary>Verifies that <see cref="SubnetUtilities.FewestConsecutiveSubnetsFor(IPAddress, IPAddress, int)"/> propagates maxEnumerationExponent.</summary>
+        [Fact]
+        public void FewestConsecutiveSubnetsFor_ExponentPropagates_Test()
+        {
+            var results = SubnetUtilities.FewestConsecutiveSubnetsFor(
+                IPAddress.Parse("10.0.0.0"),
+                IPAddress.Parse("10.0.0.255"),
+                maxEnumerationExponent: 4
+            );
+            foreach (var subnet in results)
+            {
+                Assert.Equal(4, subnet.MaxEnumerationExponent);
+            }
+        }
+
+        #endregion // end: maxEnumerationExponent propagation
     }
 }

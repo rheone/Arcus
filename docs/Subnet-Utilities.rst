@@ -14,7 +14,9 @@ Given an inclusive range of IP Addresses defined by ``IPAddress left`` and ``IPA
 
 .. code-block:: c#
 
-   public static IEnumerable<Subnet> FewestConsecutiveSubnetsFor(IPAddress left, IPAddress right)
+   public static IEnumerable<Subnet> FewestConsecutiveSubnetsFor(IPAddress left, IPAddress right, int maxEnumerationExponent = 12)
+
+The optional ``maxEnumerationExponent`` parameter controls the enumeration cap for subnets created during computation.
 
 The following examples shows that the range defined by ``192.168.1.3`` - ``192.168.1.5`` fits in  two consecutive subnets defined by ``192.168.1.4/31`` and ``192.168.1.3/32``.
 

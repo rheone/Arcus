@@ -7,7 +7,7 @@ The ``Subnet`` type, flavored in both IPv4 or IPv6, is a representation of a sub
 
 Keep in mind that a ``Subnet`` is not an arbitrary range of addresses, for that you want an :ref:`IPAddressRange`, but rather conforms to a range of length :math:`2^n` starting a particular position, following the typical rules of `Classless Inter-Domain Routing <https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing>`_.
 
-The ``Subnet`` class extends :ref:`AbstractIPAddressRange` and implements :ref:`IIPAddressRange`, ``IEquatable<Subnet>``, ``IComparable<Subnet>``, ``IFormattable``, ``IEnumerable<IPAddress>``, and ``ISerializable``.
+The ``Subnet`` class extends :ref:`AbstractIPAddressRange` and implements :ref:`IIPAddressRange`, ``IEquatable<Subnet>``, ``IComparable<Subnet>``, ``IFormattable``, ``IEnumerable<IPAddress>`` (deprecated — see :ref:`ToIPAddresses`), and ``ISerializable``.
 
 .. note::  Be aware that ``Subnet`` does *not* extend :ref:`IPAddressRange` but does implement :ref:`IIPAddressRange`.
 
@@ -27,7 +27,9 @@ Addresses *MUST* be the same address family (either ``InterNetwork`` or ``InterN
 
 .. code-block:: c#
 
-   public Subnet(IPAddress lowAddress, IPAddress highAddress)
+   public Subnet(IPAddress lowAddress, IPAddress highAddress, int maxEnumerationExponent = 12)
+
+The optional ``maxEnumerationExponent`` parameter controls the enumeration cap: ``foreach`` / ``ToIPAddresses()`` will yield at most ``2^maxEnumerationExponent`` addresses (default 4096).
 
 constructor ``IPAddress address``, ``int routingPrefix``
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -36,7 +38,7 @@ It is also possible to create a ``Subnet`` from an ``IPAddress address`` and an 
 
 .. code-block:: c#
 
-   public Subnet(IPAddress address, int routingPrefix)
+   public Subnet(IPAddress address, int routingPrefix, int maxEnumerationExponent = 12)
 
 The following example shows that the ``IPAddress`` and ``routingPrefix`` constructor taking an input of ``192.168.1.1`` and ``24`` creates a ``Subnet`` ``192.168.1.0/32``. Note that the ``Head`` is ``192.168.1.0`` and not ``192.168.1.1``, this is done as Arcus will autocorrect the input to a valid ``Subnet``. If this is not desired it is advised that you compare the ``Head`` to the input in order to validate expectations.
 
@@ -105,11 +107,11 @@ The following factory methods may be used to create an IPv4 ``Subnet`` where as 
 
 .. code-block:: c#
 
-   public static Subnet FromNetMask(IPAddress address, IPAddress netmask)
+   public static Subnet FromNetMask(IPAddress address, IPAddress netmask, int maxEnumerationExponent = 12)
 
 .. code-block:: c#
 
-   public static bool TryFromNetMask(IPAddress address, IPAddress netmask, out Subnet subnet)
+   public static bool TryFromNetMask(IPAddress address, IPAddress netmask, out Subnet subnet, int maxEnumerationExponent = 12)
 
 factory From Big-Endian Byte Arrays
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -121,11 +123,11 @@ The given ``byte`` arrays are interpreted as being in big-endian ordering are ar
 
 .. code-block:: c#
 
-   public static Subnet FromBytes(byte[] lowAddressBytes, byte[] highAddressBytes)
+   public static Subnet FromBytes(byte[] lowAddressBytes, byte[] highAddressBytes, int maxEnumerationExponent = 12)
 
 .. code-block:: c#
 
-   public static bool TryFromBytes(byte[] lowAddressBytes, byte[] highAddressBytes, out Subnet subnet)
+   public static bool TryFromBytes(byte[] lowAddressBytes, byte[] highAddressBytes, out Subnet subnet, int maxEnumerationExponent = 12)
 
 parse string
 ^^^^^^^^^^^^
@@ -136,11 +138,11 @@ If a representation of an IP Address ``string`` is provided the resulting ``Subn
 
 .. code-block:: c#
 
-   public static Subnet Parse(string subnetString)
+   public static Subnet Parse(string subnetString, int maxEnumerationExponent = 12)
 
 .. code-block:: c#
 
-   public static bool TryParse(string subnetString, out Subnet subnet)
+   public static bool TryParse(string subnetString, out Subnet subnet, int maxEnumerationExponent = 12)
 
 parse IPAddress string and RoutingPrefix int
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -149,11 +151,11 @@ It is also possible to build  a ``Subnet`` from an ``String address`` and an ``i
 
 .. code-block:: c#
 
-   public static Subnet Parse(string addressString, int routingPrefix)
+   public static Subnet Parse(string addressString, int routingPrefix, int maxEnumerationExponent = 12)
 
 .. code-block:: c#
 
-   public static bool TryParse(string addressString, int routingPrefix, out Subnet subnet)
+   public static bool TryParse(string addressString, int routingPrefix, out Subnet subnet, int maxEnumerationExponent = 12)
 
 parse IPAddress strings
 ^^^^^^^^^^^^^^^^^^^^^^^
@@ -162,11 +164,11 @@ A rather common way to to build a ``Subnet`` is to provide a pair of ``string`` 
 
 .. code-block:: c#
 
-   public static Subnet Parse(string lowAddressString, string highAddressString)
+   public static Subnet Parse(string lowAddressString, string highAddressString, int maxEnumerationExponent = 12)
 
 .. code-block:: c#
 
-   public static bool TryParse(string lowAddressString, string highAddressString, out Subnet subnet)
+   public static bool TryParse(string lowAddressString, string highAddressString, out Subnet subnet, int maxEnumerationExponent = 12)
 
 Functionality
 -------------
@@ -184,6 +186,10 @@ In addition to the properties defined in :ref:`IIPAddressRange` ``Subnet`` provi
 :``IPAddress`` NetworkPrefixAddress: An alias to the ``Head`` property
 :``int`` RoutingPrefix: The routing prefix used to specify the subnet
 :``BigInteger`` UsableHostAddressCount: The number of usable addresses in the subnet ignoring both the Broadcast and Network addresses
+
+Inherited from :ref:`IIPAddressRange`:
+
+:``int`` MaxEnumerationExponent: The exponent controlling enumeration cap (0–128). Enumeration via ``ToIPAddresses()`` yields at most ``2^MaxEnumerationExponent`` addresses.
 
 Set Based Operations
 ^^^^^^^^^^^^^^^^^^^^

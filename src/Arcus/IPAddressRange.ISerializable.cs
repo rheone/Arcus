@@ -22,6 +22,8 @@ namespace Arcus
 
             info.AddValue(nameof(Head), Head.GetAddressBytes());
             info.AddValue(nameof(Tail), Tail.GetAddressBytes());
+            info.AddValue("SerVersion", 2);
+            info.AddValue(nameof(this.MaxEnumerationExponent), this.MaxEnumerationExponent);
         }
 
         #endregion

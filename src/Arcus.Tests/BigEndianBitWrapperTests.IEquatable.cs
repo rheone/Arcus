@@ -1,7 +1,7 @@
 ﻿namespace Arcus.Tests
 {
     /// <content>
-    ///     <see cref="BigEndianBitWrapper"/> tests for <see cref="System.IEquatable{T}"/>, <c>==</c>, and <c>!=</c>.
+    ///     <see cref="BigEndianBitWrapper"/> tests for <see cref="System.IEquatable{BigEndianBitWrapper}"/>, <c>==</c>, and <c>!=</c>.
     /// </content>
     public partial class BigEndianBitWrapperTests
     {

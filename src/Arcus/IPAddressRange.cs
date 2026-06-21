@@ -28,8 +28,9 @@ namespace Arcus
         ///     Initializes a new instance of the <see cref="IPAddressRange" /> class.
         /// </summary>
         /// <param name="address">the <see cref="IPAddress" /></param>
-        public IPAddressRange(IPAddress address)
-            : base(address, address)
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128, default 12)</param>
+        public IPAddressRange(IPAddress address, int maxEnumerationExponent = DefaultMaxEnumerationExponent)
+            : base(address, address, maxEnumerationExponent)
         {
             // nothing more to do
         }
@@ -39,8 +40,9 @@ namespace Arcus
         /// </summary>
         /// <param name="head">head <see cref="IPAddress" /></param>
         /// <param name="tail">tail <see cref="IPAddress" /></param>
-        public IPAddressRange(IPAddress head, IPAddress tail)
-            : base(head, tail)
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128, default 12)</param>
+        public IPAddressRange(IPAddress head, IPAddress tail, int maxEnumerationExponent = DefaultMaxEnumerationExponent)
+            : base(head, tail, maxEnumerationExponent)
         {
             // nothing more to do
         }
@@ -56,8 +58,22 @@ namespace Arcus
                     (byte[])
                         (info ?? throw new System.ArgumentNullException(nameof(info))).GetValue(nameof(Head), typeof(byte[]))
                 ),
-                new IPAddress((byte[])info.GetValue(nameof(Tail), typeof(byte[])))
+                new IPAddress((byte[])info.GetValue(nameof(Tail), typeof(byte[]))),
+                DeserializeMaxEnumerationExponent(info)
             ) { }
+
+        private static int DeserializeMaxEnumerationExponent(SerializationInfo info)
+        {
+            try
+            {
+                return info.GetInt32(nameof(MaxEnumerationExponent));
+            }
+            catch (SerializationException)
+            {
+                // Old format (version 1): fall back to default exponent
+                return DefaultMaxEnumerationExponent;
+            }
+        }
 #endif
 
         #endregion // end: Ctor

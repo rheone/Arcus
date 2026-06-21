@@ -20,8 +20,13 @@ namespace Arcus
         /// </summary>
         /// <param name="ranges">ranges to collapse</param>
         /// <param name="result">resulting ranges post collapse</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns>true on success</returns>
-        public static bool TryCollapseAll(IEnumerable<IPAddressRange> ranges, out IEnumerable<IPAddressRange> result)
+        public static bool TryCollapseAll(
+            IEnumerable<IPAddressRange> ranges,
+            out IEnumerable<IPAddressRange> result,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
         {
             var rangeList = (ranges ?? []).ToList();
 
@@ -33,7 +38,7 @@ namespace Arcus
             }
 
             // no ranges provided
-            if (!rangeList.Any()) // no ranges
+            if (rangeList.Count == 0)
             {
                 result = [];
                 return true; // assume success
@@ -62,7 +67,7 @@ namespace Arcus
                 // can be assumed that assume that the range head is greater than or equal to last head because everything is ordered
 
                 // if TryMerge succeeded then overlap exists, merge overlap and re-assign to end of results
-                if (TryMerge(last, range, out var merge))
+                if (TryMerge(last, range, out var merge, maxEnumerationExponent))
                 {
                     resultList[resultList.Count - 1] = merge; // overwrite with merged values
                     continue;
@@ -77,7 +82,7 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Rebuild the initial range as an <see cref="IEnumerable{T}" /> of ranges excluding the excluded ranges.
+        ///     Rebuild the initial range as an <see cref="IEnumerable{IPAddressRange}" /> of ranges excluding the excluded ranges.
         ///     Excluded ranges are expected to each be sub-ranges of the initial range.
         /// </summary>
         /// <param name="initialRange">the initial <see cref="IPAddressRange" /> to exclude from</param>
@@ -85,7 +90,8 @@ namespace Arcus
         ///     the various <see cref="IPAddressRange" /> to exclude from the
         ///     <paramref name="initialRange" />
         /// </param>
-        /// <param name="result">the resulting  <see cref="IPAddressRange" /> <see cref="IEnumerable{T}" /></param>
+        /// <param name="result">the resulting  <see cref="IPAddressRange" /> <see cref="IEnumerable{IPAddressRange}" /></param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns>true on success</returns>
         /// <remarks>
         ///     <para>
@@ -111,7 +117,8 @@ namespace Arcus
         public static bool TryExcludeAll(
             IPAddressRange initialRange,
             IEnumerable<IPAddressRange> excludedRanges,
-            out IEnumerable<IPAddressRange> result
+            out IEnumerable<IPAddressRange> result,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
         )
         {
             if (initialRange is null || excludedRanges is null)
@@ -120,105 +127,91 @@ namespace Arcus
                 return false;
             }
 
-            var excludedRangesList = excludedRanges as IList<IPAddressRange> ?? [.. excludedRanges];
+            // Cast to IList<T> to allow Count access and avoid materializing a lazy sequence twice.
+            var excludedList = excludedRanges as IList<IPAddressRange> ?? [.. excludedRanges];
 
-            // item null check
-            if (excludedRangesList.Any(r => r is null))
+            if (excludedList.Any(r => r is null || r.AddressFamily != initialRange.AddressFamily))
             {
                 result = [];
                 return false;
             }
 
-            // no ranges to exclude; return copy of original
-            if (!excludedRangesList.Any())
+            if (excludedList.Count == 0)
             {
-                result = [new(initialRange.Head, initialRange.Tail)];
+                result = [new IPAddressRange(initialRange.Head, initialRange.Tail, maxEnumerationExponent)];
                 return true;
             }
 
-            // all families must match
-            if (excludedRangesList.Any(r => r.AddressFamily != initialRange.AddressFamily))
+            var resultList = new List<IPAddressRange>
             {
-                result = [];
-                return false;
-            }
+                new IPAddressRange(initialRange.Head, initialRange.Tail, maxEnumerationExponent),
+            };
 
-            // results is initialized with a *copy* of initialRange
-            var resultList = new List<IPAddressRange> { new(initialRange.Head, initialRange.Tail) };
-
-            foreach (var exclusion in excludedRangesList)
+            // Exclusions are processed in ascending order. Because each exclusion is to the right of
+            // all previous ones, it can only ever affect the rightmost not-yet-trimmed segment —
+            // earlier segments are entirely left of the current exclusion and are permanently settled.
+            foreach (var exclusion in excludedList.OrderBy(r => r))
             {
-                var last = resultList[resultList.Count - 1];
                 var lastIndex = resultList.Count - 1;
+                var (done, segments) = ApplyExclusion(resultList[lastIndex], exclusion);
 
-                if (exclusion.Contains(last))
+                resultList.RemoveAt(lastIndex);
+                resultList.AddRange(segments);
+
+                // done=true means the exclusion consumed the segment's tail boundary. Any remaining
+                // exclusions start at or after the current one's head, so they cannot produce
+                // additional output — short-circuit to avoid redundant work.
+                if (done)
                 {
-                    resultList.RemoveAt(lastIndex);
                     break;
-                }
-
-                if (exclusion.Contains(initialRange.Tail))
-                {
-                    // exclusion reaches the end of the initial range; no trailing segment possible.
-                    // Retain the leading segment only if the exclusion does not also start at the family minimum.
-                    if (!exclusion.Head.IsAtMin())
-                    {
-                        var head = resultList[lastIndex].Head;
-                        var tail = exclusion.Head.Increment(-1);
-                        resultList[lastIndex] = new IPAddressRange(head, tail);
-                    }
-                    else
-                    {
-                        // exclusion starts at the family minimum; nothing remains
-                        resultList.RemoveAt(lastIndex);
-                    }
-
-                    break;
-                }
-
-                // exclusion contains head of remaining segment
-                if (exclusion.Contains(last.Head))
-                {
-                    if (exclusion.Tail.IsAtMax())
-                    {
-                        // exclusion reaches the family maximum; nothing remains in this segment
-                        resultList.RemoveAt(lastIndex);
-                        break;
-                    }
-
-                    // push head one point beyond tail of exclusion
-                    var head = exclusion.Tail.Increment();
-                    var tail = resultList[lastIndex].Tail;
-                    resultList[lastIndex] = new IPAddressRange(head, tail);
-                    continue;
-                }
-
-                // exclusion is within last; carve last into a leading and trailing segment
-                if (!last.Overlaps(exclusion))
-                {
-                    throw new System.InvalidOperationException("An unexpected overlap check operation occurred");
-                }
-
-                if (!exclusion.Head.IsAtMin())
-                {
-                    // retain the leading segment up to one address before the exclusion starts
-                    resultList[lastIndex] = new IPAddressRange(resultList[lastIndex].Head, exclusion.Head.Increment(-1));
-                }
-                else
-                {
-                    // exclusion starts at the family minimum; no leading segment
-                    resultList.RemoveAt(lastIndex);
-                }
-
-                if (!exclusion.Tail.IsAtMax())
-                {
-                    // add the trailing segment from one address after the exclusion ends to the end of the initial range
-                    resultList.Add(new IPAddressRange(exclusion.Tail.Increment(), initialRange.Tail));
                 }
             }
 
             result = resultList;
             return true;
+
+            (bool Done, IPAddressRange[] Segments) ApplyExclusion(IPAddressRange segment, IPAddressRange exclusion)
+            {
+                // exclusion covers the entire segment
+                if (exclusion.Contains(segment))
+                {
+                    return (true, []);
+                }
+
+                // exclusion covers the tail; no trailing portion can exist after this point
+                if (exclusion.Contains(segment.Tail))
+                {
+                    return (true, LeadingFragment(segment, exclusion));
+                }
+
+                // exclusion covers the head; advance the segment's head past the exclusion's tail
+                if (exclusion.Contains(segment.Head))
+                {
+                    var trailing = TrailingFragment(segment, exclusion);
+                    return (trailing.Length == 0, trailing);
+                }
+
+                // Remaining case: exclusion is strictly interior — split into leading and trailing pieces.
+                // The Overlaps guard is a defensive invariant check; reaching this point without overlap
+                // would indicate a bug in the caller's pre-filtering or sort order.
+                if (!segment.Overlaps(exclusion))
+                {
+                    throw new System.InvalidOperationException("An unexpected overlap check operation occurred");
+                }
+
+                return (false, [.. LeadingFragment(segment, exclusion), .. TrailingFragment(segment, exclusion)]);
+            }
+
+            // Increment(-1) yields the address immediately before exclusion.Head, bounding the leading fragment.
+            IPAddressRange[] LeadingFragment(IPAddressRange segment, IPAddressRange exclusion) =>
+                exclusion.Head.IsAtMin()
+                    ? []
+                    : [new IPAddressRange(segment.Head, exclusion.Head.Increment(-1), maxEnumerationExponent)];
+
+            IPAddressRange[] TrailingFragment(IPAddressRange segment, IPAddressRange exclusion) =>
+                exclusion.Tail.IsAtMax()
+                    ? []
+                    : [new IPAddressRange(exclusion.Tail.Increment(), segment.Tail, maxEnumerationExponent)];
         }
 
         /// <summary>
@@ -227,6 +220,7 @@ namespace Arcus
         /// <param name="left">the left operand</param>
         /// <param name="right">the right operand</param>
         /// <param name="mergedRange">the resulting <see cref="IPAddressRange" /></param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
         /// <returns>true on success</returns>
         public static bool TryMerge(
             IPAddressRange left,
@@ -234,7 +228,8 @@ namespace Arcus
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
             [NotNullWhen(true)]
 #endif
-            out IPAddressRange mergedRange
+            out IPAddressRange mergedRange,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
         )
         {
             if (left is null || right is null || left.AddressFamily != right.AddressFamily)
@@ -248,7 +243,7 @@ namespace Arcus
             {
                 var newHead = IPAddressMath.Min(left.Head, right.Head);
                 var newTail = IPAddressMath.Max(left.Tail, right.Tail);
-                mergedRange = new IPAddressRange(newHead, newTail);
+                mergedRange = new IPAddressRange(newHead, newTail, maxEnumerationExponent);
 
                 return true;
             }

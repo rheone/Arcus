@@ -1,7 +1,7 @@
 ﻿namespace Arcus.Tests
 {
     /// <content>
-    ///     <see cref="IPAddressRange"/> tests for <see cref="System.IComparable{T}"/>
+    ///     <see cref="IPAddressRange"/> tests for <see cref="System.IComparable{IPAddressRange}"/>
     /// </content>
     public partial class IPAddressRangeTests
     {

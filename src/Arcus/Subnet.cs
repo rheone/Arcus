@@ -181,8 +181,9 @@ namespace Arcus
         /// </remarks>
         /// <param name="lowAddress">a address to be contained within the subnet</param>
         /// <param name="highAddress">another address to be contained within the subnet</param>
-        public Subnet(IPAddress lowAddress, IPAddress highAddress)
-            : this(CtorFactory(lowAddress, highAddress)) { }
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128); enumeration yields at most 2<sup>maxEnumerationExponent</sup> addresses</param>
+        public Subnet(IPAddress lowAddress, IPAddress highAddress, int maxEnumerationExponent = DefaultMaxEnumerationExponent)
+            : this(CtorFactory(lowAddress, highAddress, maxEnumerationExponent)) { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="Subnet" /> class.
@@ -196,18 +197,19 @@ namespace Arcus
         /// </remarks>
         /// <param name="address">the ip address</param>
         /// <param name="routingPrefix">the routing prefix</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128, default 12)</param>
         /// <exception cref="ArgumentException">IP Address must be IPv4 or IPv6</exception>
         /// <exception cref="ArgumentException">Routing prefix is out of range</exception>
-        public Subnet(IPAddress address, int routingPrefix)
-            : this(CtorFactory(address, routingPrefix)) { }
+        public Subnet(IPAddress address, int routingPrefix, int maxEnumerationExponent = DefaultMaxEnumerationExponent)
+            : this(CtorFactory(address, routingPrefix, maxEnumerationExponent)) { }
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="Subnet" /> class.
-        ///     Private constructor that receives pre-computed Head/Tail, netmask, and routing prefix.
+        ///     Private constructor that receives pre-computed Head/Tail, netmask, routing prefix, and maxEnumerationExponent.
         ///     Avoids redundant calls to <see cref="NormalizeAndCreateNetMask(IPAddress, IPAddress)" />.
         /// </summary>
         private Subnet(CtorFactoryResult result)
-            : base(result.Tuple)
+            : base(result.Tuple, result.MaxEnumerationExponent)
         {
             this.RoutingPrefix = result.RoutingPrefix;
             this.Netmask = IsIPv4 ? result.Netmask : null;
@@ -247,19 +249,39 @@ namespace Arcus
         /// <param name="context">serialization context</param>
         /// <exception cref="ArgumentNullException"><paramref name="info"/> is <see langword="null"/></exception>
         protected Subnet(SerializationInfo info, StreamingContext context)
-            : this(
-                new IPAddress(
-                    (byte[])
-                        (info ?? throw new ArgumentNullException(nameof(info))).GetValue(
-                            nameof(BroadcastAddress),
-                            typeof(byte[])
-                        )
-                ),
-                (int)info.GetValue(nameof(RoutingPrefix), typeof(int))
-            ) { }
+            : this(DeserializeSubnet(info)) { }
+
+        private static CtorFactoryResult DeserializeSubnet(SerializationInfo info)
+        {
+            if (info is null)
+            {
+                throw new ArgumentNullException(nameof(info));
+            }
+
+            var broadcastAddress = new IPAddress((byte[])info.GetValue(nameof(BroadcastAddress), typeof(byte[])));
+            var routingPrefix = (int)info.GetValue(nameof(RoutingPrefix), typeof(int));
+
+            int maxEnumerationExponent;
+            try
+            {
+                maxEnumerationExponent = info.GetInt32(nameof(MaxEnumerationExponent));
+            }
+            catch (SerializationException)
+            {
+                // Old format (version 1): fall back to max exponent for address family
+                maxEnumerationExponent =
+                    broadcastAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 32 : 128;
+            }
+
+            return CtorFactory(broadcastAddress, routingPrefix, maxEnumerationExponent);
+        }
 #endif
 
-        private static CtorFactoryResult CtorFactory(IPAddress lowAddress, IPAddress highAddress)
+        private static CtorFactoryResult CtorFactory(
+            IPAddress lowAddress,
+            IPAddress highAddress,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
         {
             #region Defense
 
@@ -304,10 +326,19 @@ namespace Arcus
             #endregion // end: Defense
 
             var result = NormalizeAndCreateNetMask(lowAddress, highAddress);
-            return new CtorFactoryResult(new AddressTuple(result.Head, result.Tail), result.Mask, result.Prefix);
+            return new CtorFactoryResult(
+                new AddressTuple(result.Head, result.Tail),
+                result.Mask,
+                result.Prefix,
+                maxEnumerationExponent
+            );
         }
 
-        private static CtorFactoryResult CtorFactory(IPAddress address, int routingPrefix)
+        private static CtorFactoryResult CtorFactory(
+            IPAddress address,
+            int routingPrefix,
+            int maxEnumerationExponent = DefaultMaxEnumerationExponent
+        )
         {
             #region Defense
 
@@ -342,14 +373,25 @@ namespace Arcus
             #endregion // end: Defense
 
             var result = NormalizeAndCreateNetMask(address, routingPrefix);
-            return new CtorFactoryResult(new AddressTuple(result.Head, result.Tail), result.Mask, routingPrefix);
+            return new CtorFactoryResult(
+                new AddressTuple(result.Head, result.Tail),
+                result.Mask,
+                routingPrefix,
+                maxEnumerationExponent
+            );
         }
 
-        private readonly struct CtorFactoryResult(AddressTuple tuple, IPAddress netmask, int routingPrefix)
+        private readonly struct CtorFactoryResult(
+            AddressTuple tuple,
+            IPAddress netmask,
+            int routingPrefix,
+            int maxEnumerationExponent
+        )
         {
             public AddressTuple Tuple { get; } = tuple;
             public IPAddress Netmask { get; } = netmask;
             public int RoutingPrefix { get; } = routingPrefix;
+            public int MaxEnumerationExponent { get; } = maxEnumerationExponent;
         }
 
         #endregion // end: Ctor

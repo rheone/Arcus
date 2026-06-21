@@ -213,12 +213,7 @@ namespace Arcus.Tests
         [MemberData(nameof(CreateMask_IPv4_Test_Data))]
         public void CreateMask_IPv4_ReturnsCorrectMask_Test(int byteWidth, int prefix, byte[] expected)
         {
-            // Act
-            var mask = BigEndianBitWrapper.CreateMask(byteWidth, prefix);
-
-            // Assert
-            Assert.Equal(byteWidth, mask.ByteWidth);
-            Assert.Equal(expected, mask.ToBytes());
+            AssertCreateMask(byteWidth, prefix, expected);
         }
 
         /// <summary>
@@ -267,12 +262,7 @@ namespace Arcus.Tests
         [MemberData(nameof(CreateMask_IPv6_Test_Data))]
         public void CreateMask_IPv6_ReturnsCorrectMask_Test(int byteWidth, int prefix, byte[] expected)
         {
-            // Act
-            var mask = BigEndianBitWrapper.CreateMask(byteWidth, prefix);
-
-            // Assert
-            Assert.Equal(byteWidth, mask.ByteWidth);
-            Assert.Equal(expected, mask.ToBytes());
+            AssertCreateMask(byteWidth, prefix, expected);
         }
 
         /// <summary>Verifies CreateMask throws ArgumentOutOfRangeException for invalid byte widths.</summary>
@@ -300,5 +290,13 @@ namespace Arcus.Tests
         }
 
         #endregion // end: CreateMask
+
+        private static void AssertCreateMask(int byteWidth, int prefix, byte[] expected)
+        {
+            var mask = BigEndianBitWrapper.CreateMask(byteWidth, prefix);
+
+            Assert.Equal(byteWidth, mask.ByteWidth);
+            Assert.Equal(expected, mask.ToBytes());
+        }
     }
 }

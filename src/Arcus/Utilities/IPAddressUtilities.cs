@@ -157,18 +157,13 @@ namespace Arcus.Utilities
         /// </summary>
         /// <param name="addressFamily">the <see cref="AddressFamily"/></param>
         /// <returns><see cref="IPv4MaxAddress"/> when <paramref name="addressFamily"/> is <see cref="AddressFamily.InterNetwork" /> or <see cref="IPv6MaxAddress"/> when <see cref="AddressFamily.InterNetworkV6" /> </returns>
-        public static IPAddress MaxIPAddress(this AddressFamily addressFamily)
-        {
-            switch (addressFamily)
+        public static IPAddress MaxIPAddress(this AddressFamily addressFamily) =>
+            addressFamily switch
             {
-                case AddressFamily.InterNetwork:
-                    return IPv4MaxAddress;
-                case AddressFamily.InterNetworkV6:
-                    return IPv6MaxAddress;
-                default:
-                    throw new ArgumentException($"Unsupported address family \"{addressFamily}\"", nameof(addressFamily));
-            }
-        }
+                AddressFamily.InterNetwork => IPv4MaxAddress,
+                AddressFamily.InterNetworkV6 => IPv6MaxAddress,
+                _ => throw new ArgumentException($"Unsupported address family \"{addressFamily}\"", nameof(addressFamily)),
+            };
 
         /// <summary>
         ///     Get the Min Address for the given address family. (supports only <see cref="AddressFamily.InterNetwork" /> and
@@ -176,18 +171,13 @@ namespace Arcus.Utilities
         /// </summary>
         /// <param name="addressFamily">the <see cref="AddressFamily"/></param>
         /// <returns><see cref="IPv4MinAddress"/> when <paramref name="addressFamily"/> is <see cref="AddressFamily.InterNetwork" /> or <see cref="IPv6MinAddress"/> when <see cref="AddressFamily.InterNetworkV6" /> </returns>
-        public static IPAddress MinIPAddress(this AddressFamily addressFamily)
-        {
-            switch (addressFamily)
+        public static IPAddress MinIPAddress(this AddressFamily addressFamily) =>
+            addressFamily switch
             {
-                case AddressFamily.InterNetwork:
-                    return IPv4MinAddress;
-                case AddressFamily.InterNetworkV6:
-                    return IPv6MinAddress;
-                default:
-                    throw new ArgumentException($"Unsupported address family \"{addressFamily}\"", nameof(addressFamily));
-            }
-        }
+                AddressFamily.InterNetwork => IPv4MinAddress,
+                AddressFamily.InterNetworkV6 => IPv6MinAddress,
+                _ => throw new ArgumentException($"Unsupported address family \"{addressFamily}\"", nameof(addressFamily)),
+            };
 
         #endregion // end: Address Max / Minimum
 
@@ -198,20 +188,16 @@ namespace Arcus.Utilities
         /// </summary>
         /// <param name="ipAddress">the IPAddress to test</param>
         /// <returns>true if ipv4</returns>
-        public static bool IsIPv4(this IPAddress ipAddress)
-        {
-            return ipAddress != null && ipAddress.AddressFamily == AddressFamily.InterNetwork;
-        }
+        public static bool IsIPv4(this IPAddress ipAddress) =>
+            ipAddress != null && ipAddress.AddressFamily == AddressFamily.InterNetwork;
 
         /// <summary>
         ///     Test if address is IPv6
         /// </summary>
         /// <param name="ipAddress">the IPAddress to test</param>
         /// <returns>true if ipv6</returns>
-        public static bool IsIPv6(this IPAddress ipAddress)
-        {
-            return ipAddress != null && ipAddress.AddressFamily == AddressFamily.InterNetworkV6;
-        }
+        public static bool IsIPv6(this IPAddress ipAddress) =>
+            ipAddress != null && ipAddress.AddressFamily == AddressFamily.InterNetworkV6;
 
         #endregion
 
@@ -289,11 +275,13 @@ namespace Arcus.Utilities
         #region hex parsing
 
         /// <summary>
-        ///     Attempt to parse a hex input string as an IP Address of the given family
+        ///     Attempt to parse a hex input string as an IP Address of the given family.
         /// </summary>
-        /// <param name="input">hex input</param>
-        /// <param name="addressFamily">address family</param>
-        /// <returns>IP Address, or <see langword="null" /> if parse fails</returns>
+        /// <param name="input">Hex input.</param>
+        /// <param name="addressFamily">Address family.</param>
+        /// <returns>
+        ///     IP Address, or <see langword="null" /> if parse fails.
+        /// </returns>
         public static IPAddress ParseFromHexString(string input, AddressFamily addressFamily)
         {
             #region defense
@@ -318,28 +306,27 @@ namespace Arcus.Utilities
 
             #endregion // end: defense
 
-            // ignore "0x" prefix, and trim most significant 0s
+            // Ignore "0x" prefix and trim most significant zeros.
             var byteString = (
-                input.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? input.Substring(2, input.Length - 2) : input
+                input.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? input.Substring(2) : input
             ).TrimStart('0');
 
-            // if the byte string has an odd number of characters provide a single significant 0
+            // If the byte string has an odd number of characters, provide a single significant 0.
             if (byteString.Length % 2 != 0)
             {
-                byteString = "0" + byteString; // ensure string has an even number of characters, prefix with MSB 0
+                byteString = "0" + byteString;
             }
 
-            // fail if the string is composed of non-valid hex characters
+            // Fail if the string contains non-hex characters.
             if (!HexLikeRegularExpression.IsMatch(byteString))
             {
                 throw new ArgumentException($"{nameof(input)} is in an unexpected format", nameof(input));
             }
 
-            // for each i%2, convert i, i+1 into a byte, reverse, and convert into an array
+            // Convert each pair of hex characters into a byte.
             var byteArray = Enumerable
                 .Range(0, byteString.Length / 2)
-                .Select(i => i * 2)
-                .Select(i => Convert.ToByte(byteString.Substring(i, 2), 16))
+                .Select(i => Convert.ToByte(byteString.Substring(i * 2, 2), 16))
                 .ToArray();
 
             return Parse(byteArray, addressFamily);
@@ -386,7 +373,7 @@ namespace Arcus.Utilities
         #region octal parsing
 
         /// <summary>
-        ///     Converts an IP address string to an <see cref="System.Net.IPAddress" /> instance ignoring leading zeros (octal
+        ///     Converts an IP address string to an <see cref="IPAddress" /> instance ignoring leading zeros (octal
         ///     notation) of dotted quad format.
         /// </summary>
         /// <remarks>
@@ -400,7 +387,7 @@ namespace Arcus.Utilities
         ///     A string that contains an IP address in dotted-quad notation for IPv4 and in colon-hexadecimal
         ///     notation for IPv6
         /// </param>
-        /// <returns>An <see cref="System.Net.IPAddress" /> instance</returns>
+        /// <returns>An <see cref="IPAddress" /> instance</returns>
         public static IPAddress ParseIgnoreOctalInIPv4(string input)
         {
             #region defense
@@ -426,12 +413,12 @@ namespace Arcus.Utilities
         }
 
         /// <summary>
-        ///     Converts an IP address string to an <see cref="System.Net.IPAddress" /> instance ignoring leading zeros (octal
+        ///     Converts an IP address string to an <see cref="IPAddress" /> instance ignoring leading zeros (octal
         ///     notation) of dotted
         ///     quad format.
         /// </summary>
         /// <param name="input">The string to validate.</param>
-        /// <param name="address">The <see cref="System.Net.IPAddress" /> version of the string.</param>
+        /// <param name="address">The <see cref="IPAddress" /> version of the string.</param>
         /// <returns>true if ipString is a valid IP address; otherwise, false.</returns>
         public static bool TryParseIgnoreOctalInIPv4(string input,
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
@@ -474,18 +461,12 @@ namespace Arcus.Utilities
                 throw new ArgumentNullException(nameof(input));
             }
 
-            int expectedByteCount;
-            switch (addressFamily)
+            var expectedByteCount = addressFamily switch
             {
-                case AddressFamily.InterNetwork:
-                    expectedByteCount = IPv4ByteCount;
-                    break;
-                case AddressFamily.InterNetworkV6:
-                    expectedByteCount = IPv6ByteCount;
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(addressFamily));
-            }
+                AddressFamily.InterNetwork => IPv4ByteCount,
+                AddressFamily.InterNetworkV6 => IPv6ByteCount,
+                _ => throw new ArgumentOutOfRangeException(nameof(addressFamily)),
+            };
 
             if (input.Length > expectedByteCount)
             {

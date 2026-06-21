@@ -8,7 +8,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Arcus.Comparers
 {
     /// <summary>
-    ///     Default <see cref="IIPAddressRange" /> <see cref="Comparer{T}" />
+    ///     Default <see cref="IIPAddressRange" /> <see cref="Comparer{IIPAddressRange}" />
     ///     Compares by <see cref="IIPAddressRange.Head" /> and then by range length ordinal
     /// </summary>
 #pragma warning disable S101 // Types should be named in PascalCase

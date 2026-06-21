@@ -9,7 +9,7 @@ using System.Diagnostics.CodeAnalysis;
 namespace Arcus.Comparers
 {
     /// <summary>
-    ///     Default <see cref="IPAddress" /> <see cref="Comparer{T}" />
+    ///     Default <see cref="IPAddress" /> <see cref="Comparer{IPAddress}" />
     ///     Compares the <see cref="AddressFamily" /> then the integer equivalent value of an <see cref="IPAddress" /> in
     ///     ordinal order
     /// </summary>

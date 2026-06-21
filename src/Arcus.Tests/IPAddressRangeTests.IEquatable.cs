@@ -3,7 +3,7 @@
 namespace Arcus.Tests
 {
     /// <content>
-    ///     <see cref="IPAddressRange"/> tests for <see cref="System.IEquatable{T}"/>
+    ///     <see cref="IPAddressRange"/> tests for <see cref="System.IEquatable{IPAddressRange}"/>
     /// </content>
     public partial class IPAddressRangeTests
     {

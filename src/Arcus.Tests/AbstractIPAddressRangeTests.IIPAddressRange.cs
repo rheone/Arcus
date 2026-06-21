@@ -22,7 +22,7 @@ namespace Arcus.Tests
             var tail = IPAddress.Parse(tailString);
 
             // Act
-            var (resultHead, resultTail) = CreateSubstituteIPAddressRange(head, tail);
+            var (resultHead, resultTail) = CreateIPAddressRange(head, tail);
 
             // Assert
             Assert.Equal(resultHead, head);
@@ -45,10 +45,10 @@ namespace Arcus.Tests
             {
                 var data = new TheoryData<bool, IPAddressRange>
                 {
-                    { true, CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Any) },
-                    { true, CreateSubstituteIPAddressRange(IPAddress.IPv6Any, IPAddress.IPv6Any) },
-                    { false, CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast) },
-                    { false, CreateSubstituteIPAddressRange(IPAddress.IPv6Any, IPAddress.IPv6Loopback) },
+                    { true, CreateIPAddressRange(IPAddress.Any, IPAddress.Any) },
+                    { true, CreateIPAddressRange(IPAddress.IPv6Any, IPAddress.IPv6Any) },
+                    { false, CreateIPAddressRange(IPAddress.Any, IPAddress.Broadcast) },
+                    { false, CreateIPAddressRange(IPAddress.IPv6Any, IPAddress.IPv6Loopback) },
                 };
                 return data;
             }
@@ -136,7 +136,7 @@ namespace Arcus.Tests
             var tail = IPAddress.Parse(tailString);
             _ = IPAddress.TryParse(addressString, out var containsAddress);
 
-            var iPAddressRange = CreateSubstituteIPAddressRange(head, tail);
+            var iPAddressRange = CreateIPAddressRange(head, tail);
 
             // Act
             var result = iPAddressRange.Contains(containsAddress);
@@ -190,7 +190,7 @@ namespace Arcus.Tests
                     ? new IPAddressRange(subhead, subtail)
                     : null;
 
-            var iPAddressRange = CreateSubstituteIPAddressRange(head, tail);
+            var iPAddressRange = CreateIPAddressRange(head, tail);
 
             var containedIPAddressRange = substituteIPAddressSubRange;
 
@@ -215,8 +215,8 @@ namespace Arcus.Tests
         {
             get
             {
-                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
-                var ipv6Range = CreateSubstituteIPAddressRange(
+                var ipv4Range = CreateIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateIPAddressRange(
                     IPAddress.IPv6Any,
                     IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
                 );
@@ -229,80 +229,63 @@ namespace Arcus.Tests
                     // same overlap checking
                     { true, ipv4Range, ipv4Range },
                     { true, ipv6Range, ipv6Range },
-                    // equal overlap checking
-                    {
-                        true,
-                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast),
-                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast)
-                    },
-                    {
-                        true,
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.IPv6Any,
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        ),
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.IPv6Any,
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        )
-                    },
                     // differing address families
                     { false, ipv4Range, ipv6Range },
                     { false, ipv6Range, ipv4Range },
                     // head only overlapped
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
                     },
                     // full head and tail overlapped
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00"))
                     },
                     // tail only overlapped
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
                     },
                     // not touching
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128")),
+                        CreateIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f"))
+                        CreateIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f")),
+                        CreateIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f"))
                     },
                     // disparate ranges
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
+                        CreateIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
+                        CreateIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
                     },
                 };
                 return data;
@@ -339,8 +322,8 @@ namespace Arcus.Tests
         {
             get
             {
-                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
-                var ipv6Range = CreateSubstituteIPAddressRange(
+                var ipv4Range = CreateIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateIPAddressRange(
                     IPAddress.IPv6Any,
                     IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
                 );
@@ -362,40 +345,37 @@ namespace Arcus.Tests
                     // does not contain outside before
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.200")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.200")),
                         IPAddress.Parse("192.168.1.0")
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff01"), IPAddress.Parse("::ff08")),
+                        CreateIPAddressRange(IPAddress.Parse("::ff01"), IPAddress.Parse("::ff08")),
                         IPAddress.Parse("::ff00")
                     },
                     // does not contain outside after
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.200")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.200")),
                         IPAddress.Parse("192.168.1.201")
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff01"), IPAddress.Parse("::ff08")),
+                        CreateIPAddressRange(IPAddress.Parse("::ff01"), IPAddress.Parse("::ff08")),
                         IPAddress.Parse("::ff09")
                     },
                 };
 
                 // contains all inside IPv4
-                var ipv4InsideRange = CreateSubstituteIPAddressRange(
-                    IPAddress.Parse("192.168.1.0"),
-                    IPAddress.Parse("192.168.1.5")
-                );
-                foreach (var ip in ipv4InsideRange)
+                var ipv4InsideRange = CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.5"));
+                foreach (var ip in ipv4InsideRange.ToIPAddresses())
                 {
                     data.Add(true, ipv4InsideRange, ip);
                 }
 
                 // contains all inside IPv6
-                var ipv6InsideRange = CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("::ff0f"));
-                foreach (var ip in ipv6InsideRange)
+                var ipv6InsideRange = CreateIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("::ff0f"));
+                foreach (var ip in ipv6InsideRange.ToIPAddresses())
                 {
                     data.Add(true, ipv6InsideRange, ip);
                 }
@@ -438,8 +418,8 @@ namespace Arcus.Tests
         {
             get
             {
-                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
-                var ipv6Range = CreateSubstituteIPAddressRange(
+                var ipv4Range = CreateIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateIPAddressRange(
                     IPAddress.IPv6Any,
                     IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
                 );
@@ -452,80 +432,63 @@ namespace Arcus.Tests
                     // same overlap checking
                     { true, ipv4Range, ipv4Range },
                     { true, ipv6Range, ipv6Range },
-                    // equal overlap checking
-                    {
-                        true,
-                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast),
-                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast)
-                    },
-                    {
-                        true,
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.IPv6Any,
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        ),
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.IPv6Any,
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        )
-                    },
                     // differing address families
                     { false, ipv4Range, ipv6Range },
                     { false, ipv6Range, ipv4Range },
                     // head only overlapped
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
                     },
                     // full head and tail overlapped
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00")),
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff"))
                     },
                     // tail only overlapped
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
                     },
                     // not touching
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128"))
+                        CreateIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f"))
+                        CreateIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f")),
+                        CreateIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f"))
                     },
                     // disparate ranges
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
+                        CreateIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
+                        CreateIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
                     },
                 };
                 return data;
@@ -562,8 +525,8 @@ namespace Arcus.Tests
         {
             get
             {
-                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
-                var ipv6Range = CreateSubstituteIPAddressRange(
+                var ipv4Range = CreateIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateIPAddressRange(
                     IPAddress.IPv6Any,
                     IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
                 );
@@ -576,80 +539,63 @@ namespace Arcus.Tests
                     // same overlap checking
                     { true, ipv4Range, ipv4Range },
                     { true, ipv6Range, ipv6Range },
-                    // equal overlap checking
-                    {
-                        true,
-                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast),
-                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast)
-                    },
-                    {
-                        true,
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.IPv6Any,
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        ),
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.IPv6Any,
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        )
-                    },
                     // differing address families
                     { false, ipv4Range, ipv6Range },
                     { false, ipv6Range, ipv4Range },
                     // head only overlapped
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
                     },
                     // full head and tail overlapped
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00")),
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff"))
                     },
                     // tail only overlapped
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
                     },
                     // not touching
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128"))
+                        CreateIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f"))
+                        CreateIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f")),
+                        CreateIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f"))
                     },
                     // disparate ranges
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
+                        CreateIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
+                        CreateIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
                     },
                 };
                 return data;
@@ -686,8 +632,8 @@ namespace Arcus.Tests
         {
             get
             {
-                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
-                var ipv6Range = CreateSubstituteIPAddressRange(
+                var ipv4Range = CreateIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateIPAddressRange(
                     IPAddress.IPv6Any,
                     IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
                 );
@@ -697,104 +643,87 @@ namespace Arcus.Tests
                     // null overlap checking
                     { false, ipv4Range, null },
                     { false, ipv6Range, null },
-                    // same overlap checking
+                    // same overlap checking (also covers value equality since same values produce same display name)
                     { true, ipv4Range, ipv4Range },
                     { true, ipv6Range, ipv6Range },
-                    // equal overlap checking
-                    {
-                        true,
-                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast),
-                        CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast)
-                    },
-                    {
-                        true,
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.IPv6Any,
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        ),
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.IPv6Any,
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        )
-                    },
                     // differing address families
                     { false, ipv4Range, ipv6Range },
                     { false, ipv6Range, ipv4Range },
                     // head only overlapped
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
                     },
                     // full head and tail overlapped
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00"))
                     },
                     // tail only overlapped
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
                     },
                     // not touching
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.128")),
+                        CreateIPAddressRange(IPAddress.Parse("10.1.1.0"), IPAddress.Parse("10.1.1.100"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f"))
+                        CreateIPAddressRange(IPAddress.Parse("ab::"), IPAddress.Parse("ab::f")),
+                        CreateIPAddressRange(IPAddress.Parse("ef::"), IPAddress.Parse("ef::f"))
                     },
                     // disparate ranges
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
+                        CreateIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
+                        CreateIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
                     },
                     // wholly contained — both directions must return true (symmetry)
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.64"), IPAddress.Parse("192.168.1.192"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.64"), IPAddress.Parse("192.168.1.192"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.64"), IPAddress.Parse("192.168.1.192")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.64"), IPAddress.Parse("192.168.1.192")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("1::"), IPAddress.Parse("fffe::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("1::"), IPAddress.Parse("fffe::ffff"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("1::"), IPAddress.Parse("fffe::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("1::"), IPAddress.Parse("fffe::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff"))
                     },
                 };
                 return data;
@@ -831,8 +760,8 @@ namespace Arcus.Tests
         {
             get
             {
-                var ipv4Range = CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
-                var ipv6Range = CreateSubstituteIPAddressRange(
+                var ipv4Range = CreateIPAddressRange(IPAddress.Any, IPAddress.Broadcast);
+                var ipv6Range = CreateIPAddressRange(
                     IPAddress.IPv6Any,
                     IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
                 );
@@ -840,13 +769,10 @@ namespace Arcus.Tests
                 var data = new TheoryData<bool, IIPAddressRange, IIPAddressRange>
                 {
                     // null overlap checking
-                    { false, CreateSubstituteIPAddressRange(IPAddress.Any, IPAddress.Broadcast), null },
+                    { false, CreateIPAddressRange(IPAddress.Any, IPAddress.Broadcast), null },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.IPv6Any,
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        ),
+                        CreateIPAddressRange(IPAddress.IPv6Any, IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")),
                         null
                     },
                     // differing address families
@@ -855,96 +781,90 @@ namespace Arcus.Tests
                     // left tail touches right head
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.100")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.101"), IPAddress.Parse("192.168.1.200"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.100")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.101"), IPAddress.Parse("192.168.1.200"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::abcd")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::abce"), IPAddress.Parse("::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::abcd")),
+                        CreateIPAddressRange(IPAddress.Parse("::abce"), IPAddress.Parse("::ffff"))
                     },
                     // left head touches right tail
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.101"), IPAddress.Parse("192.168.1.200")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.100"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.101"), IPAddress.Parse("192.168.1.200")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.100"))
                     },
                     {
                         true,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::abce"), IPAddress.Parse("::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::abcd"))
+                        CreateIPAddressRange(IPAddress.Parse("::abce"), IPAddress.Parse("::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::abcd"))
                     },
                     // head only overlapped
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.128")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff"))
                     },
                     // full head and tail overlapped
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.128"), IPAddress.Parse("192.168.1.192"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::ff00"), IPAddress.Parse("ff::ff00"))
                     },
                     // tail only overlapped
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.192"), IPAddress.Parse("192.168.1.255")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.192"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
+                        CreateIPAddressRange(IPAddress.Parse("::ffff"), IPAddress.Parse("1::ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ffff"))
                     },
                     // disparate ranges
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.2.0")),
+                        CreateIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
+                        CreateIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
                     },
                     // this tail at max
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("255.255.255.255")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("255.255.255.255")),
+                        CreateIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.Parse("::"),
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        ),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")),
+                        CreateIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
                     },
                     // that tail at max
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0")),
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("255.255.255.255"))
+                        CreateIPAddressRange(IPAddress.Parse("10.1.1.1"), IPAddress.Parse("10.1.5.0")),
+                        CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("255.255.255.255"))
                     },
                     {
                         false,
-                        CreateSubstituteIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::")),
-                        CreateSubstituteIPAddressRange(
-                            IPAddress.Parse("::"),
-                            IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
-                        )
+                        CreateIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::")),
+                        CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff"))
                     },
                 };
                 return data;
@@ -989,14 +909,14 @@ namespace Arcus.Tests
                 foreach (var subnet in SubnetUtilities.PrivateIPAddressRangesList)
                 {
                     // has private
-                    data.Add(false, true, CreateSubstituteIPAddressRange(subnet.Head, subnet.Tail)); // on the border of private
-                    data.Add(false, true, CreateSubstituteIPAddressRange(subnet.Head.Increment(2), subnet.Tail.Increment(-2))); // wholly inside of private
-                    data.Add(false, true, CreateSubstituteIPAddressRange(subnet.Head.Increment(2), subnet.Tail)); // partially within of private
-                    data.Add(false, true, CreateSubstituteIPAddressRange(subnet.Head, subnet.Tail.Increment(-2))); // partially within of private
+                    data.Add(false, true, CreateIPAddressRange(subnet.Head, subnet.Tail)); // on the border of private
+                    data.Add(false, true, CreateIPAddressRange(subnet.Head.Increment(2), subnet.Tail.Increment(-2))); // wholly inside of private
+                    data.Add(false, true, CreateIPAddressRange(subnet.Head.Increment(2), subnet.Tail)); // partially within of private
+                    data.Add(false, true, CreateIPAddressRange(subnet.Head, subnet.Tail.Increment(-2))); // partially within of private
 
                     // has private and public
-                    data.Add(true, true, CreateSubstituteIPAddressRange(subnet.Head.Increment(-2), subnet.Tail)); // partially outside of private
-                    data.Add(true, true, CreateSubstituteIPAddressRange(subnet.Head, subnet.Tail.Increment(2))); // partially outside of private
+                    data.Add(true, true, CreateIPAddressRange(subnet.Head.Increment(-2), subnet.Tail)); // partially outside of private
+                    data.Add(true, true, CreateIPAddressRange(subnet.Head, subnet.Tail.Increment(2))); // partially outside of private
                 }
 
                 // public only
@@ -1008,8 +928,8 @@ namespace Arcus.Tests
 
                 foreach (var (head, tail) in publicSpace)
                 {
-                    data.Add(true, false, CreateSubstituteIPAddressRange(head, tail)); // on the border of public
-                    data.Add(true, false, CreateSubstituteIPAddressRange(head.Increment(2), tail.Increment(-2))); // wholly inside public
+                    data.Add(true, false, CreateIPAddressRange(head, tail)); // on the border of public
+                    data.Add(true, false, CreateIPAddressRange(head.Increment(2), tail.Increment(-2))); // wholly inside public
                 }
 
                 return data;
@@ -1094,7 +1014,7 @@ namespace Arcus.Tests
         {
             // Regression: endpoints 11.0.0.0 and 173.0.0.0 are both public, but the range
             // spans 172.16.0.0/12 — the endpoint heuristic incorrectly returned false.
-            var range = CreateSubstituteIPAddressRange(IPAddress.Parse("11.0.0.0"), IPAddress.Parse("173.0.0.0"));
+            var range = CreateIPAddressRange(IPAddress.Parse("11.0.0.0"), IPAddress.Parse("173.0.0.0"));
 
             Assert.True(range.ContainsAnyPrivateAddresses());
         }
@@ -1105,7 +1025,7 @@ namespace Arcus.Tests
         {
             // Regression: endpoints are both public, but the range spans 172.16.0.0/12 —
             // not all addresses are public, so this must return false.
-            var range = CreateSubstituteIPAddressRange(IPAddress.Parse("11.0.0.0"), IPAddress.Parse("173.0.0.0"));
+            var range = CreateIPAddressRange(IPAddress.Parse("11.0.0.0"), IPAddress.Parse("173.0.0.0"));
 
             Assert.False(range.ContainsAllPublicAddresses());
         }
