@@ -220,6 +220,9 @@ src/results/
 devcontainer-lock.json
 TestResults/
 
+# Git worktrees
+.worktrees/
+
 # Temporary files
 *.bak
 *.swp

@@ -1299,6 +1299,17 @@ namespace Arcus.Tests
             Assert.Throws<ArgumentException>(() => Subnet.FromNetMask(IPAddress.Any, IPAddress.IPv6Any));
         }
 
+        /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress, int)"/> throws <see cref="ArgumentException"/> when the netmask is an IPv4 address with non-contiguous 1-bits.</summary>
+        [Fact]
+        public void FromNetMask_NonContiguousNetMask_Throws_ArgumentException_Test()
+        {
+            // Arrange — 255.0.255.0 has non-contiguous 1-bits (gap in the second octet)
+            var invalidNetmask = new IPAddress(new byte[] { 0xff, 0x00, 0xff, 0x00 });
+
+            // Act / Assert
+            Assert.Throws<ArgumentException>(() => Subnet.FromNetMask(IPAddress.Any, invalidNetmask));
+        }
+
         /// <summary>Verifies that <see cref="Subnet.FromNetMask(IPAddress, IPAddress, int)"/> throws <see cref="ArgumentException"/> when the address is IPv6.</summary>
         [Fact]
         public void FromNetMask_IPv6Address_Throws_ArgumentException_Test()

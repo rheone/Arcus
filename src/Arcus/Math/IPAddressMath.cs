@@ -48,7 +48,7 @@ namespace Arcus.Math
         {
             #region defense
 
-            if (input == null)
+            if (input is null)
             {
                 throw new ArgumentNullException(nameof(input));
             }
@@ -220,17 +220,17 @@ namespace Arcus.Math
         {
             #region defense
 
-            if (input == null)
+            if (input is null)
             {
                 throw new ArgumentNullException(nameof(input));
             }
 
-            if (low == null)
+            if (low is null)
             {
                 throw new ArgumentNullException(nameof(low));
             }
 
-            if (high == null)
+            if (high is null)
             {
                 throw new ArgumentNullException(nameof(high));
             }
@@ -273,12 +273,12 @@ namespace Arcus.Math
         {
             #region defense
 
-            if (left == null)
+            if (left is null)
             {
                 throw new ArgumentNullException(nameof(left));
             }
 
-            if (right == null)
+            if (right is null)
             {
                 throw new ArgumentNullException(nameof(right));
             }
@@ -306,12 +306,12 @@ namespace Arcus.Math
         {
             #region defense
 
-            if (left == null)
+            if (left is null)
             {
                 throw new ArgumentNullException(nameof(left));
             }
 
-            if (right == null)
+            if (right is null)
             {
                 throw new ArgumentNullException(nameof(right));
             }
@@ -349,7 +349,7 @@ namespace Arcus.Math
         {
             #region defense
 
-            if (address == null)
+            if (address is null)
             {
                 throw new ArgumentNullException(nameof(address));
             }
@@ -386,7 +386,7 @@ namespace Arcus.Math
         {
             #region defense
 
-            if (address == null)
+            if (address is null)
             {
                 throw new ArgumentNullException(nameof(address));
             }

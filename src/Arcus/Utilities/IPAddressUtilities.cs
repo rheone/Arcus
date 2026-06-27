@@ -291,7 +291,7 @@ namespace Arcus.Utilities
         {
             #region defense
 
-            if (input == null)
+            if (input is null)
             {
                 throw new ArgumentNullException(nameof(input));
             }
@@ -397,7 +397,7 @@ namespace Arcus.Utilities
         {
             #region defense
 
-            if (input == null)
+            if (input is null)
             {
                 throw new ArgumentNullException(nameof(input));
             }
@@ -461,7 +461,7 @@ namespace Arcus.Utilities
         /// <returns>The parsed <see cref="IPAddress"/></returns>
         public static IPAddress Parse(byte[] input, AddressFamily addressFamily)
         {
-            if (input == null)
+            if (input is null)
             {
                 throw new ArgumentNullException(nameof(input));
             }
