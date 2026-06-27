@@ -3,9 +3,19 @@
 IPAddress Range
 ===============
 
+|version| v5.0.0
+
 ``IPAddressRange`` is a very basic implementation of an :ref:`AbstractIPAddressRange` used to represent an inclusive range of arbitrary IP Addresses of the same address family. It isn't restricted to a `CIDR <https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing>`_ representation like a :ref:`Subnet` is, allowing for non-power of two range sizes.
 
-The ``IPAddressRange`` class extends :ref:`AbstractIPAddressRange` and implements :ref:`IIPAddressRange`, ``IEquatable<IPAddressRange>``, ``IComparable<IPAddressRange>``, ``IFormattable``, ``IEnumerable<IPAddress>`` (deprecated — see :ref:`ToIPAddresses`), and ``ISerializable``.
+The ``IPAddressRange`` class extends :ref:`AbstractIPAddressRange` and implements :ref:`IIPAddressRange`, ``IEquatable<IPAddressRange>``, ``IComparable<IPAddressRange>``, ``IFormattable``, and ``ISerializable``.
+
+.. warning::
+
+   ``IEnumerable<IPAddress>`` (and ``GetEnumerator()``) are **deprecated in v5.0.0** and will be **removed in v6.0.0**. Use :ref:`ToIPAddresses` instead. See :ref:`IIPAddressRange` for details.
+
+.. note::
+
+   Beginning in v5.0.0, **all constructors and factory methods** accept an optional ``maxEnumerationExponent`` parameter (default 12) that controls enumeration limits. See the constructor signatures below.
 
 Creation
 --------
@@ -49,6 +59,10 @@ The function call will return ``true`` if it could collapse two or more ranges. 
    public static bool TryCollapseAll(IEnumerable<IPAddressRange> ranges, out IEnumerable<IPAddressRange> result, int maxEnumerationExponent = 12)
 
 The optional ``maxEnumerationExponent`` parameter controls the enumeration cap for any ranges created during collapse.
+
+.. note::
+
+   **v5.0.0 behavior correction — TryExcludeAll boundary guards:** When an exclusion ends at the family maximum address (e.g., ``255.255.255.255`` for IPv4), the method returns ``(true, leading segment)`` or ``(true, [])`` instead of throwing ``InvalidOperationException``. The trailing-segment path is guarded symmetrically for family-minimum exclusions.
 
 The following example shows that the three touching ranges of ``192.168.1.0 - 192.168.1.5``, ``192.168.1.6 - 192.168.1.7``, and ``192.168.1.8 - 192.168.1.20`` were collapsed into the new ``IPAddressRange`` of ``192.168.1.0 - 192.168.1.20``.
 

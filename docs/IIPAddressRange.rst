@@ -3,15 +3,17 @@
 IIPAddressRange
 ===============
 
+|version| v5.0.0
+
 Arcus defines the ``IIPAddressRange`` interface for representation of consecutive ``IPAddress`` objects. It implements ``IFormattable``.
 
-.. caution::
+.. warning::
 
-   ``IIPAddressRange`` currently implements ``IEnumerable<IPAddress>`` for backwards compatibility, but this will be **removed in a future major version**.
+   **Will be removed in v6.0.0:** ``IIPAddressRange`` currently implements ``IEnumerable<IPAddress>`` for backwards compatibility, but this will be **removed in v6.0.0**.
 
-   **Why:** The ``IEnumerable<IPAddress>`` interface makes it too easy to accidentally enumerate astronomically large address spaces. Even with the enumeration cap, the interface contract itself encourages direct ``foreach`` usage that is semantically misleading.
+   **Why:** The ``IEnumerable<IPAddress>`` interface makes it too easy to accidentally enumerate astronomically large address spaces. Even with the enumeration cap, the interface contract itself encourages direct ``foreach`` usage that is semantically misleading — iterating over billions of items is rarely the intent.
 
-   **Migration:** Replace ``foreach (var addr in range)`` with ``foreach (var addr in range.ToIPAddresses())`` now. This produces no warnings in v5 and will be required when the interface is removed.
+   **Migration:** Replace ``foreach (var addr in range)`` with ``foreach (var addr in range.ToIPAddresses())`` now. This produces no warnings in v5 and will be **required** in v6.0.0.
 
    .. seealso:: :ref:`ToIPAddresses` for the replacement enumeration method.
 
@@ -20,6 +22,10 @@ Arcus defines the ``IIPAddressRange`` interface for representation of consecutiv
 .. hint:: ``AddressFamily`` unless otherwise explicitly stated are expected to be either ``InterNetwork`` or ``InterNetworkV6``.
 
 ``IIPAddressRange`` is implemented by :ref:`AbstractIPAddressRange`, :ref:`IPAddressRange`, and :ref:`Subnet`.
+
+.. note::
+
+   **New in v5.0.0:** All range types now accept an optional ``maxEnumerationExponent`` parameter (default 12) that caps enumeration at ``2^maxEnumerationExponent`` addresses (4096 by default). This prevents accidental enumeration of enormous address spaces. See :ref:`ToIPAddresses` for details.
 
 Functionality Promises
 ----------------------
@@ -43,7 +49,7 @@ Enumeration via ToIPAddresses
 
 .. _ToIPAddresses:
 
-The ``ToIPAddresses()`` method returns an ``IEnumerable<IPAddress>`` yielding addresses from ``Head`` to ``Tail``, capped at ``2^MaxEnumerationExponent``. This is the recommended way to enumerate range addresses in v5 and will be the only way in a future major version.
+**New in v5.0.0:** The ``ToIPAddresses()`` method returns an ``IEnumerable<IPAddress>`` yielding addresses from ``Head`` to ``Tail``, capped at ``2^MaxEnumerationExponent``. This is the recommended way to enumerate range addresses in v5 and will be the **only** way in v6.0.0.
 
 .. code-block:: c#
 
@@ -51,11 +57,13 @@ The ``ToIPAddresses()`` method returns an ``IEnumerable<IPAddress>`` yielding ad
 
 .. caution::
 
-   If the range contains more addresses than the cap allows, ``InvalidOperationException`` is thrown at the point the limit is exceeded. Increase ``maxEnumerationExponent`` at construction time to enumerate larger ranges.
+   If the range contains more addresses than the cap allows, ``InvalidOperationException`` is thrown at the point the limit is exceeded. Increase ``maxEnumerationExponent`` at construction time to enumerate larger ranges. A value of ``0`` disables enumeration entirely; ``128`` allows enumeration up to the full IPv6 space.
 
-.. hint::
+.. warning::
 
-   The old ``GetEnumerator()`` method is now ``[Obsolete("Use ToIPAddresses() instead")]``. It still works by delegating to ``ToIPAddresses()`` but produces a compile-time warning.
+   **Obsolete in v5.0.0, will be removed in v6.0.0:** The ``GetEnumerator()`` method is now ``[Obsolete("Use ToIPAddresses() instead")]``. It still works by delegating to ``ToIPAddresses()`` but produces a compile-time warning.
+
+   Replace all uses of ``foreach (var addr in range)`` with ``foreach (var addr in range.ToIPAddresses())`` now to prepare for v6.0.0.
 
 Set Based Operations
 ^^^^^^^^^^^^^^^^^^^^

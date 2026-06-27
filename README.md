@@ -13,6 +13,20 @@ Arcus is a C# manipulation library for calculating, parsing, formatting, convert
 
 ## ❗Breaking Changes in v5.0.0
 
+### Gulliver dependency removed
+
+The [Gulliver](https://github.com/sandialabs/gulliver) NuGet package is no longer a dependency. All byte-level manipulation previously delegated to Gulliver is now handled internally by the new `BigEndianBitWrapper` type.
+
+**Why:** Removing the external dependency simplifies the dependency graph for consumers, avoids version conflicts, and gives Arcus full control over its byte-level operations without relying on an outside library's API surface.
+
+**Migration:** If your project depended on Gulliver being available transitively through Arcus (e.g. you used `ByteArrayUtils`, `ShiftBitsLeft`, or the `byte[].ToString("HC"/"IBE"/"b")` format extensions without a direct reference to Gulliver), you must add a direct `PackageReference` to Gulliver or replace those usages with equivalent implementations.
+
+### .NET 10 target added
+
+Arcus now targets `net10.0` in addition to `netstandard2.0`, `net8.0`, and `net9.0`. The test project similarly targets `net10.0`.
+
+**Why:** Stay current with the latest .NET releases and take advantage of new platform features and performance improvements.
+
 ### Enumeration cap via `maxEnumerationExponent` and `DefaultMaxEnumerationExponent`
 
 Every range type now stores a `MaxEnumerationExponent` property (0–128). Enumeration via `ToIPAddresses()` (and `foreach` / `IEnumerable<T>` for backwards compatibility) yields at most **2<sup>MaxEnumerationExponent</sup>** addresses.
@@ -94,6 +108,23 @@ In .NET versions up to and including .NET 4.8 (which corresponds to .NET Standar
 In newer versions of .NET, including .NET 8, .NET 9, and .NET 10, the parsing rules have been relaxed. The trailing '%' character is now ignored during parsing, allowing for inputs that would have previously failed.
 
 It is important to note that this scenario appears to be an extreme edge case. If in doubt, sanitize IP address user input to meet your development needs.
+
+### Obsolete members (compile-time warning in v5, will be removed in v6)
+
+The following members are marked `[Obsolete]` in v5.0.0. They continue to work but produce compile-time warnings. They will be **removed in v6.0.0**.
+
+| Obsolete member | Replacement | Notes |
+|---|---|---|
+| `IIPAddressRange.GetEnumerator()` (and `foreach` on any range type) | `ToIPAddresses()` | `GetEnumerator()` now delegates to `ToIPAddresses()`; direct `foreach` on range types is deprecated |
+| `IIPAddressRange` implementing `IEnumerable<IPAddress>` | None — the interface itself will be removed | Avoid relying on `IIPAddressRange` being enumerable; use `ToIPAddresses()` explicitly |
+| `Subnet.TryIPv6FromPartial(string, out IEnumerable<Subnet>)` | To be replaced by more explicit methods in a future release | This method's behavior was highly specialized and often surprising to consumers |
+
+### Performance and modernization
+
+- **Regex source generators:** `Subnet` parsing and `IPAddressUtilities` hexadecimal/octal parsing now use C# `[GeneratedRegex]` source generators for improved startup and throughput on targets that support it.
+- **Partial class split:** Large types (`Subnet`, `IPAddressRange`, `AbstractIPAddressRange`, `BigEndianBitWrapper`) have been split into partial files organized by interface implementation for better maintainability.
+- **Internal `BigEndianBitWrapper`:** A new internal type provides big-endian byte-array arithmetic, replacing the Gulliver dependency.
+- **`InternalsVisibleTo`:** Tests and benchmarks now have access to internal types for more thorough testing.
 
 ### Anticipated future breaking change: `IEnumerable<IPAddress>` removal from `IIPAddressRange`
 

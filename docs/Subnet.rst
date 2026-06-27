@@ -3,11 +3,21 @@
 Subnet
 ======
 
-The ``Subnet`` type, flavored in both IPv4 or IPv6, is a representation of a subnetwork within Arcus. It is the workhorse and original reason for the Arcus library. Outside the concept of the ``Subnet`` object, most everything else in Arcus is auxiliary and exists only in support of making this one facet work. That’s not to say that the remaining pieces of the Arcus library aren’t useful, on the contrary their utility can benefit a developer greatly. But that said, once the dark and mysterious magic of the ``Subnet`` is understood the rest of Arcus should be easy to understand.
+|version| v5.0.0
+
+The ``Subnet`` type, flavored in both IPv4 or IPv6, is a representation of a subnetwork within Arcus. It is the workhorse and original reason for the Arcus library. Outside the concept of the ``Subnet`` object, most everything else in Arcus is auxiliary and exists only in support of making this one facet work. That's not to say that the remaining pieces of the Arcus library aren't useful, on the contrary their utility can benefit a developer greatly. But that said, once the dark and mysterious magic of the ``Subnet`` is understood the rest of Arcus should be easy to understand.
 
 Keep in mind that a ``Subnet`` is not an arbitrary range of addresses, for that you want an :ref:`IPAddressRange`, but rather conforms to a range of length :math:`2^n` starting a particular position, following the typical rules of `Classless Inter-Domain Routing <https://en.wikipedia.org/wiki/Classless_Inter-Domain_Routing>`_.
 
-The ``Subnet`` class extends :ref:`AbstractIPAddressRange` and implements :ref:`IIPAddressRange`, ``IEquatable<Subnet>``, ``IComparable<Subnet>``, ``IFormattable``, ``IEnumerable<IPAddress>`` (deprecated — see :ref:`ToIPAddresses`), and ``ISerializable``.
+The ``Subnet`` class extends :ref:`AbstractIPAddressRange` and implements :ref:`IIPAddressRange`, ``IEquatable<Subnet>``, ``IComparable<Subnet>``, ``IFormattable``, and ``ISerializable``.
+
+.. warning::
+
+   ``IEnumerable<IPAddress>`` (and ``GetEnumerator()``) are **deprecated in v5.0.0** and will be **removed in v6.0.0**. Use :ref:`ToIPAddresses` instead. See :ref:`IIPAddressRange` for details.
+
+.. note::
+
+   Beginning in v5.0.0, **all constructors and factory methods** accept an optional ``maxEnumerationExponent`` parameter (default 12) that controls enumeration limits. See the constructor signatures below.
 
 .. note::  Be aware that ``Subnet`` does *not* extend :ref:`IPAddressRange` but does implement :ref:`IIPAddressRange`.
 

@@ -18,12 +18,26 @@ Arcus
    :alt: Apache 2.0 License
    :target: https://github.com/sandialabs/Arcus/blob/main/LICENSE
 
+|version| Arcus v5.0.0
+
 Arcus is a C# manipulation library for calculating, parsing, formatting, converting, and comparing both IPv4 and IPv6 addresses and subnets. It accounts for 128-bit numbers on 32-bit platforms.
 
 Arcus provides extension and helper methods for the pre-existing ``System.Net.IPAddress`` and other objects within that realm. It was created to fill in some of the gaps left by the absence of a representation of a :doc:`Subnet <Subnet>`. As more gaps were found, they were filled. Like all coding projects, Arcus is a work in progress. We rely on both our free time and our :doc:`community <Community>` in order to provide the best solution we can given the constraints we must conform to.
 
 .. hint:: Chances are you're primarily here looking for the :doc:`Subnet <Subnet>` object.
 
+.. _release-notes:
+
+.. warning::
+
+    Arcus v5.0.0 introduces several **breaking changes**. See the :ref:`release-notes` for a full migration guide.
+
+    Key changes:
+    - Enumeration cap (``MaxEnumerationExponent``) prevents accidental enumeration of large ranges
+    - ``ToIPAddresses()`` replaces ``GetEnumerator()`` (deprecated, will be removed in v6)
+    - ``MacAddress`` type and ``DefaultIPAddressRangeComparer`` removed
+    - Gulliver dependency removed
+    - ``SubnetUtilities.*List`` fields are now ``readonly``
 
 .. warning::
 

@@ -3,11 +3,17 @@
 AbstractIPAddressRange
 ======================
 
+|version| v5.0.0
+
 The ``AbstractIPAddressRange`` is an abstract implementation of :ref:`IIPAddressRange`. It is extended by both :ref:`IPAddressRange`, and :ref:`Subnet`.
 
-.. note::
+.. important::
 
-   **Enumeration cap:** Every range now stores a ``MaxEnumerationExponent`` (default 12). Enumeration via ``ToIPAddresses()`` yields at most ``2^MaxEnumerationExponent`` addresses (4096 by default). If exceeded, ``InvalidOperationException`` is thrown. Pass a larger ``maxEnumerationExponent`` at construction time to enumerate larger ranges.
+   **v5.0.0 Breaking changes in this class:**
+
+   **MaxEnumerationExponent property:** Every range now stores a ``MaxEnumerationExponent`` property (0–128, default 12). Enumeration via ``ToIPAddresses()`` yields at most ``2^MaxEnumerationExponent`` addresses (4096 by default). If exceeded, ``InvalidOperationException`` is thrown. Pass a larger ``maxEnumerationExponent`` at construction time to enumerate larger ranges.
+
+   **Obsolete — GetEnumerator():** ``GetEnumerator()`` is now ``[Obsolete("Use ToIPAddresses() instead")]``. It delegates to ``ToIPAddresses()`` but produces a compile-time warning and **will be removed in v6.0.0**.
 
    **Overlaps — symmetry fix:** ``Overlaps(IIPAddressRange)`` now returns ``true`` in both directions when one range is wholly contained inside the other. Previously, calling ``inner.Overlaps(outer)`` returned ``false`` when ``inner`` was wholly inside ``outer``.
 

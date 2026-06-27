@@ -1,6 +1,12 @@
 IP Address Range Comparers
 ==========================
 
+|version| v5.0.0
+
+.. warning::
+
+   **Removed in v5.0.0:** The ``DefaultIPAddressRangeComparer`` type has been removed. Use :ref:`DefaultIIPAddressRangeComparer` (documented below) instead. This type was previously marked ``[Obsolete]`` and has been fully removed in v5.0.0.
+
 Unsurprisingly, sometimes it is necessary to compare an :ref:`IIPAddressRange` to another. For that an implementation of a ``Comparer<IIPAddressRange>`` is just what the code monkey ordered.
 
 .. _DefaultIIPAddressRangeComparer:
