@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
@@ -157,13 +154,15 @@ namespace Arcus.Utilities
         /// </summary>
         /// <param name="addressFamily">the <see cref="AddressFamily"/></param>
         /// <returns><see cref="IPv4MaxAddress"/> when <paramref name="addressFamily"/> is <see cref="AddressFamily.InterNetwork" /> or <see cref="IPv6MaxAddress"/> when <see cref="AddressFamily.InterNetworkV6" /> </returns>
-        public static IPAddress MaxIPAddress(this AddressFamily addressFamily) =>
-            addressFamily switch
+        public static IPAddress MaxIPAddress(this AddressFamily addressFamily)
+        {
+            return addressFamily switch
             {
                 AddressFamily.InterNetwork => IPv4MaxAddress,
                 AddressFamily.InterNetworkV6 => IPv6MaxAddress,
                 _ => throw new ArgumentException($"Unsupported address family \"{addressFamily}\"", nameof(addressFamily)),
             };
+        }
 
         /// <summary>
         ///     Get the Min Address for the given address family. (supports only <see cref="AddressFamily.InterNetwork" /> and
@@ -171,13 +170,15 @@ namespace Arcus.Utilities
         /// </summary>
         /// <param name="addressFamily">the <see cref="AddressFamily"/></param>
         /// <returns><see cref="IPv4MinAddress"/> when <paramref name="addressFamily"/> is <see cref="AddressFamily.InterNetwork" /> or <see cref="IPv6MinAddress"/> when <see cref="AddressFamily.InterNetworkV6" /> </returns>
-        public static IPAddress MinIPAddress(this AddressFamily addressFamily) =>
-            addressFamily switch
+        public static IPAddress MinIPAddress(this AddressFamily addressFamily)
+        {
+            return addressFamily switch
             {
                 AddressFamily.InterNetwork => IPv4MinAddress,
                 AddressFamily.InterNetworkV6 => IPv6MinAddress,
                 _ => throw new ArgumentException($"Unsupported address family \"{addressFamily}\"", nameof(addressFamily)),
             };
+        }
 
         #endregion // end: Address Max / Minimum
 
@@ -188,16 +189,20 @@ namespace Arcus.Utilities
         /// </summary>
         /// <param name="ipAddress">the IPAddress to test</param>
         /// <returns>true if ipv4</returns>
-        public static bool IsIPv4(this IPAddress ipAddress) =>
-            ipAddress != null && ipAddress.AddressFamily == AddressFamily.InterNetwork;
+        public static bool IsIPv4(this IPAddress ipAddress)
+        {
+            return ipAddress != null && ipAddress.AddressFamily == AddressFamily.InterNetwork;
+        }
 
         /// <summary>
         ///     Test if address is IPv6
         /// </summary>
         /// <param name="ipAddress">the IPAddress to test</param>
         /// <returns>true if ipv6</returns>
-        public static bool IsIPv6(this IPAddress ipAddress) =>
-            ipAddress != null && ipAddress.AddressFamily == AddressFamily.InterNetworkV6;
+        public static bool IsIPv6(this IPAddress ipAddress)
+        {
+            return ipAddress != null && ipAddress.AddressFamily == AddressFamily.InterNetworkV6;
+        }
 
         #endregion
 
@@ -218,7 +223,7 @@ namespace Arcus.Utilities
         /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
         public static bool IsIPv4MappedIPv6(this IPAddress ipAddress)
         {
-            if (ipAddress == null || !ipAddress.IsIPv6())
+            if (ipAddress?.IsIPv6() != true)
             {
                 return false;
             }

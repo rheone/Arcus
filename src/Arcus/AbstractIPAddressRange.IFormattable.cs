@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -14,7 +13,10 @@ namespace Arcus
         #region Formatting
 
         /// <inheritdoc />
-        public override string ToString() => this.ToString("G", CultureInfo.InvariantCulture);
+        public override string ToString()
+        {
+            return this.ToString("G", CultureInfo.InvariantCulture);
+        }
 
         /// <inheritdoc />
         public virtual string ToString(
@@ -25,12 +27,14 @@ namespace Arcus
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
             [AllowNull]
 #endif
-            IFormatProvider formatProvider) =>
-            format?.Trim() switch
+            IFormatProvider formatProvider)
+        {
+            return format?.Trim() switch
             {
                 null or { Length: 0 } or "g" or "G" => $"{this.Head} - {this.Tail}",
                 _ => throw new FormatException($"The format \"{format}\" is not supported."),
             };
+        }
 
         #endregion // end: Formatting
     }

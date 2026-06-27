@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using Arcus.Utilities;
 using BenchmarkDotNet.Attributes;
@@ -28,6 +28,9 @@ namespace Arcus.Benchmarks
         }
 
         [Benchmark]
-        public IPAddress ParseFromHexString() => IPAddressUtilities.ParseFromHexString(_hexString, Family);
+        public IPAddress ParseFromHexString()
+        {
+            return IPAddressUtilities.ParseFromHexString(_hexString, Family);
+        }
     }
 }

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Arcus
+﻿namespace Arcus
 {
     /// <content>
     ///     <see cref="IPAddressRange"/> implementation of <see cref="IEquatable{IPAddressRange}"/>
@@ -39,6 +37,9 @@ namespace Arcus
         }
 
         /// <inheritdoc />
-        public override int GetHashCode() => HashCode.Combine(Head, Tail);
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Head, Tail);
+        }
     }
 }

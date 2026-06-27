@@ -1,5 +1,4 @@
-﻿using System;
-using System.Globalization;
+﻿using System.Globalization;
 using System.Net;
 
 namespace Arcus.Tests
@@ -8,11 +7,20 @@ namespace Arcus.Tests
     public partial class BigEndianBitWrapperTests
     {
         // Convenience helpers — keep tests focused on behaviour, not construction noise.
-        private static BigEndianBitWrapper Wrap(params byte[] bytes) => BigEndianBitWrapper.FromBytes(bytes);
+        private static BigEndianBitWrapper Wrap(params byte[] bytes)
+        {
+            return BigEndianBitWrapper.FromBytes(bytes);
+        }
 
-        private static BigEndianBitWrapper WrapIPv4(string dotted) => Wrap(IPAddress.Parse(dotted).GetAddressBytes());
+        private static BigEndianBitWrapper WrapIPv4(string dotted)
+        {
+            return Wrap(IPAddress.Parse(dotted).GetAddressBytes());
+        }
 
-        private static BigEndianBitWrapper WrapIPv6(string addr) => Wrap(IPAddress.Parse(addr).GetAddressBytes());
+        private static BigEndianBitWrapper WrapIPv6(string addr)
+        {
+            return Wrap(IPAddress.Parse(addr).GetAddressBytes());
+        }
 
         #region TryAdd
 

@@ -1,5 +1,4 @@
-﻿using System;
-using Arcus.Comparers;
+﻿using Arcus.Comparers;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 #endif

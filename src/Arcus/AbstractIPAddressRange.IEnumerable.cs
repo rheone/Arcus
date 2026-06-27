@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Net;
 using System.Numerics;
 using Arcus.Math;
@@ -16,17 +14,26 @@ namespace Arcus
         #region IEnumerable / IEnumerable<IPAddress>
 
         /// <inheritdoc />
-        public IEnumerable<IPAddress> ToIPAddresses() => EnumerateCore(BigInteger.One << this.MaxEnumerationExponent);
+        public IEnumerable<IPAddress> ToIPAddresses()
+        {
+            return EnumerateCore(BigInteger.One << this.MaxEnumerationExponent);
+        }
 
         /// <inheritdoc />
 #pragma warning disable S1133 // Do not forget to remove this deprecated code someday
         [Obsolete("Use ToIPAddresses() instead")]
 #pragma warning restore S1133
-        public IEnumerator<IPAddress> GetEnumerator() => ToIPAddresses().GetEnumerator();
+        public IEnumerator<IPAddress> GetEnumerator()
+        {
+            return ToIPAddresses().GetEnumerator();
+        }
 
         /// <inheritdoc />
 #pragma warning disable CS0618 // Type or member is obsolete
-        IEnumerator IEnumerable.GetEnumerator() => this.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator()
+        {
+            return this.GetEnumerator();
+        }
 #pragma warning restore CS0618
 
         private IEnumerable<IPAddress> EnumerateCore(BigInteger maxCount)

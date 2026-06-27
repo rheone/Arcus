@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using Arcus.Converters;
 using BenchmarkDotNet.Attributes;
@@ -32,12 +32,21 @@ namespace Arcus.Benchmarks
 
         // ToBase85String applies to IPv6 only; always benchmarks the IPv6 path.
         [Benchmark]
-        public string ToBase85String() => Ipv6Address.ToBase85String();
+        public string ToBase85String()
+        {
+            return Ipv6Address.ToBase85String();
+        }
 
         [Benchmark]
-        public string ToDottedQuadString() => _address.ToDottedQuadString();
+        public string ToDottedQuadString()
+        {
+            return _address.ToDottedQuadString();
+        }
 
         [Benchmark]
-        public string ToUncompressedString() => _address.ToUncompressedString();
+        public string ToUncompressedString()
+        {
+            return _address.ToUncompressedString();
+        }
     }
 }

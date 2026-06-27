@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-
-namespace Arcus.Tests
+﻿namespace Arcus.Tests
 {
     /// <summary>
     /// Provides an <c>IEnumerable&lt;byte&gt;</c> returning reverse operation for byte arrays used by test code. This
@@ -15,6 +12,9 @@ namespace Arcus.Tests
         /// </summary>
         /// <param name="bytes">bytes</param>
         /// <returns>bytes in reverse</returns>
-        public static IEnumerable<byte> Reverse(this byte[] bytes) => Enumerable.Reverse(bytes);
+        public static IEnumerable<byte> Reverse(this byte[] bytes)
+        {
+            return Enumerable.Reverse(bytes);
+        }
     }
 }

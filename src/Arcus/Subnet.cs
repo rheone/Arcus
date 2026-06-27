@@ -1,7 +1,5 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
-using System.Linq;
 using System.Net;
 using System.Numerics;
 using Arcus.Math;
@@ -152,15 +150,20 @@ namespace Arcus
         /// </summary>
         /// <param name="subnet">the subnet to test</param>
         /// <returns>true if the passed subnet is contained within this</returns>
-        public bool Contains(Subnet subnet) =>
-            subnet != null && Contains(subnet.NetworkPrefixAddress) && Contains(subnet.BroadcastAddress);
+        public bool Contains(Subnet subnet)
+        {
+            return subnet != null && Contains(subnet.NetworkPrefixAddress) && Contains(subnet.BroadcastAddress);
+        }
 
         /// <summary>
         ///     check if the given subnets overlaps this
         /// </summary>
         /// <param name="subnet">the subnet to check the overlap of</param>
         /// <returns>true if there is an overlap</returns>
-        public bool Overlaps(Subnet subnet) => subnet != null && (subnet.Contains(this) || this.Contains(subnet));
+        public bool Overlaps(Subnet subnet)
+        {
+            return subnet != null && (subnet.Contains(this) || this.Contains(subnet));
+        }
 
         #endregion // end: set based operations
 

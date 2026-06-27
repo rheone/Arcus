@@ -88,11 +88,6 @@ dotnet_tool_ensure dotnet-dump
 
 echo "Installing language servers..."
 
-# C# language server.
-if ! command -v csharp-ls >/dev/null 2>&1; then
-    dotnet tool install --global csharp-ls || true
-fi
-
 # Python language server.
 if ! command -v pyright-langserver >/dev/null 2>&1; then
     npm install -g pyright || true

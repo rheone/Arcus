@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Arcus
+﻿namespace Arcus
 {
     /// <content><see cref="BigEndianBitWrapper"/> implementation of <see cref="IEquatable{BigEndianBitWrapper}"/></content>
     internal readonly partial struct BigEndianBitWrapper
@@ -19,7 +17,10 @@ namespace Arcus
 #endif
 
         /// <inheritdoc />
-        public override bool Equals(object obj) => obj is BigEndianBitWrapper other && Equals(other);
+        public override bool Equals(object obj)
+        {
+            return obj is BigEndianBitWrapper other && Equals(other);
+        }
 
         /// <inheritdoc />
         public override int GetHashCode() =>

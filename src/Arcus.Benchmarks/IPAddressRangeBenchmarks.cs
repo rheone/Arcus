@@ -1,5 +1,4 @@
-using System.Collections.Generic;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using Arcus.Math;
 using BenchmarkDotNet.Attributes;
@@ -55,9 +54,15 @@ namespace Arcus.Benchmarks
         }
 
         [Benchmark]
-        public bool TryCollapseAll() => IPAddressRange.TryCollapseAll(_ranges, out _);
+        public bool TryCollapseAll()
+        {
+            return IPAddressRange.TryCollapseAll(_ranges, out _);
+        }
 
         [Benchmark]
-        public bool TryExcludeAll() => IPAddressRange.TryExcludeAll(_initialRange, _exclusions, out _);
+        public bool TryExcludeAll()
+        {
+            return IPAddressRange.TryExcludeAll(_initialRange, _exclusions, out _);
+        }
     }
 }

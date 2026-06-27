@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using Arcus.Utilities;
 using static System.Net.Sockets.AddressFamily;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
@@ -122,8 +120,10 @@ namespace Arcus.Math
         /// <param name="left">first operand</param>
         /// <param name="right">second operand</param>
         /// <returns>true if <paramref name="left"/> is logically equal to <paramref name="left"/></returns>
-        public static bool IsEqualTo(this IPAddress left, IPAddress right) =>
-            ReferenceEquals(left, right) || (!ReferenceEquals(left, null) && left.Equals(right));
+        public static bool IsEqualTo(this IPAddress left, IPAddress right)
+        {
+            return ReferenceEquals(left, right) || (!ReferenceEquals(left, null) && left.Equals(right));
+        }
 
         /// <summary>
         ///     Greater Than
@@ -155,15 +155,17 @@ namespace Arcus.Math
         /// <param name="left">first operand</param>
         /// <param name="right">second operand</param>
         /// <returns>true if <paramref name="left"/> is logically greater than or equal to <paramref name="left"/></returns>
-        public static bool IsGreaterThanOrEqualTo(this IPAddress left, IPAddress right) =>
-            ReferenceEquals(left, right)
-            || (!ReferenceEquals(left, null) && left.Equals(right))
-            || (
-                left?.AddressFamily == right?.AddressFamily
-                && BigEndianBitWrapper
-                    .FromBytes(left.GetAddressBytes())
-                    .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) >= 0
-            );
+        public static bool IsGreaterThanOrEqualTo(this IPAddress left, IPAddress right)
+        {
+            return ReferenceEquals(left, right)
+                || (!ReferenceEquals(left, null) && left.Equals(right))
+                || (
+                    left?.AddressFamily == right?.AddressFamily
+                    && BigEndianBitWrapper
+                        .FromBytes(left.GetAddressBytes())
+                        .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) >= 0
+                );
+        }
 
         /// <summary>
         ///     Less Than
@@ -190,15 +192,17 @@ namespace Arcus.Math
         /// <param name="left">first operand</param>
         /// <param name="right">second operand</param>
         /// <returns>true if <paramref name="left"/> is logically less than or equal to <paramref name="left"/></returns>
-        public static bool IsLessThanOrEqualTo(this IPAddress left, IPAddress right) =>
-            ReferenceEquals(left, right)
-            || (!ReferenceEquals(left, null) && left.Equals(right))
-            || (
-                left?.AddressFamily == right?.AddressFamily
-                && BigEndianBitWrapper
-                    .FromBytes(left.GetAddressBytes())
-                    .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) <= 0
-            );
+        public static bool IsLessThanOrEqualTo(this IPAddress left, IPAddress right)
+        {
+            return ReferenceEquals(left, right)
+                || (!ReferenceEquals(left, null) && left.Equals(right))
+                || (
+                    left?.AddressFamily == right?.AddressFamily
+                    && BigEndianBitWrapper
+                        .FromBytes(left.GetAddressBytes())
+                        .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) <= 0
+                );
+        }
 
         /// <summary>
         ///     Determine if the <paramref name="input"/> occurs numerically between the given high and low IP addresses

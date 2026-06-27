@@ -1,5 +1,4 @@
-﻿using System;
-using System.Net;
+﻿using System.Net;
 using Arcus.Math;
 
 namespace Arcus.Tests.Math
@@ -913,10 +912,10 @@ namespace Arcus.Tests.Math
             var address = IPAddress.Parse(input);
 
             // Act
-            Action act = () => address.Increment(delta);
+            void Act() => address.Increment(delta);
 
             // Assert — overflow message is distinct from underflow
-            var ex = Assert.Throws<InvalidOperationException>(act);
+            var ex = Assert.Throws<InvalidOperationException>(Act);
             Assert.Contains("overflow", ex.Message, StringComparison.OrdinalIgnoreCase);
         }
 

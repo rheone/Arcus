@@ -1,5 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 using Arcus.Comparers;
 
 namespace Arcus.Tests.Comparers

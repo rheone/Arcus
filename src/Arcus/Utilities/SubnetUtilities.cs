@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using Arcus.Math;
 
 namespace Arcus.Utilities
@@ -194,8 +191,10 @@ namespace Arcus.Utilities
         /// <exception cref="ArgumentNullException"><paramref name="subnets" /> is <see langword="null" />.</exception>
         /// <exception cref="InvalidOperationException"><paramref name="subnets" /> contains no elements.</exception>
         /// <exception cref="ArgumentException"><paramref name="subnets" /> contains a <see langword="null" /> element.</exception>
-        public static Subnet LargestSubnet(IEnumerable<Subnet> subnets) =>
-            SelectSubnet(subnets, (candidate, current) => candidate.RoutingPrefix < current.RoutingPrefix);
+        public static Subnet LargestSubnet(IEnumerable<Subnet> subnets)
+        {
+            return SelectSubnet(subnets, (candidate, current) => candidate.RoutingPrefix < current.RoutingPrefix);
+        }
 
         /// <summary>
         ///     Return the smallest subnet (largest routing prefix value).
@@ -214,8 +213,10 @@ namespace Arcus.Utilities
         /// <exception cref="ArgumentNullException"><paramref name="subnets" /> is <see langword="null" />.</exception>
         /// <exception cref="InvalidOperationException"><paramref name="subnets" /> contains no elements.</exception>
         /// <exception cref="ArgumentException"><paramref name="subnets" /> contains a <see langword="null" /> element.</exception>
-        public static Subnet SmallestSubnet(IEnumerable<Subnet> subnets) =>
-            SelectSubnet(subnets, (candidate, current) => candidate.RoutingPrefix > current.RoutingPrefix);
+        public static Subnet SmallestSubnet(IEnumerable<Subnet> subnets)
+        {
+            return SelectSubnet(subnets, (candidate, current) => candidate.RoutingPrefix > current.RoutingPrefix);
+        }
 
         /// <summary>Iterates <paramref name="subnets" /> and returns the element for which <paramref name="shouldReplace" /> never returns <see langword="true" /> when compared against a later element.</summary>
         /// <param name="subnets">the subnets to search; must not be <see langword="null" /> or empty, and must contain no <see langword="null" /> elements.</param>

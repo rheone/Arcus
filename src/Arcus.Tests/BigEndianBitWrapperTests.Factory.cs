@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Arcus.Tests
+﻿namespace Arcus.Tests
 {
     /// <content>
     ///     <see cref="BigEndianBitWrapper"/> tests for factory methods: <c>FromBytes</c> and <c>CreateMask</c>.

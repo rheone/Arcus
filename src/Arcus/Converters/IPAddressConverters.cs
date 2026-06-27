@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using Arcus.Utilities;
@@ -297,8 +295,10 @@ namespace Arcus.Converters
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         [return: NotNullIfNotNull(nameof(ipAddress))]
 #endif
-        public static string ToHexString(this IPAddress ipAddress) =>
-            ipAddress == null ? null : BigEndianBitWrapper.FromBytes(ipAddress.GetAddressBytes()).ToHexString();
+        public static string ToHexString(this IPAddress ipAddress)
+        {
+            return ipAddress == null ? null : BigEndianBitWrapper.FromBytes(ipAddress.GetAddressBytes()).ToHexString();
+        }
 
         /// <summary>
         ///     Convert an <see cref="IPAddress" /> to a numeric representation
@@ -309,8 +309,10 @@ namespace Arcus.Converters
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         [return: NotNullIfNotNull(nameof(ipAddress))]
 #endif
-        public static string ToNumericString(this IPAddress ipAddress) =>
-            ipAddress == null ? null : BigEndianBitWrapper.FromBytes(ipAddress.GetAddressBytes()).ToDecimalString();
+        public static string ToNumericString(this IPAddress ipAddress)
+        {
+            return ipAddress == null ? null : BigEndianBitWrapper.FromBytes(ipAddress.GetAddressBytes()).ToDecimalString();
+        }
 
         /// <summary>
         ///     Convert to uncompressed IPv4/IPv6, adding zeros or expanding '::' where appropriate

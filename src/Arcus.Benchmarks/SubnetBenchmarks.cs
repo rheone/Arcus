@@ -1,6 +1,5 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
-using Arcus.Math;
 using BenchmarkDotNet.Attributes;
 using BenchmarkDotNet.Jobs;
 
@@ -14,7 +13,7 @@ namespace Arcus.Benchmarks
     public class SubnetBenchmarks
     {
         [Params(AddressFamily.InterNetwork, AddressFamily.InterNetworkV6)]
-        public AddressFamily Family;
+        public AddressFamily Family { get; set; }
 
         private IPAddress _low;
         private IPAddress _high;
@@ -60,31 +59,58 @@ namespace Arcus.Benchmarks
         }
 
         [Benchmark]
-        public Subnet ConstructFromTwoAddresses() => new Subnet(_low, _high);
+        public Subnet ConstructFromTwoAddresses()
+        {
+            return new(_low, _high);
+        }
 
         [Benchmark]
-        public Subnet ConstructFromAddressAndPrefix() => new Subnet(_address, _routingPrefix);
+        public Subnet ConstructFromAddressAndPrefix()
+        {
+            return new(_address, _routingPrefix);
+        }
 
         [Benchmark]
-        public Subnet Parse() => Subnet.Parse(_cidrString);
+        public Subnet Parse()
+        {
+            return Subnet.Parse(_cidrString);
+        }
 
         [Benchmark]
-        public bool TryParse() => Subnet.TryParse(_cidrString, out _);
+        public bool TryParse()
+        {
+            return Subnet.TryParse(_cidrString, out _);
+        }
 
         // Always benchmarks the IPv4 path regardless of Family param.
         [Benchmark]
-        public Subnet FromNetMask() => Subnet.FromNetMask(Ipv4Address, Ipv4Netmask);
+        public Subnet FromNetMask()
+        {
+            return Subnet.FromNetMask(Ipv4Address, Ipv4Netmask);
+        }
 
         [Benchmark]
-        public bool Contains_Address() => _subnet.Contains(_containedAddress);
+        public bool Contains_Address()
+        {
+            return _subnet.Contains(_containedAddress);
+        }
 
         [Benchmark]
-        public bool Contains_Range() => _subnet.Contains(_innerSubnet);
+        public bool Contains_Range()
+        {
+            return _subnet.Contains(_innerSubnet);
+        }
 
         [Benchmark]
-        public bool Overlaps() => _subnet.Overlaps(_innerSubnet);
+        public bool Overlaps()
+        {
+            return _subnet.Overlaps(_innerSubnet);
+        }
 
         [Benchmark]
-        public bool Touches() => _subnet.Touches(_adjacentSubnet);
+        public bool Touches()
+        {
+            return _subnet.Touches(_adjacentSubnet);
+        }
     }
 }

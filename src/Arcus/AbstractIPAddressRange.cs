@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using Arcus.Math;
@@ -67,26 +65,20 @@ namespace Arcus
         /// <summary>
         ///     AddressTuple for moving around a pair of <see cref="IPAddress" /> objects as a unit
         /// </summary>
-        private protected readonly struct AddressTuple : IEquatable<AddressTuple>
+        /// <remarks>
+        ///     Initializes a new instance of the <see cref="AddressTuple" /> struct.
+        /// </remarks>
+        /// <param name="head">the head address</param>
+        /// <param name="tail">the tail address</param>
+        private protected readonly struct AddressTuple(IPAddress head, IPAddress tail) : IEquatable<AddressTuple>
         {
-            /// <summary>
-            ///     Initializes a new instance of the <see cref="AddressTuple" /> struct.
-            /// </summary>
-            /// <param name="head">the head address</param>
-            /// <param name="tail">the tail address</param>
-            public AddressTuple(IPAddress head, IPAddress tail)
-            {
-                this.Head = head ?? throw new ArgumentNullException(nameof(head));
-                this.Tail = tail ?? throw new ArgumentNullException(nameof(tail));
-            }
-
             /// <summary>
             ///     Gets head
             /// </summary>
             /// <value>
             /// Head
             /// </value>
-            public IPAddress Head { get; }
+            public IPAddress Head { get; } = head ?? throw new ArgumentNullException(nameof(head));
 
             /// <summary>
             ///     Gets tail
@@ -94,13 +86,19 @@ namespace Arcus
             /// <value>
             /// Tail
             /// </value>
-            public IPAddress Tail { get; }
+            public IPAddress Tail { get; } = tail ?? throw new ArgumentNullException(nameof(tail));
 
             /// <inheritdoc />
-            public bool Equals(AddressTuple other) => this.Head.Equals(other.Head) && this.Tail.Equals(other.Tail);
+            public bool Equals(AddressTuple other)
+            {
+                return this.Head.Equals(other.Head) && this.Tail.Equals(other.Tail);
+            }
 
             /// <inheritdoc />
-            public override bool Equals(object obj) => obj is AddressTuple other && this.Equals(other);
+            public override bool Equals(object obj)
+            {
+                return obj is AddressTuple other && this.Equals(other);
+            }
 
             /// <summary>
             ///     Equals operation
@@ -157,7 +155,7 @@ namespace Arcus
                 throw new ArgumentNullException(nameof(tail));
             }
 
-            if (maxEnumerationExponent < 0 || maxEnumerationExponent > 128)
+            if (maxEnumerationExponent is < 0 or > 128)
             {
                 throw new ArgumentOutOfRangeException(nameof(maxEnumerationExponent));
             }

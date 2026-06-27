@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Arcus.Math;
+﻿using Arcus.Math;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -142,10 +140,7 @@ namespace Arcus
                 return true;
             }
 
-            var resultList = new List<IPAddressRange>
-            {
-                new IPAddressRange(initialRange.Head, initialRange.Tail, maxEnumerationExponent),
-            };
+            var resultList = new List<IPAddressRange> { new(initialRange.Head, initialRange.Tail, maxEnumerationExponent) };
 
             // Exclusions are processed in ascending order. Because each exclusion is to the right of
             // all previous ones, it can only ever affect the rightmost not-yet-trimmed segment —

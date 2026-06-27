@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using Arcus.Math;
 using BenchmarkDotNet.Attributes;
@@ -38,12 +38,21 @@ namespace Arcus.Benchmarks
         }
 
         [Benchmark]
-        public IPAddress Increment() => _address.Increment();
+        public IPAddress Increment()
+        {
+            return _address.Increment();
+        }
 
         [Benchmark]
-        public bool IsGreaterThan() => _address.IsGreaterThan(_low);
+        public bool IsGreaterThan()
+        {
+            return _address.IsGreaterThan(_low);
+        }
 
         [Benchmark]
-        public bool IsBetween() => _address.IsBetween(_low, _high);
+        public bool IsBetween()
+        {
+            return _address.IsBetween(_low, _high);
+        }
     }
 }

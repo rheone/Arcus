@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Net.Sockets;
+﻿using System.Net.Sockets;
 
 namespace Arcus.Comparers
 {
@@ -16,6 +14,9 @@ namespace Arcus.Comparers
         public static readonly DefaultAddressFamilyComparer Instance = new();
 
         /// <inheritdoc />
-        public override int Compare(AddressFamily x, AddressFamily y) => x.CompareTo(y);
+        public override int Compare(AddressFamily x, AddressFamily y)
+        {
+            return x.CompareTo(y);
+        }
     }
 }

@@ -1,4 +1,4 @@
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Numerics;
 using BenchmarkDotNet.Attributes;
@@ -41,7 +41,10 @@ namespace Arcus.Benchmarks
         }
 
         [Benchmark]
-        public int FromBytes() => BigEndianBitWrapper.FromBytes(_addressBytes).ByteWidth;
+        public int FromBytes()
+        {
+            return BigEndianBitWrapper.FromBytes(_addressBytes).ByteWidth;
+        }
 
         [Benchmark]
         public bool TryAdd()
@@ -51,12 +54,21 @@ namespace Arcus.Benchmarks
         }
 
         [Benchmark]
-        public byte[] ToBytes() => _wrapper.ToBytes();
+        public byte[] ToBytes()
+        {
+            return _wrapper.ToBytes();
+        }
 
         [Benchmark]
-        public BigInteger ToBigInteger() => _wrapper.ToBigInteger();
+        public BigInteger ToBigInteger()
+        {
+            return _wrapper.ToBigInteger();
+        }
 
         [Benchmark]
-        public int CreateMask() => BigEndianBitWrapper.CreateMask(_byteWidth, _prefixLength).ByteWidth;
+        public int CreateMask()
+        {
+            return BigEndianBitWrapper.CreateMask(_byteWidth, _prefixLength).ByteWidth;
+        }
     }
 }

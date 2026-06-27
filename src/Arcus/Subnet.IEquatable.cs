@@ -1,5 +1,4 @@
-﻿using System;
-using Arcus.Comparers;
+﻿using Arcus.Comparers;
 
 namespace Arcus
 {
@@ -36,6 +35,9 @@ namespace Arcus
         }
 
         /// <inheritdoc />
-        public override int GetHashCode() => HashCode.Combine(Head, this.RoutingPrefix);
+        public override int GetHashCode()
+        {
+            return HashCode.Combine(Head, this.RoutingPrefix);
+        }
     }
 }

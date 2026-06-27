@@ -1,5 +1,4 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 #if !NET8_0_OR_GREATER
@@ -357,7 +356,10 @@ namespace Arcus
         ///     Returns the decimal string of the unsigned big-endian integer value.
         /// </summary>
         /// <returns>Example: 192.168.1.1 → "3232235777".</returns>
-        public string ToDecimalString() => ToBigInteger().ToString(CultureInfo.InvariantCulture);
+        public string ToDecimalString()
+        {
+            return ToBigInteger().ToString(CultureInfo.InvariantCulture);
+        }
 
         /// <summary>
         ///     Returns a binary string of exactly <c>ByteWidth × 8</c> characters, MSB first.
@@ -398,7 +400,10 @@ namespace Arcus
 
         /// <summary>Returns the hex compact representation (same as <see cref="ToHexString" />).</summary>
         /// <returns>An uppercase hex string of length <c>ByteWidth × 2</c>.</returns>
-        public override string ToString() => ToHexString();
+        public override string ToString()
+        {
+            return ToHexString();
+        }
 
         [DebuggerBrowsable(DebuggerBrowsableState.Never)]
         private string DebuggerDisplay

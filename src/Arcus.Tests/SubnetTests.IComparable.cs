@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Arcus.Tests
+﻿namespace Arcus.Tests
 {
     /// <content>
     ///     <see cref="Subnet"/> tests for <see cref="IComparable{Subnet}"/> and <see cref="IComparable"/>

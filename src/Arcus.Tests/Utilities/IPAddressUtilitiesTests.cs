@@ -1,7 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Net;
+﻿using System.Net;
 using System.Net.Sockets;
 using System.Text.RegularExpressions;
 using Arcus.Math;
@@ -530,7 +527,11 @@ namespace Arcus.Tests.Utilities
 
                 if (address.AddressFamily == AddressFamily.InterNetwork)
                 {
-                    data.Add(address, AddressToQuads(address));
+                    var quads = AddressToQuads(address);
+                    if (quads != address.ToString())
+                    {
+                        data.Add(address, quads);
+                    }
                 }
             }
 
