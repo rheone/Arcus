@@ -6,9 +6,6 @@ query-filters:
         - warning
         - recommendation
         - note
-  - include:
-      problem.severity:
-        - error
 
 paths:
-  - src
+  - src/Arcus

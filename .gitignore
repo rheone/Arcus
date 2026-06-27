@@ -223,6 +223,9 @@ TestResults/
 # Git worktrees
 .worktrees/
 
+# Generated XML doc (in-tree artifact)
+src/Arcus/Arcus.xml
+
 # Temporary files
 *.bak
 *.swp
