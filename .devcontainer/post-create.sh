@@ -35,6 +35,16 @@ if ! grep -q "oh-my-posh.zsh" "$USER_HOME/.zshrc" 2>/dev/null; then
 
 source ~/.oh-my-posh.zsh
 
+# CSharpier installed to /root/.dotnet/tools (not on vscode user's PATH by default)
+export PATH="$PATH:/root/.dotnet/tools"
+
+# CLI completions (silent if completion files not yet available).
+if [ -f /usr/share/zsh/site-functions/_dotnet ]; then
+    source /usr/share/zsh/site-functions/_dotnet
+fi
+
+complete -o nospace -C /usr/bin/git git 2>/dev/null || true
+
 # Aliases
 alias ll="ls -alF"
 alias gs="git status"
@@ -64,6 +74,8 @@ dotnet_tool_ensure() {
 }
 
 dotnet_tool_ensure dotnet-ef
+dotnet_tool_ensure dotnet-format
+dotnet_tool_ensure dotnet-monitor
 dotnet_tool_ensure dotnet-outdated-tool
 dotnet_tool_ensure dotnet-script
 dotnet_tool_ensure dotnet-trace
@@ -151,13 +163,35 @@ cp .devcontainer/dotfiles/opencode.jsonc /home/vscode/.config/opencode/opencode.
 chown vscode:vscode /home/vscode/.config/opencode/opencode.jsonc
 
 # ---------------------------------------------------------------------------
+# Pre-commit hooks
+# ---------------------------------------------------------------------------
+
+if command -v pip > /dev/null 2>&1; then
+    pip install --quiet pre-commit codespell 2>/dev/null || true
+fi
+
+# Install the pre-commit config to the workspace root.
+if [ -f .devcontainer/dotfiles/pre-commit-config.yaml ] && [ ! -f /workspace/.pre-commit-config.yaml ]; then
+    cp .devcontainer/dotfiles/pre-commit-config.yaml /workspace/.pre-commit-config.yaml
+    chown vscode:vscode /workspace/.pre-commit-config.yaml
+    echo "Pre-commit config deployed to /workspace/.pre-commit-config.yaml"
+    echo "  Activate with: cd /workspace && pre-commit install"
+fi
+
+# ---------------------------------------------------------------------------
 # Solution restore
 # ---------------------------------------------------------------------------
 
-find . -name "*.sln" -print0 | while IFS= read -r -d '' sln; do
-    echo "Restoring: $sln"
-    dotnet restore "$sln" || echo "WARNING: restore failed for $sln — continuing."
-done || true
+sln_count=$(find . -name "*.sln" -maxdepth 2 | wc -l)
+if [ "$sln_count" -eq 0 ]; then
+    echo "No .sln files found — skipping NuGet restore."
+    echo "  (Run 'dotnet restore' manually or use /init to scaffold a project.)"
+else
+    find . -name "*.sln" -maxdepth 2 -print0 | while IFS= read -r -d '' sln; do
+        echo "Restoring: $sln"
+        dotnet restore "$sln" || echo "WARNING: restore failed for $sln — continuing."
+    done
+fi
 
 # ---------------------------------------------------------------------------
 # PowerShell profile

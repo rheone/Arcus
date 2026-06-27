@@ -1,0 +1,60 @@
+name: Smoke Test
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  smoke-test:
+    name: ${{ matrix.os }} / ${{ matrix.framework }}
+    runs-on: ${{ matrix.os }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: windows-latest
+            framework: net48
+          - os: ubuntu-latest
+            framework: net8.0
+          - os: ubuntu-latest
+            framework: net9.0
+          - os: ubuntu-latest
+            framework: net10.0
+
+    steps:
+      - uses: actions/checkout@v6
+
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: |
+            8.0.x
+            9.0.x
+            10.0.x
+
+      - name: Pack Arcus into local feed
+        shell: bash
+        run: |
+          mkdir -p smoketests/feed
+          dotnet pack src/Arcus/Arcus.csproj \
+            --configuration Release \
+            --output smoketests/feed \
+            -p:VersionFromCI=99.0.0-smoke \
+            --verbosity quiet
+
+      - name: Restore SmokeTests consumer
+        run: dotnet restore smoketests/SmokeTests/SmokeTests.csproj -p:ArcusVersion=99.0.0-smoke --verbosity quiet
+
+      - name: Build SmokeTests consumer
+        run: dotnet build smoketests/SmokeTests/SmokeTests.csproj --no-restore --configuration Release -p:ArcusVersion=99.0.0-smoke --verbosity quiet
+
+      - name: Run smoke tests (${{ matrix.framework }})
+        run: >
+          dotnet run
+          --project smoketests/SmokeTests/SmokeTests.csproj
+          --framework ${{ matrix.framework }}
+          --configuration Release
+          --no-build
+          -p:ArcusVersion=99.0.0-smoke

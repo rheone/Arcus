@@ -1,4 +1,4 @@
-﻿{
+{
 	// Display name shown in VS Code.
 	"name": "${localWorkspaceFolderBasename}",
 	// Use Docker Compose instead of directly building/running containers.
@@ -44,7 +44,8 @@
 		"ghcr.io/devcontainers/features/github-cli:1": {},
 		// Common utilities like curl, wget, git, and more for general development and scripting tasks.
 		"ghcr.io/devcontainers/features/common-utils:2": {},
-    "ghcr.io/sliekens/devcontainer-features/mono:1": {}
+		// Mono runtime for running .NET Framework applications and tools that require Mono.
+		"ghcr.io/sliekens/devcontainer-features/mono:1": {}
 	},
 	// Environment variables inside the container.
 	"containerEnv": {

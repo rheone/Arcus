@@ -2,7 +2,7 @@
 # Run Arcus NuGet package smoke tests on Linux/macOS.
 #
 # What this script does:
-#   1. Packs the Arcus library into a local NuGet feed (Arcus.SmokeTests/feed/).
+#   1. Packs the Arcus library into a local NuGet feed (smoketests/feed/).
 #   2. Restores and builds the SmokeTests consumer project against that feed.
 #   3. Runs the consumer for each supported framework and reports results.
 #
@@ -10,7 +10,7 @@
 # Use run-smoke-tests.ps1 on Windows to cover net48 (netstandard2.0 asset).
 #
 # Usage:
-#   ./Arcus.SmokeTests/run-smoke-tests.sh [VERSION]
+#   ./smoketests/run-smoke-tests.sh [VERSION]
 #
 #   VERSION  SemVer string for the packed library.  Defaults to 99.0.0-smoke.
 #

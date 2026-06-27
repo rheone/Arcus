@@ -4,7 +4,7 @@
     Run Arcus NuGet package smoke tests on Windows (all frameworks including net48).
 
 .DESCRIPTION
-    1. Packs the Arcus library into a local NuGet feed (Arcus.SmokeTests\feed\).
+    1. Packs the Arcus library into a local NuGet feed (smoketests\feed\).
     2. Restores and builds the SmokeTests consumer project against that feed.
     3. Runs the consumer for each supported framework and reports results.
 
@@ -15,9 +15,9 @@
     SemVer string for the packed library.  Defaults to "99.0.0-smoke".
 
 .EXAMPLE
-    .\Arcus.SmokeTests\run-smoke-tests.ps1
-    .\Arcus.SmokeTests\run-smoke-tests.ps1 -Version 4.1.0-preview
+    .\smoketests\run-smoke-tests.ps1
 
+    .\smoketests\run-smoke-tests.ps1 -Version 4.1.0-preview
 .NOTES
     Exit code 0 = all frameworks passed; 1 = one or more frameworks failed.
 #>

@@ -38,13 +38,12 @@ jobs:
 
       - name: Restore dependencies
         run: dotnet restore
-        working-directory: ./src
 
       - name: Build
-        run: dotnet build ./src --no-restore --configuration Release /p:VersionFromCI=${{ env.VERSION }}
+        run: dotnet build --no-restore --configuration Release /p:VersionFromCI=${{ env.VERSION }}
 
       - name: Pack
-        run: dotnet pack ./src/Arcus/Arcus.csproj --configuration Release --no-build --output ./packages /p:VersionFromCI=${{ env.VERSION }}
+        run: dotnet pack src/Arcus/Arcus.csproj --configuration Release --no-build --output packages /p:VersionFromCI=${{ env.VERSION }}
 
       - name: Publish to GitHub Packages
         env:
