@@ -16,7 +16,17 @@ namespace Arcus.Tests
             var data = new TheoryData<bool, Subnet, Subnet>();
             var seen = new HashSet<string>();
 
-            foreach (var ipAddress in IPv4Addresses())
+            PopulateV4Entries(data, seen);
+            PopulateV6Entries(data, seen);
+
+            return data;
+        }
+
+        private static void PopulateV4Entries(TheoryData<bool, Subnet, Subnet> data, HashSet<string> seen)
+        {
+            foreach (
+                var ipAddress in new[] { IPAddress.Any, IPAddress.Loopback, IPAddress.None, IPAddress.Parse("192.168.1.1") }
+            )
             {
                 for (var i = 0; i <= 32; i++)
                 {
@@ -25,62 +35,48 @@ namespace Arcus.Tests
                     var sv6A = new Subnet(IPAddress.IPv6Any, i);
                     var sv6B = new Subnet(IPAddress.IPv6Loopback, i);
 
-                    if (seen.Add($"T|{sA.ToString("f", null)}|{sA.ToString("f", null)}"))
-                    {
-                        data.Add(true, sA, sA); // equivalent
-                    }
-
-                    if (seen.Add($"F|{sA.ToString("f", null)}|{sB.ToString("f", null)}"))
-                    {
-                        data.Add(false, sA, sB); // differing prefix
-                    }
-
-                    if (seen.Add($"F|{sA.ToString("f", null)}|{sv6A.ToString("f", null)}"))
-                    {
-                        data.Add(false, sA, sv6A); // different family
-                    }
-
-                    if (seen.Add($"F|{sA.ToString("f", null)}|{sv6B.ToString("f", null)}"))
-                    {
-                        data.Add(false, sA, sv6B); // different family
-                    }
+                    AddIfNew(data, seen, true, sA, sA);
+                    AddIfNew(data, seen, false, sA, sB);
+                    AddIfNew(data, seen, false, sA, sv6A);
+                    AddIfNew(data, seen, false, sA, sv6B);
                 }
             }
+        }
 
-            foreach (var ipAddress in IPv6Addresses())
+        private static void PopulateV6Entries(TheoryData<bool, Subnet, Subnet> data, HashSet<string> seen)
+        {
+            foreach (
+                var ipAddress in new[]
+                {
+                    IPAddress.IPv6Any,
+                    IPAddress.IPv6Loopback,
+                    IPAddress.Parse("2001:0db8:85a3:0042:1000:8a2e:0370:7334"),
+                }
+            )
             {
                 for (var i = 0; i <= 128; i++)
                 {
                     var sA = new Subnet(ipAddress, i);
                     var sB = new Subnet(ipAddress, (i + 2) % 128);
 
-                    if (seen.Add($"T|{sA.ToString("f", null)}|{sA.ToString("f", null)}"))
-                    {
-                        data.Add(true, sA, sA); // equivalent
-                    }
-
-                    if (seen.Add($"F|{sA.ToString("f", null)}|{sB.ToString("f", null)}"))
-                    {
-                        data.Add(false, sA, sB); // differing prefix
-                    }
+                    AddIfNew(data, seen, true, sA, sA);
+                    AddIfNew(data, seen, false, sA, sB);
                 }
             }
+        }
 
-            return data;
-
-            IEnumerable<IPAddress> IPv4Addresses()
+        private static void AddIfNew(
+            TheoryData<bool, Subnet, Subnet> data,
+            HashSet<string> seen,
+            bool expected,
+            Subnet a,
+            Subnet b
+        )
+        {
+            var key = $"{(expected ? 'T' : 'F')}|{a.ToString("f", null)}|{b.ToString("f", null)}";
+            if (seen.Add(key))
             {
-                yield return IPAddress.Any;
-                yield return IPAddress.Loopback;
-                yield return IPAddress.None;
-                yield return IPAddress.Parse("192.168.1.1");
-            }
-
-            IEnumerable<IPAddress> IPv6Addresses()
-            {
-                yield return IPAddress.IPv6Any;
-                yield return IPAddress.IPv6Loopback;
-                yield return IPAddress.Parse("2001:0db8:85a3:0042:1000:8a2e:0370:7334");
+                data.Add(expected, a, b);
             }
         }
 
