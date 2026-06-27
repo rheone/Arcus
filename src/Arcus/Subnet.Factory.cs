@@ -17,7 +17,7 @@ namespace Arcus
         private const string CouldNotInstantiateSubnetMessage = "could not instantiate subnet";
 
         /// <summary>
-        ///     Regex pattern that matches valid partial IPv4 octet strings (1–4 dot-separated octets, each 0–255).
+        ///     Regex pattern that matches valid partial IPv4 octet strings (1-4 dot-separated octets, each 0-255).
         ///     Applied with <see cref="RegexOptions.CultureInvariant"/>.
         /// </summary>
         public const string Ipv4OctetPartialPattern =
@@ -98,7 +98,7 @@ namespace Arcus
 
             if (!netmask.IsValidNetMask())
             {
-                throw new ArgumentException($"{nameof(netmask)} must be IPv4", nameof(netmask));
+                throw new ArgumentException($"{nameof(netmask)} must be a valid netmask", nameof(netmask));
             }
 
             try
@@ -630,11 +630,11 @@ namespace Arcus
         ///     </para>
         ///     <list type="table">
         ///         <listheader><term>Input pattern</term><description>Example</description></listheader>
-        ///         <item><term>Exact CIDR</term><description><c>"2001:db8::/32"</c> — returned as-is.</description></item>
-        ///         <item><term>Bare hex word</term><description><c>"2001"</c> or <c>"abba"</c> — treated as a single hextet with implicit <c>::</c>.</description></item>
-        ///         <item><term>Colon-separated partial</term><description><c>"2001:db8::"</c>, <c>"2001:db8:"</c>, <c>"2001:db8:0:0:0:0:"</c> — all possible prefix-length expansions.</description></item>
-        ///         <item><term>Bracketed</term><description><c>"[2001:db8::1]"</c> — brackets are stripped before processing.</description></item>
-        ///         <item><term>Whitespace-wrapped</term><description><c>" 2001:db8:: "</c> — leading/trailing whitespace is trimmed.</description></item>
+        ///         <item><term>Exact CIDR</term><description><c>"2001:db8::/32"</c> - returned as-is.</description></item>
+        ///         <item><term>Bare hex word</term><description><c>"2001"</c> or <c>"abba"</c> - treated as a single hextet with implicit <c>::</c>.</description></item>
+        ///         <item><term>Colon-separated partial</term><description><c>"2001:db8::"</c>, <c>"2001:db8:"</c>, <c>"2001:db8:0:0:0:0:"</c> - all possible prefix-length expansions.</description></item>
+        ///         <item><term>Bracketed</term><description><c>"[2001:db8::1]"</c> - brackets are stripped before processing.</description></item>
+        ///         <item><term>Whitespace-wrapped</term><description><c>" 2001:db8:: "</c> - leading/trailing whitespace is trimmed.</description></item>
         ///     </list>
         ///     <para>
         ///         The permutation-based disambiguation treats each specified hextet as part of the
@@ -662,22 +662,22 @@ namespace Arcus
         ///     A partial IPv6 address string. The following forms are accepted:
         ///     <list type="bullet">
         ///         <item>
-        ///             <description>Exact CIDR notation — <c>"2001:db8::/32"</c>, <c>"::/0"</c>.</description>
+        ///             <description>Exact CIDR notation - <c>"2001:db8::/32"</c>, <c>"::/0"</c>.</description>
         ///         </item>
         ///         <item>
-        ///             <description>Fully-qualified address — <c>"2001:db8::1"</c>, <c>"2001:db8:0:0:0:0:0:1"</c>.</description>
+        ///             <description>Fully-qualified address - <c>"2001:db8::1"</c>, <c>"2001:db8:0:0:0:0:0:1"</c>.</description>
         ///         </item>
         ///         <item>
-        ///             <description>Partial hextets with trailing <c>::</c> — <c>"2001:db8::"</c>, <c>"abba::"</c>.</description>
+        ///             <description>Partial hextets with trailing <c>::</c> - <c>"2001:db8::"</c>, <c>"abba::"</c>.</description>
         ///         </item>
         ///         <item>
-        ///             <description>Partial hextets with trailing <c>:</c> — <c>"2001:db8:"</c>, <c>"2001:db8:0:0:0:0:"</c>.</description>
+        ///             <description>Partial hextets with trailing <c>:</c> - <c>"2001:db8:"</c>, <c>"2001:db8:0:0:0:0:"</c>.</description>
         ///         </item>
         ///         <item>
-        ///             <description>Bare hex word (no colons) — <c>"2001"</c>, <c>"abba"</c>.</description>
+        ///             <description>Bare hex word (no colons) - <c>"2001"</c>, <c>"abba"</c>.</description>
         ///         </item>
         ///         <item>
-        ///             <description>URL-bracketed — <c>"[2001:db8::1]"</c>.</description>
+        ///             <description>URL-bracketed - <c>"[2001:db8::1]"</c>.</description>
         ///         </item>
         ///     </list>
         ///     Leading/trailing whitespace is automatically trimmed.
@@ -760,11 +760,11 @@ namespace Arcus
         /// <remarks>
         ///     Rejects:
         ///     <list type="bullet">
-        ///         <item>Lone <c>":"</c> — meaningless.</item>
-        ///         <item>Triple-colon <c>":::"</c> — invalid syntax.</item>
-        ///         <item>Multiple discrete <c>"::"</c> occurrences — RFC 4291 §2.2 allows at most one zero-collapse.</item>
-        ///         <item>More than 8 non-empty hextets — exceeds IPv6 address width.</item>
-        ///         <item>8+ hextets with trailing colon — over-full; no room for a collapse.</item>
+        ///         <item>Lone <c>":"</c> - meaningless.</item>
+        ///         <item>Triple-colon <c>":::"</c> - invalid syntax.</item>
+        ///         <item>Multiple discrete <c>"::"</c> occurrences - RFC 4291 §2.2 allows at most one zero-collapse.</item>
+        ///         <item>More than 8 non-empty hextets - exceeds IPv6 address width.</item>
+        ///         <item>8+ hextets with trailing colon - over-full; no room for a collapse.</item>
         ///     </list>
         ///     Does NOT validate individual hextet values (hex format is checked by downstream parsers).
         /// </remarks>
@@ -835,7 +835,7 @@ namespace Arcus
         ///     or <c>"::/0"</c>.  The input must not end with <c>/</c> (missing prefix)
         ///     and must not be an IPv4 CIDR (filtered via <c>Subnet.IsIPv6</c>).
         ///     <para>
-        ///         This is the least-ambiguous input pattern — the user explicitly states
+        ///         This is the least-ambiguous input pattern - the user explicitly states
         ///         the route prefix length. A single result is returned.
         ///     </para>
         /// </remarks>
@@ -1010,38 +1010,44 @@ namespace Arcus
 
             var hextets = trimmedPartial.Split([':'], StringSplitOptions.None).ToList();
 
-            var collapse = hextets
-                .Select((value, index) => new { value, index })
-                .FirstOrDefault(pair => string.IsNullOrWhiteSpace(pair.value));
+            var collapseIndex = -1;
+            for (var i = 0; i < hextets.Count; i++)
+            {
+                if (string.IsNullOrWhiteSpace(hextets[i]))
+                {
+                    collapseIndex = i;
+                    break;
+                }
+            }
 
-            int collapseIndex;
-            if (collapse is null && hextets.Count == 8)
+            if (collapseIndex == -1 && hextets.Count == 8)
             {
                 subnets = [Parse(input, IPAddressUtilities.IPv6BitCount, exponent)];
                 return true;
             }
 
-            if (collapse is null)
+            if (collapseIndex == -1)
             {
                 hextets.Add(string.Empty);
                 collapseIndex = hextets.Count - 1;
-            }
-            else
-            {
-                collapseIndex = collapse.index;
             }
 
             var hextetCount = hextets.Count;
             var permutationLimit = (IPAddressUtilities.IPv6HextetCount + 1) - hextetCount;
             var subnetsList = new List<Subnet>(permutationLimit + 1);
+            var hextetsCopy = new List<string>(hextetCount + permutationLimit);
 
             // Iterate in DESCENDING order so the most-specific (largest prefix) result
-            // appears first — this matches user expectations when scanning the output list.
+            // appears first - this matches user expectations when scanning the output list.
             for (var permutation = permutationLimit; permutation >= 0; permutation--)
             {
-                var hextetsCopy = hextets.ToList();
+                hextetsCopy.Clear();
+                hextetsCopy.AddRange(hextets);
                 hextetsCopy.RemoveAt(collapseIndex);
-                hextetsCopy.InsertRange(collapseIndex, Enumerable.Repeat("0", permutation));
+                for (var j = 0; j < permutation; j++)
+                {
+                    hextetsCopy.Insert(collapseIndex, "0");
+                }
 
                 var addressString = string.Join(":", hextetsCopy);
 

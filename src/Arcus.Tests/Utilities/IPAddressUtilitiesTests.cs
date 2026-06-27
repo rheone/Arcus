@@ -7,7 +7,7 @@ using Arcus.Utilities;
 namespace Arcus.Tests.Utilities
 {
     /// <summary>Unit tests for <see cref="IPAddressUtilities"/>.</summary>
-    public class IPAddressUtilitiesTests
+    public partial class IPAddressUtilitiesTests
     {
         #region IPv4MaxAddress
 
@@ -206,9 +206,7 @@ namespace Arcus.Tests.Utilities
 
         private static IEnumerable<AddressFamily> NonStandardAddressFamilies()
         {
-            return Enum.GetValues(typeof(AddressFamily))
-                .Cast<AddressFamily>()
-                .Except([AddressFamily.InterNetwork, AddressFamily.InterNetworkV6]);
+            return Enum.GetValues<AddressFamily>().Except([AddressFamily.InterNetwork, AddressFamily.InterNetworkV6]);
         }
 
         private static IEnumerable<IPAddress> GeneralPurposeIPv4Addresses()
@@ -677,22 +675,22 @@ namespace Arcus.Tests.Utilities
         public static TheoryData<bool, string> HexLikePattern_Test_Data =>
             new()
             {
-                // matching — lowercase hex digits
+                // matching - lowercase hex digits
                 { true, "0123456789abcdef" },
-                // matching — uppercase hex digits (IgnoreCase)
+                // matching - uppercase hex digits (IgnoreCase)
                 { true, "0123456789ABCDEF" },
-                // matching — mixed case
+                // matching - mixed case
                 { true, "DeAdBeEf" },
-                // matching — digits only
+                // matching - digits only
                 { true, "0000" },
-                // matching — empty string (pattern uses '*', allows zero chars)
+                // matching - empty string (pattern uses '*', allows zero chars)
                 { true, string.Empty },
-                // non-matching — 'g' and beyond are not hex
+                // non-matching - 'g' and beyond are not hex
                 { false, "abcdefg" },
                 { false, "xyz" },
-                // non-matching — '0x' prefix contains 'x'
+                // non-matching - '0x' prefix contains 'x'
                 { false, "0x1A" },
-                // non-matching — space or punctuation
+                // non-matching - space or punctuation
                 { false, "12 34" },
                 { false, "!" },
             };
@@ -705,7 +703,7 @@ namespace Arcus.Tests.Utilities
         public void HexLikePattern_IsMatch_ReturnsExpected_Test(bool expected, string input)
         {
             // Arrange
-            var regex = new Regex(IPAddressUtilities.HexLikePattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant);
+            var regex = MyRegex();
 
             // Act
             var result = regex.IsMatch(input);
@@ -723,23 +721,23 @@ namespace Arcus.Tests.Utilities
         public static TheoryData<bool, string> DottedQuadRegularExpressionPattern_Test_Data =>
             new()
             {
-                // matching — well-formed dotted quads (pattern checks format, not address validity)
+                // matching - well-formed dotted quads (pattern checks format, not address validity)
                 { true, "192.168.1.1" },
                 { true, "0.0.0.0" },
                 { true, "255.255.255.255" },
-                // matching — out-of-range values pass (pattern is format-only)
+                // matching - out-of-range values pass (pattern is format-only)
                 { true, "999.999.999.999" },
-                // non-matching — too few groups
+                // non-matching - too few groups
                 { false, "192.168.1" },
                 { false, "192.168" },
                 { false, "192" },
-                // non-matching — too many groups
+                // non-matching - too many groups
                 { false, "192.168.1.1.5" },
-                // non-matching — empty or non-numeric
+                // non-matching - empty or non-numeric
                 { false, string.Empty },
                 { false, "::" },
                 { false, "potato" },
-                // non-matching — 4-digit group exceeds {1,3}
+                // non-matching - 4-digit group exceeds {1,3}
                 { false, "1234.1.1.1" },
             };
 
@@ -775,7 +773,7 @@ namespace Arcus.Tests.Utilities
                 // lone-zero octets preserved (lookahead prevents stripping the only '0')
                 { "0.0.0.0", "000.000.000.000" },
                 { "0.0.0.0", "0.0.0.0" },
-                // no leading zeros — no change
+                // no leading zeros - no change
                 { "192.168.1.0", "192.168.1.0" },
                 { "0.1.0.1", "0.1.0.1" },
             };
@@ -812,7 +810,7 @@ namespace Arcus.Tests.Utilities
                 data.Add(address, [.. address.GetAddressBytes()], address.AddressFamily);
             }
 
-            // underflow — pad with MSB zeros
+            // underflow - pad with MSB zeros
             data.Add(IPAddress.Parse("0.0.0.0"), [], AddressFamily.InterNetwork);
             data.Add(IPAddress.Parse("::"), [], AddressFamily.InterNetworkV6);
             data.Add(IPAddress.Parse("0.0.0.255"), [0x00, 0xff], AddressFamily.InterNetwork);
@@ -1234,6 +1232,9 @@ namespace Arcus.Tests.Utilities
             // Assert
             Assert.Throws<ArgumentNullException>(() => address.IsPrivate());
         }
+
+        [GeneratedRegex(IPAddressUtilities.HexLikePattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
+        private static partial Regex MyRegex();
 
         #endregion // end: IsPrivate
     }

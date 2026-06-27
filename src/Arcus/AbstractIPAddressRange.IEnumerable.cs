@@ -58,7 +58,7 @@ namespace Arcus
                     throw new InvalidOperationException(
                         $"Enumeration limit of {maxCount} addresses (2^{this.MaxEnumerationExponent}) reached. "
                             + $"The range contains {this.Length} addresses, which exceeds this limit. "
-                            + "Construct with a larger maxEnumerationExponent (0–128) to enumerate more."
+                            + "Construct with a larger maxEnumerationExponent (0-128) to enumerate more."
                     );
                 }
 

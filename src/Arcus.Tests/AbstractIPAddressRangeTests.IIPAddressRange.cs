@@ -704,7 +704,7 @@ namespace Arcus.Tests
                         CreateIPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::ff")),
                         CreateIPAddressRange(IPAddress.Parse("f::"), IPAddress.Parse("f:1::"))
                     },
-                    // wholly contained — both directions must return true (symmetry)
+                    // wholly contained - both directions must return true (symmetry)
                     {
                         true,
                         CreateIPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255")),
@@ -1013,7 +1013,7 @@ namespace Arcus.Tests
         public void ContainsAnyPrivateAddresses_RangeSpansPrivateBlock_WithPublicEndpoints_Test()
         {
             // Regression: endpoints 11.0.0.0 and 173.0.0.0 are both public, but the range
-            // spans 172.16.0.0/12 — the endpoint heuristic incorrectly returned false.
+            // spans 172.16.0.0/12 - the endpoint heuristic incorrectly returned false.
             var range = CreateIPAddressRange(IPAddress.Parse("11.0.0.0"), IPAddress.Parse("173.0.0.0"));
 
             Assert.True(range.ContainsAnyPrivateAddresses());
@@ -1023,7 +1023,7 @@ namespace Arcus.Tests
         [Fact]
         public void ContainsAllPublicAddresses_RangeSpansPrivateBlock_WithPublicEndpoints_Test()
         {
-            // Regression: endpoints are both public, but the range spans 172.16.0.0/12 —
+            // Regression: endpoints are both public, but the range spans 172.16.0.0/12 -
             // not all addresses are public, so this must return false.
             var range = CreateIPAddressRange(IPAddress.Parse("11.0.0.0"), IPAddress.Parse("173.0.0.0"));
 

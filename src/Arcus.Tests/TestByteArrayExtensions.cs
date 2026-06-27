@@ -2,8 +2,8 @@
 {
     /// <summary>
     /// Provides an <c>IEnumerable&lt;byte&gt;</c> returning reverse operation for byte arrays used by test code. This
-    /// method avoids overload resolution selecting <c>MemoryExtensions.Reverse(Span&lt;T&gt;)</c> instead of <c>
-    /// Enumerable.Reverse&lt;T&gt;()</c>, preserving the expected behavior and return type.
+    /// method avoids overload resolution selecting <c>MemoryExtensions.Reverse(Span&lt;T&gt;)</c> instead of <code>
+    /// Enumerable.Reverse&lt;T&gt;()</code>, preserving the expected behavior and return type.
     /// </summary>
     internal static class TestByteArrayExtensions
     {

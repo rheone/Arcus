@@ -88,12 +88,12 @@ namespace Arcus.Utilities
         {
             #region defense
 
-            if (left == null)
+            if (left is null)
             {
                 throw new ArgumentNullException(nameof(left));
             }
 
-            if (right == null)
+            if (right is null)
             {
                 throw new ArgumentNullException(nameof(right));
             }

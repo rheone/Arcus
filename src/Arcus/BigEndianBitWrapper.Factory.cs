@@ -17,7 +17,7 @@ namespace Arcus
         /// <exception cref="ArgumentException"><paramref name="bigEndianBytes" /> is empty or longer than 16 bytes.</exception>
         public static BigEndianBitWrapper FromBytes(byte[] bigEndianBytes)
         {
-            if (bigEndianBytes == null)
+            if (bigEndianBytes is null)
             {
                 throw new ArgumentNullException(nameof(bigEndianBytes));
             }
@@ -44,7 +44,7 @@ namespace Arcus
         ///     A non-null big-endian byte array whose length does not exceed
         ///     <paramref name="targetWidth" />.
         /// </param>
-        /// <param name="targetWidth">Target byte width (1–16).</param>
+        /// <param name="targetWidth">Target byte width (1-16).</param>
         /// <returns>
         ///     A wrapper with the value from <paramref name="bigEndianBytes" /> and
         ///     <see cref="ByteWidth" /> equal to <paramref name="targetWidth" />.
@@ -58,7 +58,7 @@ namespace Arcus
         /// </exception>
         public static BigEndianBitWrapper FromBytes(byte[] bigEndianBytes, int targetWidth)
         {
-            if (bigEndianBytes == null)
+            if (bigEndianBytes is null)
             {
                 throw new ArgumentNullException(nameof(bigEndianBytes));
             }
@@ -86,7 +86,7 @@ namespace Arcus
         ///     remaining host bits set to 0. For example, <c>CreateMask(4, 24)</c> produces the IPv4
         ///     netmask 255.255.255.0.
         /// </summary>
-        /// <param name="byteWidth">Byte width of the address family (1–16).</param>
+        /// <param name="byteWidth">Byte width of the address family (1-16).</param>
         /// <param name="prefixLength">Number of leading network bits to set; must be in [0, byteWidth × 8].</param>
         /// <returns>A <see cref="BigEndianBitWrapper" /> representing the subnet mask.</returns>
         /// <exception cref="ArgumentOutOfRangeException">
@@ -123,7 +123,7 @@ namespace Arcus
 
 #if NET8_0_OR_GREATER
             var allOnes = byteWidth >= 16 ? UInt128.MaxValue : (UInt128.One << totalBits) - 1;
-            // Shift right to drop the low hostBits, then shift back left to restore bit positions —
+            // Shift right to drop the low hostBits, then shift back left to restore bit positions -
             // this clears the trailing hostBits while keeping the leading prefixLength bits set.
             var mask = hostBits == 0 ? allOnes : (allOnes >> hostBits) << hostBits;
             return new BigEndianBitWrapper(mask, byteWidth);

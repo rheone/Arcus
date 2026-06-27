@@ -84,7 +84,7 @@ namespace Arcus.Benchmarks
 
         // Always benchmarks the IPv4 path regardless of Family param.
         [Benchmark]
-        public Subnet FromNetMask()
+        public static Subnet FromNetMask()
         {
             return Subnet.FromNetMask(Ipv4Address, Ipv4Netmask);
         }

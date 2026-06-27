@@ -43,7 +43,7 @@ namespace Arcus.Benchmarks
         }
 
         [Benchmark(Baseline = true)]
-#pragma warning disable CS0618 // Type or member is obsolete — intentionally testing backwards-compat path
+#pragma warning disable CS0618 // Type or member is obsolete - intentionally testing backwards-compat path
         public int Enumerate_Foreach()
         {
             var count = 0;

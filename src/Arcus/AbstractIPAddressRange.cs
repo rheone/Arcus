@@ -31,7 +31,7 @@ namespace Arcus
         ///     2<sup>MaxEnumerationExponent</sup> addresses. Defaults to <see cref="DefaultMaxEnumerationExponent"/>
         ///     (2<sup>12</sup> = 4096) to prevent accidental enumeration of enormous address spaces.
         /// </summary>
-        /// <value>The maximum enumeration exponent (0–128).</value>
+        /// <value>The maximum enumeration exponent (0-128).</value>
         public int MaxEnumerationExponent { get; }
 
         /// <summary>
@@ -125,7 +125,7 @@ namespace Arcus
             /// <inheritdoc />
             public override int GetHashCode()
             {
-                throw new NotImplementedException();
+                return HashCode.Combine(this.Head, this.Tail);
             }
         }
 
@@ -138,19 +138,19 @@ namespace Arcus
         /// </summary>
         /// <param name="head">the range head (lowest valued <see cref="IPAddress" />)</param>
         /// <param name="tail">the range tail (highest valued <see cref="IPAddress" />)</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128); enumeration yields at most 2<sup>maxEnumerationExponent</sup> addresses</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0-128); enumeration yields at most 2<sup>maxEnumerationExponent</sup> addresses</param>
         protected AbstractIPAddressRange(
             IPAddress head,
             IPAddress tail,
             int maxEnumerationExponent = DefaultMaxEnumerationExponent
         )
         {
-            if (head == null)
+            if (head is null)
             {
                 throw new ArgumentNullException(nameof(head));
             }
 
-            if (tail == null)
+            if (tail is null)
             {
                 throw new ArgumentNullException(nameof(tail));
             }
@@ -207,7 +207,7 @@ namespace Arcus
         ///     Initializes a new instance of the <see cref="AbstractIPAddressRange"/> class.
         /// </summary>
         /// <param name="addressTuple">an <see cref="AddressTuple"/> representing two addresses</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128)</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0-128)</param>
         private protected AbstractIPAddressRange(
             AddressTuple addressTuple,
             int maxEnumerationExponent = DefaultMaxEnumerationExponent

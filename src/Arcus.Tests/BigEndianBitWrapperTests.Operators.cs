@@ -174,7 +174,7 @@
             // Act
             var result = ~w;
 
-            // Assert — byte width unchanged
+            // Assert - byte width unchanged
             Assert.Equal(w.ByteWidth, result.ByteWidth);
         }
 

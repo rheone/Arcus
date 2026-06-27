@@ -16,14 +16,14 @@ namespace Arcus.Tests.Math
             {
                 var data = new TheoryData<bool, IPAddress, IPAddress>();
 
-                // reference equal — same instance, verifies the ReferenceEquals fast path
+                // reference equal - same instance, verifies the ReferenceEquals fast path
                 var ipv4SameAddress = IPAddress.Parse("192.168.1.1");
                 data.Add(true, ipv4SameAddress, ipv4SameAddress);
 
                 var ipv6SameAddress = IPAddress.Parse("abc::123");
                 data.Add(true, ipv6SameAddress, ipv6SameAddress);
 
-                // value equal — distinct instances with equal values, verifies Equals fallback
+                // value equal - distinct instances with equal values, verifies Equals fallback
                 data.Add(true, IPAddress.Parse("10.0.0.1"), IPAddress.Parse("10.0.0.1"));
                 data.Add(true, IPAddress.Parse("def::456"), IPAddress.Parse("def::456"));
 
@@ -78,14 +78,14 @@ namespace Arcus.Tests.Math
             {
                 var data = new TheoryData<bool, IPAddress, IPAddress>();
 
-                // reference equal — not greater than (verifies ReferenceEquals fast path)
+                // reference equal - not greater than (verifies ReferenceEquals fast path)
                 var ipv4SameAddress = IPAddress.Parse("192.168.1.1");
                 data.Add(false, ipv4SameAddress, ipv4SameAddress);
 
                 var ipv6SameAddress = IPAddress.Parse("abc::123");
                 data.Add(false, ipv6SameAddress, ipv6SameAddress);
 
-                // value equal — not greater than (verifies Equals fallback using distinct instances)
+                // value equal - not greater than (verifies Equals fallback using distinct instances)
                 data.Add(false, IPAddress.Parse("10.0.0.1"), IPAddress.Parse("10.0.0.1"));
                 data.Add(false, IPAddress.Parse("def::456"), IPAddress.Parse("def::456"));
 
@@ -140,14 +140,14 @@ namespace Arcus.Tests.Math
             {
                 var data = new TheoryData<bool, IPAddress, IPAddress>();
 
-                // reference equal — is >= (verifies ReferenceEquals fast path)
+                // reference equal - is >= (verifies ReferenceEquals fast path)
                 var ipv4SameAddress = IPAddress.Parse("192.168.1.1");
                 data.Add(true, ipv4SameAddress, ipv4SameAddress);
 
                 var ipv6SameAddress = IPAddress.Parse("abc::123");
                 data.Add(true, ipv6SameAddress, ipv6SameAddress);
 
-                // value equal — is >= (verifies Equals fallback using distinct instances)
+                // value equal - is >= (verifies Equals fallback using distinct instances)
                 data.Add(true, IPAddress.Parse("10.0.0.1"), IPAddress.Parse("10.0.0.1"));
                 data.Add(true, IPAddress.Parse("def::456"), IPAddress.Parse("def::456"));
 
@@ -206,14 +206,14 @@ namespace Arcus.Tests.Math
             {
                 var data = new TheoryData<bool, IPAddress, IPAddress>();
 
-                // reference equal — not less than (verifies ReferenceEquals fast path)
+                // reference equal - not less than (verifies ReferenceEquals fast path)
                 var ipv4SameAddress = IPAddress.Parse("192.168.1.1");
                 data.Add(false, ipv4SameAddress, ipv4SameAddress);
 
                 var ipv6SameAddress = IPAddress.Parse("abc::123");
                 data.Add(false, ipv6SameAddress, ipv6SameAddress);
 
-                // value equal — not less than (verifies Equals fallback using distinct instances)
+                // value equal - not less than (verifies Equals fallback using distinct instances)
                 data.Add(false, IPAddress.Parse("10.0.0.1"), IPAddress.Parse("10.0.0.1"));
                 data.Add(false, IPAddress.Parse("def::456"), IPAddress.Parse("def::456"));
 
@@ -228,7 +228,7 @@ namespace Arcus.Tests.Math
                 data.Add(false, IPAddress.Parse("192.168.1.1"), IPAddress.Parse("abc::123"));
                 data.Add(false, IPAddress.Parse("abc::123"), IPAddress.Parse("192.168.1.1"));
 
-                // greater than — not less than
+                // greater than - not less than
                 data.Add(false, IPAddress.Parse("192.168.1.25"), IPAddress.Parse("192.168.1.1"));
                 data.Add(false, IPAddress.Parse("abc::fff"), IPAddress.Parse("abc::123"));
 
@@ -268,14 +268,14 @@ namespace Arcus.Tests.Math
             {
                 var data = new TheoryData<bool, IPAddress, IPAddress>();
 
-                // reference equal — is <= (verifies ReferenceEquals fast path)
+                // reference equal - is <= (verifies ReferenceEquals fast path)
                 var ipv4SameAddress = IPAddress.Parse("192.168.1.1");
                 data.Add(true, ipv4SameAddress, ipv4SameAddress);
 
                 var ipv6SameAddress = IPAddress.Parse("abc::123");
                 data.Add(true, ipv6SameAddress, ipv6SameAddress);
 
-                // value equal — is <= (verifies Equals fallback using distinct instances)
+                // value equal - is <= (verifies Equals fallback using distinct instances)
                 data.Add(true, IPAddress.Parse("10.0.0.1"), IPAddress.Parse("10.0.0.1"));
                 data.Add(true, IPAddress.Parse("def::456"), IPAddress.Parse("def::456"));
 
@@ -290,11 +290,11 @@ namespace Arcus.Tests.Math
                 data.Add(false, IPAddress.Parse("192.168.1.1"), IPAddress.Parse("abc::123"));
                 data.Add(false, IPAddress.Parse("abc::123"), IPAddress.Parse("192.168.1.1"));
 
-                // greater than — not <=
+                // greater than - not <=
                 data.Add(false, IPAddress.Parse("192.168.1.25"), IPAddress.Parse("192.168.1.1"));
                 data.Add(false, IPAddress.Parse("abc::fff"), IPAddress.Parse("abc::123"));
 
-                // less than — is <=
+                // less than - is <=
                 data.Add(true, IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.25"));
                 data.Add(true, IPAddress.Parse("abc::123"), IPAddress.Parse("abc::fff"));
 
@@ -355,7 +355,7 @@ namespace Arcus.Tests.Math
                 data.Add(true, ipv6SameAddress, ipv6SameAddress, ipv6SameAddress, true);
                 data.Add(false, ipv6SameAddress, ipv6SameAddress, ipv6SameAddress, false);
 
-                // value equals low — distinct instances, verifies Equals fallback
+                // value equals low - distinct instances, verifies Equals fallback
                 data.Add(
                     true,
                     IPAddress.Parse("10.20.30.1"),
@@ -373,7 +373,7 @@ namespace Arcus.Tests.Math
                 data.Add(true, IPAddress.Parse("def::456"), IPAddress.Parse("def::456"), IPAddress.Parse("def::f456"), true);
                 data.Add(false, IPAddress.Parse("def::456"), IPAddress.Parse("def::456"), IPAddress.Parse("def::f456"), false);
 
-                // value equals high — distinct instances, verifies Equals fallback
+                // value equals high - distinct instances, verifies Equals fallback
                 data.Add(
                     true,
                     IPAddress.Parse("10.20.30.10"),
@@ -391,7 +391,7 @@ namespace Arcus.Tests.Math
                 data.Add(true, IPAddress.Parse("def::456"), IPAddress.Parse("def::"), IPAddress.Parse("def::456"), true);
                 data.Add(false, IPAddress.Parse("def::456"), IPAddress.Parse("def::"), IPAddress.Parse("def::456"), false);
 
-                // value equals low and high — distinct instances, verifies Equals fallback
+                // value equals low and high - distinct instances, verifies Equals fallback
                 data.Add(
                     true,
                     IPAddress.Parse("10.20.30.1"),
@@ -409,7 +409,7 @@ namespace Arcus.Tests.Math
                 data.Add(true, IPAddress.Parse("def::456"), IPAddress.Parse("def::456"), IPAddress.Parse("def::456"), true);
                 data.Add(false, IPAddress.Parse("def::456"), IPAddress.Parse("def::456"), IPAddress.Parse("def::456"), false);
 
-                // before low — both inclusive and exclusive
+                // before low - both inclusive and exclusive
                 data.Add(
                     false,
                     IPAddress.Parse("192.168.1.0"),
@@ -427,7 +427,7 @@ namespace Arcus.Tests.Math
                 data.Add(false, IPAddress.Parse("abc::"), IPAddress.Parse("abc::ff"), IPAddress.Parse("abc::ffff"), true);
                 data.Add(false, IPAddress.Parse("abc::"), IPAddress.Parse("abc::ff"), IPAddress.Parse("abc::ffff"), false);
 
-                // after high — both inclusive and exclusive
+                // after high - both inclusive and exclusive
                 data.Add(
                     false,
                     IPAddress.Parse("192.168.20.0"),
@@ -445,7 +445,7 @@ namespace Arcus.Tests.Math
                 data.Add(false, IPAddress.Parse("abcd::"), IPAddress.Parse("abc::ff"), IPAddress.Parse("abc::ffff"), true);
                 data.Add(false, IPAddress.Parse("abcd::"), IPAddress.Parse("abc::ff"), IPAddress.Parse("abc::ffff"), false);
 
-                // inside range — both inclusive and exclusive
+                // inside range - both inclusive and exclusive
                 data.Add(
                     true,
                     IPAddress.Parse("192.168.10.128"),
@@ -914,7 +914,7 @@ namespace Arcus.Tests.Math
             // Act
             void Act() => address.Increment(delta);
 
-            // Assert — overflow message is distinct from underflow
+            // Assert - overflow message is distinct from underflow
             var ex = Assert.Throws<InvalidOperationException>(Act);
             Assert.Contains("overflow", ex.Message, StringComparison.OrdinalIgnoreCase);
         }

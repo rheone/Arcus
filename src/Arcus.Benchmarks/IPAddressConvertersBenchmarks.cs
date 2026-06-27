@@ -32,7 +32,7 @@ namespace Arcus.Benchmarks
 
         // ToBase85String applies to IPv6 only; always benchmarks the IPv6 path.
         [Benchmark]
-        public string ToBase85String()
+        public static string ToBase85String()
         {
             return Ipv6Address.ToBase85String();
         }

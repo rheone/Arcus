@@ -79,12 +79,12 @@ namespace Arcus.Tests.Comparers
             {
                 var data = new TheoryData<int, IPAddress, IPAddress>
                 {
-                    // equal addresses (value equality — distinct IPAddress instances with same value)
+                    // equal addresses (value equality - distinct IPAddress instances with same value)
                     { 0, IPAddress.Parse("10.0.0.1"), IPAddress.Parse("10.0.0.1") },
                     { 0, IPAddress.Parse("dead::beef"), IPAddress.Parse("dead::beef") },
                 };
 
-                // same address (reference equality — identical object)
+                // same address (reference equality - identical object)
                 var ipv4Same = IPAddress.Parse("192.168.1.1");
                 data.Add(0, ipv4Same, ipv4Same);
 

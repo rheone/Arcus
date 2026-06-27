@@ -53,7 +53,7 @@ namespace Arcus
         private readonly ulong _lo; // least-significant 64 bits
 
         /// <summary>Initializes a new instance of the <see cref="BigEndianBitWrapper" /> struct.</summary>
-        /// <param name="hi">Most-significant 64 bits of the value; always <c>0</c> for byte widths 1–8.</param>
+        /// <param name="hi">Most-significant 64 bits of the value; always <c>0</c> for byte widths 1-8.</param>
         /// <param name="lo">Least-significant 64 bits of the value.</param>
         /// <param name="byteWidth">Byte width of the address family; must be in [1, 16].</param>
         private BigEndianBitWrapper(ulong hi, ulong lo, int byteWidth)
@@ -65,8 +65,8 @@ namespace Arcus
 
         /// <summary>Gets the maximum unsigned integer for <see cref="ByteWidth" /> bytes, split into high and low 64-bit components.</summary>
         /// <value>
-        ///     A tuple where <c>Hi</c> is <c>0</c> for byte widths 1–8 (value fits entirely in <c>Lo</c>)
-        ///     and carries the most-significant bits for widths 9–16. Serves as the arithmetic ceiling
+        ///     A tuple where <c>Hi</c> is <c>0</c> for byte widths 1-8 (value fits entirely in <c>Lo</c>)
+        ///     and carries the most-significant bits for widths 9-16. Serves as the arithmetic ceiling
         ///     for overflow detection and as the all-ones base for bitwise NOT and mask operations.
         /// </value>
         private (ulong Hi, ulong Lo) MaxHiLoForWidth

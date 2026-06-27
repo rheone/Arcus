@@ -14,11 +14,11 @@ namespace Arcus
         ///     <list type="bullet">
         ///         <item>
         ///             <term><c>"HC"</c></term>
-        ///             <description>Hex compact — uppercase, no separators (e.g. "C0A80101").</description>
+        ///             <description>Hex compact - uppercase, no separators (e.g. "C0A80101").</description>
         ///         </item>
         ///         <item>
         ///             <term><c>"IBE"</c></term>
-        ///             <description>Integer big-endian — decimal string of the unsigned value.</description>
+        ///             <description>Integer big-endian - decimal string of the unsigned value.</description>
         ///         </item>
         ///         <item>
         ///             <term><c>"b"</c></term>
@@ -26,7 +26,7 @@ namespace Arcus
         ///         </item>
         ///         <item>
         ///             <term><c>null</c> or <c>"G"</c></term>
-        ///             <description>Default — same as "HC".</description>
+        ///             <description>Default - same as "HC".</description>
         ///         </item>
         ///     </list>
         /// </param>

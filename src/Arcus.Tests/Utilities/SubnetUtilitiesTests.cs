@@ -92,15 +92,15 @@ namespace Arcus.Tests.Utilities
             // small IPv4 range
             yield return new object[]
             {
-                new[] { "128.64.20.3/32", "128.64.20.4/30", "128.64.20.8/30", "128.64.20.12/32" }.Select(s => Subnet.Parse(s)),
+                SourceArray.Select(s => Subnet.Parse(s)),
                 IPAddress.Parse("128.64.20.3"),
                 IPAddress.Parse("128.64.20.12"),
             };
 
-            // small IPv4 range (reversed order — verifies min/max normalization)
+            // small IPv4 range (reversed order - verifies min/max normalization)
             yield return new object[]
             {
-                new[] { "128.64.20.3/32", "128.64.20.4/30", "128.64.20.8/30", "128.64.20.12/32" }.Select(s => Subnet.Parse(s)),
+                SourceArray.Select(s => Subnet.Parse(s)),
                 IPAddress.Parse("128.64.20.12"),
                 IPAddress.Parse("128.64.20.3"),
             };
@@ -121,7 +121,7 @@ namespace Arcus.Tests.Utilities
                 IPAddress.Parse("2001:400:4402::"),
             };
 
-            // full IPv6 /48 block — exact subnet boundary
+            // full IPv6 /48 block - exact subnet boundary
             yield return new object[]
             {
                 new[] { Subnet.Parse("2001:400:4402::/48") },
@@ -605,6 +605,14 @@ namespace Arcus.Tests.Utilities
                 { IPAddress.Any, null },
                 { null, IPAddress.Any },
             };
+
+        private static readonly string[] SourceArray = new[]
+        {
+            "128.64.20.3/32",
+            "128.64.20.4/30",
+            "128.64.20.8/30",
+            "128.64.20.12/32",
+        };
 
         /// <summary>Verifies that <see cref="SubnetUtilities.FewestConsecutiveSubnetsFor"/> throws <see cref="ArgumentNullException"/> when either argument is null.</summary>
         /// <param name="left">Left bound address.</param>

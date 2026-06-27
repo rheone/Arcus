@@ -27,7 +27,7 @@ namespace Arcus.Comparers
         /// <exception cref="ArgumentNullException"><paramref name="addressFamilyComparer" /> is <see langword="null" />.</exception>
         public DefaultIPAddressComparer(IComparer<AddressFamily> addressFamilyComparer)
         {
-            if (addressFamilyComparer == null)
+            if (addressFamilyComparer is null)
             {
                 throw new ArgumentNullException(nameof(addressFamilyComparer));
             }

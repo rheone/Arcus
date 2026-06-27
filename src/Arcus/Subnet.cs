@@ -184,7 +184,7 @@ namespace Arcus
         /// </remarks>
         /// <param name="lowAddress">a address to be contained within the subnet</param>
         /// <param name="highAddress">another address to be contained within the subnet</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128); enumeration yields at most 2<sup>maxEnumerationExponent</sup> addresses</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0-128); enumeration yields at most 2<sup>maxEnumerationExponent</sup> addresses</param>
         public Subnet(IPAddress lowAddress, IPAddress highAddress, int maxEnumerationExponent = DefaultMaxEnumerationExponent)
             : this(CtorFactory(lowAddress, highAddress, maxEnumerationExponent)) { }
 
@@ -200,7 +200,7 @@ namespace Arcus
         /// </remarks>
         /// <param name="address">the ip address</param>
         /// <param name="routingPrefix">the routing prefix</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128, default 12)</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0-128, default 12)</param>
         /// <exception cref="ArgumentException">IP Address must be IPv4 or IPv6</exception>
         /// <exception cref="ArgumentException">Routing prefix is out of range</exception>
         public Subnet(IPAddress address, int routingPrefix, int maxEnumerationExponent = DefaultMaxEnumerationExponent)
@@ -504,7 +504,7 @@ namespace Arcus
         /// </summary>
         /// <param name="networkPrefixAddress">the subnet <see cref="NetworkPrefixAddress" /></param>
         /// <param name="broadcastAddress">the subnet <see cref="BroadcastAddress" /></param>
-        /// <param name="netmask">the subnet <see cref="Netmask" />, will be <see langword="null" /> for non IPv6 subnets</param>
+        /// <param name="netmask">the subnet <see cref="Netmask" />, will be <see langword="null" /> for IPv6 subnets</param>
         /// <param name="routingPrefix">the subnet <see cref="RoutingPrefix" /></param>
         public void Deconstruct(
             out IPAddress networkPrefixAddress,

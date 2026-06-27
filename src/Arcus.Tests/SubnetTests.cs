@@ -191,13 +191,13 @@ namespace Arcus.Tests
         public void Overlaps_WhollyContainedIIPAddressRange_IsSymmetric_Test()
         {
             // When a range is wholly contained inside a subnet, both directions must return true.
-            // This exercises AbstractIPAddressRange.Overlaps(IIPAddressRange) — the Subnet-typed
+            // This exercises AbstractIPAddressRange.Overlaps(IIPAddressRange) - the Subnet-typed
             // overload already handled this correctly; the base-class path had an asymmetry bug.
             var outer = Subnet.Parse("192.168.0.0/16");
             var inner = new IPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"));
 
             Assert.True(outer.Overlaps((IIPAddressRange)inner), "outer.Overlaps(inner) should be true");
-            Assert.True(inner.Overlaps((IIPAddressRange)outer), "inner.Overlaps(outer) should be true — symmetry");
+            Assert.True(inner.Overlaps((IIPAddressRange)outer), "inner.Overlaps(outer) should be true - symmetry");
         }
 
         /// <summary>Verifies that the subnet-typed <see cref="Subnet.Overlaps(Subnet)"/> overload is symmetric when one subnet is wholly inside the other.</summary>
@@ -209,7 +209,7 @@ namespace Arcus.Tests
             var inner = Subnet.Parse("10.10.0.0/16");
 
             Assert.True(outer.Overlaps(inner), "outer.Overlaps(inner) should be true");
-            Assert.True(inner.Overlaps(outer), "inner.Overlaps(outer) should be true — symmetry");
+            Assert.True(inner.Overlaps(outer), "inner.Overlaps(outer) should be true - symmetry");
         }
 
         #endregion // end: Overlaps

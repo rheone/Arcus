@@ -6,7 +6,7 @@ namespace Arcus.Tests
     /// <summary>Unit tests for <see cref="BigEndianBitWrapper"/>.</summary>
     public partial class BigEndianBitWrapperTests
     {
-        // Convenience helpers — keep tests focused on behaviour, not construction noise.
+        // Convenience helpers - keep tests focused on behaviour, not construction noise.
         private static BigEndianBitWrapper Wrap(params byte[] bytes)
         {
             return BigEndianBitWrapper.FromBytes(bytes);
@@ -201,7 +201,7 @@ namespace Arcus.Tests
             // Act
             var diff = tail.Subtract(head);
 
-            // Assert — difference is 9
+            // Assert - difference is 9
             Assert.Equal(9, (int)diff.ToBigInteger());
         }
 

@@ -60,7 +60,7 @@ namespace Arcus.Tests
         public static TheoryData<bool, string> Ipv4OctetPartialPattern_Test_Data =>
             new()
             {
-                // single octet — valid range
+                // single octet - valid range
                 { true, "0" },
                 { true, "1" },
                 { true, "192" },
@@ -71,7 +71,7 @@ namespace Arcus.Tests
                 // three octets
                 { true, "192.168.1" },
                 { true, "10.0.0" },
-                // four octets — full addresses
+                // four octets - full addresses
                 { true, "192.168.1.1" },
                 { true, "0.0.0.0" },
                 { true, "255.255.255.255" },
@@ -79,14 +79,14 @@ namespace Arcus.Tests
                 { true, "192." },
                 { true, "192.168." },
                 { true, "192.168.1." },
-                // non-matching — empty
+                // non-matching - empty
                 { false, string.Empty },
-                // non-matching — octet out of range
+                // non-matching - octet out of range
                 { false, "256" },
                 { false, "999" },
-                // non-matching — five groups
+                // non-matching - five groups
                 { false, "192.168.0.1.5" },
-                // non-matching — non-IPv4
+                // non-matching - non-IPv4
                 { false, "::" },
                 { false, "potato" },
             };
@@ -99,7 +99,7 @@ namespace Arcus.Tests
         public void Ipv4OctetPartialPattern_IsMatch_ReturnsExpected_Test(bool expected, string input)
         {
             // Arrange
-            var regex = new Regex(Subnet.Ipv4OctetPartialPattern, RegexOptions.CultureInvariant);
+            var regex = MyRegex();
 
             // Act
             var result = regex.IsMatch(input);
@@ -146,7 +146,7 @@ namespace Arcus.Tests
             {
                 var sb = new StringBuilder();
 
-                sb.Append(string.Join(":", Enumerable.Repeat("0", hextetCount)));
+                sb.AppendJoin(":", Enumerable.Repeat("0", hextetCount));
 
                 if (hextetCount < 8)
                 {
@@ -195,13 +195,13 @@ namespace Arcus.Tests
                 }
             }
 
-            // edge cases — CIDR boundary values
+            // edge cases - CIDR boundary values
             data.Add(Enumerable.Empty<Subnet>(), "::/129"); // prefix exceeds 128
             data.Add(new[] { Subnet.Parse("::/0") }, "::/0"); // prefix of zero
             data.Add(Enumerable.Empty<Subnet>(), "::/"); // CIDR with missing prefix number
             data.Add(Enumerable.Empty<Subnet>(), "::/abc"); // CIDR with non-numeric prefix
 
-            // edge cases — collapse in middle of address
+            // edge cases - collapse in middle of address
             data.Add(
                 [
                     Subnet.Parse("2001:db8:0:0:0:0:0:1/128"),
@@ -214,7 +214,7 @@ namespace Arcus.Tests
                 "2001:db8::1"
             );
 
-            // edge cases — uppercase hex (IPv6 is case-insensitive)
+            // edge cases - uppercase hex (IPv6 is case-insensitive)
             data.Add(
                 [
                     Subnet.Parse("2001:db8:0:0:0:0:0:0/128"),
@@ -228,10 +228,10 @@ namespace Arcus.Tests
                 "2001:DB8::"
             );
 
-            // edge cases — IPv4 mapped IPv6 should be treated as an exact /128
+            // edge cases - IPv4 mapped IPv6 should be treated as an exact /128
             data.Add(new[] { Subnet.Parse("::ffff:192.168.0.1/128") }, "::ffff:192.168.0.1/128");
 
-            // edge cases — valid but incomplete, 6 hextets without "::"
+            // edge cases - valid but incomplete, 6 hextets without "::"
             data.Add(
                 [
                     Subnet.Parse("2001:db8:0:0:0:0:0:0/128"),
@@ -241,7 +241,7 @@ namespace Arcus.Tests
                 "2001:db8:0:0:0:0:"
             );
 
-            // edge cases — single non-zero hextet with trailing "::"
+            // edge cases - single non-zero hextet with trailing "::"
             data.Add(
                 [
                     Subnet.Parse("abba:0:0:0:0:0:0:0/128"),
@@ -256,7 +256,7 @@ namespace Arcus.Tests
                 "abba::"
             );
 
-            // edge cases — bare hextet pair without trailing "::"
+            // edge cases - bare hextet pair without trailing "::"
             data.Add(
                 [
                     Subnet.Parse("2001:db8:0:0:0:0:0:0/128"),
@@ -270,11 +270,11 @@ namespace Arcus.Tests
                 "2001:db8:"
             );
 
-            // edge cases — IPv6 input that looks like a valid complete address without hextet count of 8
+            // edge cases - IPv6 input that looks like a valid complete address without hextet count of 8
             data.Add(new[] { Subnet.Parse("::1/128") }, "::1/128");
             data.Add(new[] { Subnet.Parse("fe80::1/128") }, "fe80::1/128");
 
-            // bare hex word (no colons) — treated as single hextet with implicit "::"
+            // bare hex word (no colons) - treated as single hextet with implicit "::"
             data.Add(
                 [
                     Subnet.Parse("2001:0:0:0:0:0:0:0/128"),
@@ -304,7 +304,7 @@ namespace Arcus.Tests
                 "abba"
             );
 
-            // whitespace trimming — leading/trailing spaces
+            // whitespace trimming - leading/trailing spaces
             data.Add(new[] { Subnet.Parse("::/128") }, "  ::/128");
             data.Add(new[] { Subnet.Parse("::/128") }, "::/128  ");
             data.Add(new[] { Subnet.Parse("::/128") }, "  ::/128  ");
@@ -356,16 +356,16 @@ namespace Arcus.Tests
                 "[2001:db8::]"
             );
 
-            // invalid — unclosed bracket (no matching "]")
+            // invalid - unclosed bracket (no matching "]")
             data.Add(Enumerable.Empty<Subnet>(), "[2001:db8::");
 
-            // invalid — unopened bracket (no matching "[")
+            // invalid - unopened bracket (no matching "[")
             data.Add(Enumerable.Empty<Subnet>(), "2001:db8::]");
 
-            // invalid — bare hex with colon is ambiguous
+            // invalid - bare hex with colon is ambiguous
             data.Add(Enumerable.Empty<Subnet>(), "xyz::");
 
-            // invalid — hex with invalid characters
+            // invalid - hex with invalid characters
             data.Add(Enumerable.Empty<Subnet>(), "2001:db8::zzzz");
 
             return data;
@@ -389,7 +389,7 @@ namespace Arcus.Tests
             var expectedList = expected.ToList();
             var subnetList = subnets.ToList();
 
-            Assert.Equal(expectedList.Any(), success);
+            Assert.Equal(expectedList.Count != 0, success);
 
             Assert.Equal(expectedList.Count, subnetList.Count);
             for (var i = 0; i < expectedList.Count; i++)
@@ -739,15 +739,15 @@ namespace Arcus.Tests
                 // case-insensitive (IgnoreCase)
                 { true, "FEED:BEEF::/48" },
                 { true, "feed:beef::/48" },
-                // address only — no prefix
+                // address only - no prefix
                 { true, "192.168.1.1" },
                 { true, "::" },
                 { true, "2001:db8::1" },
-                // non-matching — leading slash (no address part)
+                // non-matching - leading slash (no address part)
                 { false, "/32" },
-                // non-matching — empty string
+                // non-matching - empty string
                 { false, string.Empty },
-                // non-matching — internal space
+                // non-matching - internal space
                 { false, "192.168.1.0 /24" },
             };
 
@@ -762,7 +762,7 @@ namespace Arcus.Tests
             var regex = new Regex(Subnet.RoughSubnetStringPattern, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
             // Act
-            var result = regex.Matches(input).Count == 1;
+            var result = regex.Count(input) == 1;
 
             // Assert
             Assert.Equal(expected, result);
@@ -1303,7 +1303,7 @@ namespace Arcus.Tests
         [Fact]
         public void FromNetMask_NonContiguousNetMask_Throws_ArgumentException_Test()
         {
-            // Arrange — 255.0.255.0 has non-contiguous 1-bits (gap in the second octet)
+            // Arrange - 255.0.255.0 has non-contiguous 1-bits (gap in the second octet)
             var invalidNetmask = new IPAddress(new byte[] { 0xff, 0x00, 0xff, 0x00 });
 
             // Act / Assert
@@ -1465,6 +1465,9 @@ namespace Arcus.Tests
                 Assert.Equal(4, subnet.MaxEnumerationExponent);
             }
         }
+
+        [GeneratedRegex(Subnet.Ipv4OctetPartialPattern, RegexOptions.CultureInvariant)]
+        private static partial Regex MyRegex();
 
         #endregion // end: maxEnumerationExponent propagation
     }

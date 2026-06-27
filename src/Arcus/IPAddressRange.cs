@@ -28,7 +28,7 @@ namespace Arcus
         ///     Initializes a new instance of the <see cref="IPAddressRange" /> class.
         /// </summary>
         /// <param name="address">the <see cref="IPAddress" /></param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128, default 12)</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0-128, default 12)</param>
         public IPAddressRange(IPAddress address, int maxEnumerationExponent = DefaultMaxEnumerationExponent)
             : base(address, address, maxEnumerationExponent)
         {
@@ -40,7 +40,7 @@ namespace Arcus
         /// </summary>
         /// <param name="head">head <see cref="IPAddress" /></param>
         /// <param name="tail">tail <see cref="IPAddress" /></param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0–128, default 12)</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0-128, default 12)</param>
         public IPAddressRange(IPAddress head, IPAddress tail, int maxEnumerationExponent = DefaultMaxEnumerationExponent)
             : base(head, tail, maxEnumerationExponent)
         {

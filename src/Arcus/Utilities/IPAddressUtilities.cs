@@ -30,14 +30,14 @@ namespace Arcus.Utilities
         public const string DottedQuadLeadingZerosPattern = @"(?<=^|\.)0+(?!\.|$)";
 
         /// <summary>
-        ///     Regex pattern checking dotted-quad format: four groups of 1–3 digits separated by dots.
+        ///     Regex pattern checking dotted-quad format: four groups of 1-3 digits separated by dots.
         ///     Does not verify address validity (octet value range).
         ///     Applied with <see cref="RegexOptions.CultureInvariant"/>.
         /// </summary>
         public const string DottedQuadRegularExpressionPattern = @"^[0-9]{1,3}(\.[0-9]{1,3}){3}$";
 
         /// <summary>
-        ///     Regex pattern matching strings composed entirely of hexadecimal digits (0–9, a–f; allows empty string).
+        ///     Regex pattern matching strings composed entirely of hexadecimal digits (0-9, a-f; allows empty string).
         ///     Applied with <see cref="RegexOptions.IgnoreCase"/> and <see cref="RegexOptions.CultureInvariant"/>.
         /// </summary>
         public const string HexLikePattern = "^[0-9a-f]*$";

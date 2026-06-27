@@ -36,7 +36,7 @@ namespace Arcus.Converters
         {
             #region defense
 
-            if (netmask == null)
+            if (netmask is null)
             {
                 throw new ArgumentNullException(nameof(netmask));
             }
@@ -142,9 +142,9 @@ namespace Arcus.Converters
         ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
         ///     </para>
         ///     <para>
-        ///         For IPv6 addresses the first 96 bits (6 hextets) are rendered in compressed IPv6 notation —
+        ///         For IPv6 addresses the first 96 bits (6 hextets) are rendered in compressed IPv6 notation -
         ///         the longest consecutive run of zero-valued hextets is collapsed to <c>::</c> per
-        ///         <see href="https://www.rfc-editor.org/rfc/rfc5952#section-4">RFC 5952 §4</see> — followed
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc5952#section-4">RFC 5952 §4</see> - followed
         ///         by the trailing 32 bits as an IPv4 dotted-quad suffix.
         ///     </para>
         /// </remarks>

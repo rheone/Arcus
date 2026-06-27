@@ -1,4 +1,5 @@
-﻿using Arcus.Math;
+﻿using System.Linq;
+using Arcus.Math;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -50,7 +51,7 @@ namespace Arcus
             }
 
             // sort range list, has to be done post validation check, as invalid cannot be sorted
-            rangeList = [.. rangeList.OrderBy(r => r)];
+            rangeList.Sort();
 
             var resultList = new List<IPAddressRange>
             {
@@ -143,9 +144,11 @@ namespace Arcus
             var resultList = new List<IPAddressRange> { new(initialRange.Head, initialRange.Tail, maxEnumerationExponent) };
 
             // Exclusions are processed in ascending order. Because each exclusion is to the right of
-            // all previous ones, it can only ever affect the rightmost not-yet-trimmed segment —
+            // all previous ones, it can only ever affect the rightmost not-yet-trimmed segment -
             // earlier segments are entirely left of the current exclusion and are permanently settled.
-            foreach (var exclusion in excludedList.OrderBy(r => r))
+            var sortedExclusions = excludedList.ToList();
+            sortedExclusions.Sort();
+            foreach (var exclusion in sortedExclusions)
             {
                 var lastIndex = resultList.Count - 1;
                 var (done, segments) = ApplyExclusion(resultList[lastIndex], exclusion);
@@ -155,7 +158,7 @@ namespace Arcus
 
                 // done=true means the exclusion consumed the segment's tail boundary. Any remaining
                 // exclusions start at or after the current one's head, so they cannot produce
-                // additional output — short-circuit to avoid redundant work.
+                // additional output - short-circuit to avoid redundant work.
                 if (done)
                 {
                     break;
@@ -186,7 +189,7 @@ namespace Arcus
                     return (trailing.Length == 0, trailing);
                 }
 
-                // Remaining case: exclusion is strictly interior — split into leading and trailing pieces.
+                // Remaining case: exclusion is strictly interior - split into leading and trailing pieces.
                 // The Overlaps guard is a defensive invariant check; reaching this point without overlap
                 // would indicate a bug in the caller's pre-filtering or sort order.
                 if (!segment.Overlaps(exclusion))
