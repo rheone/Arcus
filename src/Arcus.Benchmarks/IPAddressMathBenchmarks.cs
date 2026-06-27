@@ -11,6 +11,9 @@ namespace Arcus.Benchmarks
     [SimpleJob(RuntimeMoniker.Net90)]
     [SimpleJob(RuntimeMoniker.Net10_0)]
     [MemoryDiagnoser]
+    /// <summary>
+    ///     Benchmarks for <see cref="IPAddressMath"/> comparison and arithmetic methods.
+    /// </summary>
     public class IPAddressMathBenchmarks
     {
         [Params(AddressFamily.InterNetwork, AddressFamily.InterNetworkV6)]

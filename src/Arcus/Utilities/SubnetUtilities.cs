@@ -64,22 +64,22 @@ namespace Arcus.Utilities
         }.ToList().AsReadOnly();
 
         /// <summary>
-        ///     Get The fewest consecutive subnets that would fill the range between the given addresses (inclusive)
+        ///     Computes the fewest consecutive CIDR subnets that exactly cover the range from <paramref name="left"/> to <paramref name="right"/> (inclusive).
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         Uses CIDR block sizing (each increment of prefix length halves the block: 2<sup>max−n</sup> addresses) per
+        ///         Uses a binary-tree decomposition algorithm: the range is progressively divided
+        ///         into the largest possible CIDR blocks. Each increment of the prefix length halves
+        ///         the block size (2<sup>max−n</sup> addresses) per
         ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
         ///     </para>
         /// </remarks>
-        /// <param name="left">lowest order IP Address</param>
-        /// <param name="right">highest order IP Address</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <returns>an enumerable of Subnet</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="left"/> is <see langword="null"/>.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="right"/> is <see langword="null"/>.</exception>
-        /// <exception cref="InvalidOperationException">Address families must match</exception>
-        /// <exception cref="InvalidOperationException">Address families must be InterNetwork or InternetworkV6</exception>
+        /// <param name="left">The lower bound of the range.</param>
+        /// <param name="right">The upper bound of the range.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns>An enumerable of <see cref="Subnet"/> values covering the range.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="left"/> or <paramref name="right"/> is <see langword="null"/>.</exception>
+        /// <exception cref="InvalidOperationException">Address families must match.</exception>
         public static IEnumerable<Subnet> FewestConsecutiveSubnetsFor(
             IPAddress left,
             IPAddress right,

@@ -7,14 +7,13 @@ using System.Diagnostics.CodeAnalysis;
 namespace Arcus.Comparers
 {
     /// <summary>
-    ///     Default <see cref="IPAddress" /> <see cref="Comparer{IPAddress}" />
-    ///     Compares the <see cref="AddressFamily" /> then the integer equivalent value of an <see cref="IPAddress" /> in
-    ///     ordinal order
+    ///     Default <see cref="Comparer{IPAddress}" /> for <see cref="IPAddress" />.
+    ///     Compares by <see cref="AddressFamily" /> first, then by the numeric value of the address.
     /// </summary>
     public sealed class DefaultIPAddressComparer : Comparer<IPAddress>
     {
         /// <summary>
-        ///     Default instance of <see cref="DefaultIPAddressComparer"/> using <see cref="DefaultAddressFamilyComparer.Instance"/>
+        ///     Default singleton instance using <see cref="DefaultAddressFamilyComparer.Instance"/>.
         /// </summary>
         public static readonly DefaultIPAddressComparer Instance = new();
 

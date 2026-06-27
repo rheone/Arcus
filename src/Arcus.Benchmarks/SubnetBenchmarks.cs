@@ -10,6 +10,9 @@ namespace Arcus.Benchmarks
     [SimpleJob(RuntimeMoniker.Net90)]
     [SimpleJob(RuntimeMoniker.Net10_0)]
     [MemoryDiagnoser]
+    /// <summary>
+    ///     Benchmarks for <see cref="Subnet"/> construction, parsing, and membership operations.
+    /// </summary>
     public class SubnetBenchmarks
     {
         [Params(AddressFamily.InterNetwork, AddressFamily.InterNetworkV6)]

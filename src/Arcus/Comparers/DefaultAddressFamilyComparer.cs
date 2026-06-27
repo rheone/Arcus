@@ -3,13 +3,13 @@
 namespace Arcus.Comparers
 {
     /// <summary>
-    ///     Default <see cref="AddressFamily" /> <see cref="Comparer{AddressFamily}" />
-    ///     Executes the <see cref="Enum.CompareTo" /> of <see cref="AddressFamily" /> method
+    ///     Default <see cref="Comparer{AddressFamily}" /> for <see cref="AddressFamily" />.
+    ///     Delegates to the <see cref="Enum.CompareTo" /> implementation of <see cref="AddressFamily" />.
     /// </summary>
     public sealed class DefaultAddressFamilyComparer : Comparer<AddressFamily>
     {
         /// <summary>
-        ///     Default instance of <see cref="DefaultAddressFamilyComparer"/> using <see cref="Instance"/>
+        ///     Default singleton instance.
         /// </summary>
         public static readonly DefaultAddressFamilyComparer Instance = new();
 

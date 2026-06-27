@@ -14,13 +14,12 @@ namespace Arcus
         #region static methods
 
         /// <summary>
-        ///     Attempt collapse the given input of ranges into fewer ranges thus optimizing
-        ///     Ranges that overlap, or butt against each other may be collapsed into a single range
+        ///     Attempts to collapse overlapping or adjacent ranges into the minimum number of contiguous ranges.
         /// </summary>
-        /// <param name="ranges">ranges to collapse</param>
-        /// <param name="result">resulting ranges post collapse</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <returns>true on success</returns>
+        /// <param name="ranges">The ranges to collapse.</param>
+        /// <param name="result">The collapsed ranges.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns><see langword="true" /> if the ranges were collapsed successfully.</returns>
         public static bool TryCollapseAll(
             IEnumerable<IPAddressRange> ranges,
             out IEnumerable<IPAddressRange> result,
@@ -212,13 +211,13 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Merge two touching or overlapping address ranges
+        ///     Attempts to merge two touching or overlapping address ranges into a single range.
         /// </summary>
-        /// <param name="left">the left operand</param>
-        /// <param name="right">the right operand</param>
-        /// <param name="mergedRange">the resulting <see cref="IPAddressRange" /></param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <returns>true on success</returns>
+        /// <param name="left">The left range.</param>
+        /// <param name="right">The right range.</param>
+        /// <param name="mergedRange">The merged <see cref="IPAddressRange" /> on success.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns><see langword="true" /> if the ranges were merged successfully.</returns>
         public static bool TryMerge(
             IPAddressRange left,
             IPAddressRange right,

@@ -11,6 +11,9 @@ namespace Arcus.Benchmarks
     [SimpleJob(RuntimeMoniker.Net90)]
     [SimpleJob(RuntimeMoniker.Net10_0)]
     [MemoryDiagnoser]
+    /// <summary>
+    ///     Benchmarks for <see cref="BigEndianBitWrapper"/> construction, arithmetic, and conversion.
+    /// </summary>
     public class BigEndianBitWrapperBenchmarks
     {
         [Params(AddressFamily.InterNetwork, AddressFamily.InterNetworkV6)]

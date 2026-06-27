@@ -17,6 +17,9 @@ namespace Arcus.Benchmarks
     [SimpleJob(RuntimeMoniker.Net90)]
     [SimpleJob(RuntimeMoniker.Net10_0)]
     [MemoryDiagnoser]
+    /// <summary>
+    ///     Benchmarks for <see cref="AbstractIPAddressRange"/> enumeration across address families and range sizes.
+    /// </summary>
     public class AbstractIPAddressRangeBenchmarks
     {
         [Params(AddressFamily.InterNetwork, AddressFamily.InterNetworkV6)]

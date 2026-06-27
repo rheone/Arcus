@@ -48,11 +48,9 @@ namespace Arcus
         public BigInteger UsableHostAddressCount => Length >= 2 ? Length - 2 : 0;
 
         /// <summary>
-        ///     Gets the broadcast of the subnet (highest order ip address)
+        ///     Gets the broadcast address of the subnet.
         /// </summary>
-        /// <value>
-        /// the broadcast of the subnet (highest order ip address)
-        /// </value>
+        /// <value>The highest address in the subnet (all host bits set), equivalent to <see cref="AbstractIPAddressRange.Tail"/>.</value>
         /// <remarks>
         ///     <para>
         ///         The highest address in the subnet (all host bits set) per
@@ -62,12 +60,11 @@ namespace Arcus
         public IPAddress BroadcastAddress => Tail;
 
         /// <summary>
-        ///     Gets the calculated Netmask of the subnet, only valid for IPv4 based subnets will be <see langword="null" /> on IPv6
-        ///     subnets
+        ///     Gets the subnet mask for this subnet.
         /// </summary>
         /// <value>
-        /// the calculated Netmask of the subnet, only valid for IPv4 based subnets will be <see langword="null" /> on IPv6
-        ///     subnets
+        ///     The subnet mask as an <see cref="IPAddress"/>; <see langword="null" /> for IPv6 subnets
+        ///     (IPv6 uses prefix length only, per RFC 4291).
         /// </value>
         /// <remarks>
         ///     <para>
@@ -79,11 +76,9 @@ namespace Arcus
         public IPAddress Netmask { get; }
 
         /// <summary>
-        ///     Gets the network prefix of the subnet (lowest order IP address)
+        ///     Gets the network prefix address of the subnet.
         /// </summary>
-        /// <value>
-        /// the network prefix of the subnet (lowest order IP address)
-        /// </value>
+        /// <value>The lowest address in the subnet (all host bits cleared), equivalent to <see cref="AbstractIPAddressRange.Head"/>.</value>
         /// <remarks>
         ///     <para>
         ///         The network address derived by AND-ing the IP address with the subnet mask per
@@ -93,10 +88,11 @@ namespace Arcus
         public IPAddress NetworkPrefixAddress => Head;
 
         /// <summary>
-        ///     Gets the routing prefix used to specify the ip address
+        ///     Gets the CIDR routing prefix length.
         /// </summary>
         /// <value>
-        /// the routing prefix used to specify the ip address
+        ///     The prefix length in CIDR notation. Valid range is [0, 32] for IPv4 and [0, 128] for IPv6
+        ///     per RFC 4632 §2.
         /// </value>
         /// <remarks>
         ///     <para>
@@ -403,7 +399,7 @@ namespace Arcus
 
         #endregion // end: Ctor
 
-        #region Static metods, may be appropriate for extracting
+        #region Static methods, may be appropriate for extracting
 
         private readonly struct AddressMaskAndPrefixTuple
         {
@@ -422,22 +418,22 @@ namespace Arcus
             }
 
             /// <summary>
-            ///     Gets head
+            ///     Gets the network prefix address.
             /// </summary>
             public IPAddress Head { get; }
 
             /// <summary>
-            ///     Gets tail
+            ///     Gets the broadcast address.
             /// </summary>
             public IPAddress Tail { get; }
 
             /// <summary>
-            ///     Gets mask
+            ///     Gets the subnet mask.
             /// </summary>
             public IPAddress Mask { get; }
 
             /// <summary>
-            ///     Gets prefix
+            ///     Gets the CIDR routing prefix length.
             /// </summary>
             public int Prefix { get; }
         }
@@ -445,17 +441,17 @@ namespace Arcus
         private readonly struct AddressAndMaskTuple(IPAddress head, IPAddress tail, IPAddress mask)
         {
             /// <summary>
-            ///     Gets head
+            ///     Gets the network prefix address.
             /// </summary>
             public IPAddress Head { get; } = head ?? throw new ArgumentNullException(nameof(head));
 
             /// <summary>
-            ///     Gets tail
+            ///     Gets the broadcast address.
             /// </summary>
             public IPAddress Tail { get; } = tail ?? throw new ArgumentNullException(nameof(tail));
 
             /// <summary>
-            ///     Gets mask
+            ///     Gets the subnet mask.
             /// </summary>
             public IPAddress Mask { get; } = mask ?? throw new ArgumentNullException(nameof(mask));
         }

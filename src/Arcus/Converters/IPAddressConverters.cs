@@ -9,16 +9,14 @@ using System.Diagnostics.CodeAnalysis;
 namespace Arcus.Converters
 {
     /// <summary>
-    ///     Static utility class containing conversion methods for converting <see cref="IPAddress" /> objects into something
-    ///     else
+    ///     Static utility class providing extension methods for converting <see cref="IPAddress" /> objects.
     /// </summary>
     public static class IPAddressConverters
     {
         #region integral conversion
 
         /// <summary>
-        ///     Convert a valid netmask (encoded as <see cref="IPAddress" />) into a CIDR route prefix
-        ///     Only valid for IPv4 netmasks
+        ///     Converts a valid IPv4 subnet mask to a CIDR route prefix length.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -28,10 +26,10 @@ namespace Arcus.Converters
         ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
         ///     </para>
         /// </remarks>
-        /// <param name="netmask">the netmask to convert</param>
-        /// <returns>the route prefix</returns>
+        /// <param name="netmask">The subnet mask to convert (IPv4 only).</param>
+        /// <returns>The CIDR route prefix length (0-32).</returns>
         /// <exception cref="ArgumentNullException"><paramref name="netmask" /> is <see langword="null" />.</exception>
-        /// <exception cref="InvalidOperationException">not a valid netmask</exception>
+        /// <exception cref="InvalidOperationException"><paramref name="netmask" /> is not a valid subnet mask.</exception>
         public static int NetmaskToCidrRoutePrefix(this IPAddress netmask)
         {
             #region defense
@@ -72,7 +70,7 @@ namespace Arcus.Converters
         #region string conversion
 
         /// <summary>
-        ///     IPv6 to Base85 (will return empty string for non ipv6 addresses) AKA Ascii85
+        ///     Converts an IPv6 address to a Base85 (Ascii85) string per RFC 1924.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -80,8 +78,8 @@ namespace Arcus.Converters
         ///         (an April Fools Day joke, but implemented here regardless).
         ///     </para>
         /// </remarks>
-        /// <param name="ipAddress">the ip address to convert</param>
-        /// <returns>Ascii85/Base85 representation of IPv6 Address, or <see langword="null" /> on failure</returns>
+        /// <param name="ipAddress">The IPv6 address to convert.</param>
+        /// <returns>Base85 representation, or <see langword="null" /> if the address is not IPv6.</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         [return: MaybeNull]
 #endif
@@ -134,7 +132,7 @@ namespace Arcus.Converters
         }
 
         /// <summary>
-        ///     Represent address as dotted quad (if not ipv6 simply return stringified version of input)
+        ///     Converts an IP address to dotted-quad notation (IPv4), or mixed IPv6/IPv4 notation for IPv4-mapped IPv6 addresses.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -287,11 +285,10 @@ namespace Arcus.Converters
         }
 
         /// <summary>
-        ///     Short hex value
+        ///     Converts an IP address to an uppercase hexadecimal string with no separators.
         /// </summary>
-        /// <param name="ipAddress">the ip address to convert</param>
-        /// <returns>Hex version of the given IP Address</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
+        /// <param name="ipAddress">The address to convert.</param>
+        /// <returns>Hex string (e.g., "C0A80101" for 192.168.1.1), or <see langword="null" /> if input is <see langword="null" />.</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         [return: NotNullIfNotNull(nameof(ipAddress))]
 #endif
@@ -301,11 +298,10 @@ namespace Arcus.Converters
         }
 
         /// <summary>
-        ///     Convert an <see cref="IPAddress" /> to a numeric representation
+        ///     Converts an IP address to its decimal numeric string representation.
         /// </summary>
-        /// <param name="ipAddress">The ip address to convert</param>
-        /// <returns>an integral representation of the IP address</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
+        /// <param name="ipAddress">The address to convert.</param>
+        /// <returns>Decimal string of the unsigned integer value, or <see langword="null" /> if input is <see langword="null" />.</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         [return: NotNullIfNotNull(nameof(ipAddress))]
 #endif
@@ -315,7 +311,7 @@ namespace Arcus.Converters
         }
 
         /// <summary>
-        ///     Convert to uncompressed IPv4/IPv6, adding zeros or expanding '::' where appropriate
+        ///     Converts an IP address to its fully-expanded (uncompressed) string form.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -326,9 +322,8 @@ namespace Arcus.Converters
         ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
         ///     </para>
         /// </remarks>
-        /// <param name="ipAddress">the address to expand</param>
-        /// <returns>the expanded for of IPv4/IPv6, or ToString() otherwise</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="ipAddress" /> is <see langword="null" />.</exception>
+        /// <param name="ipAddress">The address to expand.</param>
+        /// <returns>The expanded string form, or <see langword="null" /> if input is <see langword="null" />.</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         [return: NotNullIfNotNull(nameof(ipAddress))]
 #endif

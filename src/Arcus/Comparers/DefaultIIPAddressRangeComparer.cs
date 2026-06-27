@@ -6,15 +6,16 @@ using System.Diagnostics.CodeAnalysis;
 namespace Arcus.Comparers
 {
     /// <summary>
-    ///     Default <see cref="IIPAddressRange" /> <see cref="Comparer{IIPAddressRange}" />
-    ///     Compares by <see cref="IIPAddressRange.Head" /> and then by range length ordinal
+    ///     Default <see cref="Comparer{IIPAddressRange}" /> for <see cref="IIPAddressRange" />.
+    ///     Compares by <see cref="IIPAddressRange.Head" /> first, then by <see cref="IIPAddressRange.Length" />
+    ///     as a tiebreaker.
     /// </summary>
 #pragma warning disable S101 // Types should be named in PascalCase
     public sealed class DefaultIIPAddressRangeComparer : Comparer<IIPAddressRange>
 #pragma warning restore S101 // Types should be named in PascalCase
     {
         /// <summary>
-        ///     Default instance of <see cref="DefaultIIPAddressRangeComparer"/> using <see cref="DefaultIPAddressComparer.Instance"/>
+        ///     Default singleton instance using <see cref="DefaultIPAddressComparer.Instance"/>.
         /// </summary>
         public static readonly DefaultIIPAddressRangeComparer Instance = new();
 
@@ -32,7 +33,6 @@ namespace Arcus.Comparers
 
         /// <summary>
         ///     Initializes a new instance of the <see cref="DefaultIIPAddressRangeComparer" /> class.
-        ///     Defaults to use the DefaultIIPAddressComparer
         /// </summary>
         public DefaultIIPAddressRangeComparer()
             : this(DefaultIPAddressComparer.Instance) { }

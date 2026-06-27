@@ -25,7 +25,7 @@ namespace Arcus.Math
         #region basic arithmetic operations
 
         /// <summary>
-        ///     Increment IPv4 or IPv6 value
+        ///     Increments or decrements an IPv4 or IPv6 address by a delta.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -37,12 +37,10 @@ namespace Arcus.Math
         ///         <see cref="InvalidOperationException"/>.
         ///     </para>
         /// </remarks>
-        /// <param name="input">the ip address to affect</param>
-        /// <param name="delta">the increment value, may be negative</param>
-        /// <returns>the incremented ip address</returns>
-        /// <exception cref="InvalidOperationException">could not increment input</exception>
-        /// <exception cref="InvalidOperationException">Increment caused address underflow</exception>
-        /// <exception cref="InvalidOperationException">Increment caused address overflow</exception>
+        /// <param name="input">The IP address to adjust.</param>
+        /// <param name="delta">The signed increment value; negative for decrement.</param>
+        /// <returns>The adjusted IP address.</returns>
+        /// <exception cref="InvalidOperationException">Increment would overflow or underflow the address space.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
         public static IPAddress Increment(this IPAddress input, long delta = 1)
         {
@@ -80,12 +78,12 @@ namespace Arcus.Math
         }
 
         /// <summary>
-        ///     Try to increment the given address
+        ///     Attempts to increment an IPv4 or IPv6 address, returning <see langword="false" /> instead of throwing on overflow or underflow.
         /// </summary>
-        /// <param name="input">the <see cref="IPAddress"/> to increment</param>
-        /// <param name="address">the resulting <see cref="IPAddress"/> post increment</param>
-        /// <param name="delta">the amount to increment by</param>
-        /// <returns>true on success</returns>
+        /// <param name="input">The IP address to adjust.</param>
+        /// <param name="address">The resulting <see cref="IPAddress"/>, or <see langword="null" /> on failure.</param>
+        /// <param name="delta">The signed increment value; negative for decrement.</param>
+        /// <returns><see langword="true" /> if the increment succeeded.</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         public static bool TryIncrement(IPAddress input, [NotNullWhen(true)] out IPAddress address, long delta = 1)
 #else
@@ -115,22 +113,22 @@ namespace Arcus.Math
         #region comparisons
 
         /// <summary>
-        ///     Is Equal
+        ///     Determines whether two <see cref="IPAddress"/> instances have equal numeric values.
         /// </summary>
-        /// <param name="left">first operand</param>
-        /// <param name="right">second operand</param>
-        /// <returns>true if <paramref name="left"/> is logically equal to <paramref name="right"/></returns>
+        /// <param name="left">The first address to compare.</param>
+        /// <param name="right">The second address to compare.</param>
+        /// <returns><see langword="true" /> if the addresses are equal.</returns>
         public static bool IsEqualTo(this IPAddress left, IPAddress right)
         {
             return ReferenceEquals(left, right) || (!ReferenceEquals(left, null) && left.Equals(right));
         }
 
         /// <summary>
-        ///     Greater Than
+        ///     Determines whether one <see cref="IPAddress"/> is numerically greater than another.
         /// </summary>
-        /// <param name="left">first operand</param>
-        /// <param name="right">second operand</param>
-        /// <returns>true if <paramref name="left"/> is logically greater than <paramref name="right"/></returns>
+        /// <param name="left">The first address to compare.</param>
+        /// <param name="right">The second address to compare.</param>
+        /// <returns><see langword="true" /> if <paramref name="left"/> is greater than <paramref name="right"/>.</returns>
         public static bool IsGreaterThan(this IPAddress left, IPAddress right)
         {
             if (
@@ -150,11 +148,11 @@ namespace Arcus.Math
         }
 
         /// <summary>
-        ///     Greater Than or equal
+        ///     Determines whether one <see cref="IPAddress"/> is numerically greater than or equal to another.
         /// </summary>
-        /// <param name="left">first operand</param>
-        /// <param name="right">second operand</param>
-        /// <returns>true if <paramref name="left"/> is logically greater than or equal to <paramref name="right"/></returns>
+        /// <param name="left">The first address to compare.</param>
+        /// <param name="right">The second address to compare.</param>
+        /// <returns><see langword="true" /> if <paramref name="left"/> is greater than or equal to <paramref name="right"/>.</returns>
         public static bool IsGreaterThanOrEqualTo(this IPAddress left, IPAddress right)
         {
             return ReferenceEquals(left, right)
@@ -168,12 +166,13 @@ namespace Arcus.Math
         }
 
         /// <summary>
-        ///     Less Than
+        ///     Determines whether one <see cref="IPAddress"/> is numerically less than another.
         /// </summary>
-        /// <param name="left">first operand</param>
-        /// <param name="right">second operand</param>
-        /// <returns>true if <paramref name="left"/> is logically less than <paramref name="right"/></returns>
-        /// <exception cref="InvalidOperationException">Address families must be InterNetwork or InternetworkV6</exception>
+        /// <param name="left">The first address to compare.</param>
+        /// <param name="right">The second address to compare.</param>
+        /// <returns><see langword="true" /> if <paramref name="left"/> is less than <paramref name="right"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="left"/> or <paramref name="right"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentException">Address families must match.</exception>
         public static bool IsLessThan(this IPAddress left, IPAddress right)
         {
             if (
@@ -193,11 +192,11 @@ namespace Arcus.Math
         }
 
         /// <summary>
-        ///     Less Than or equal
+        ///     Determines whether one <see cref="IPAddress"/> is numerically less than or equal to another.
         /// </summary>
-        /// <param name="left">first operand</param>
-        /// <param name="right">second operand</param>
-        /// <returns>true if <paramref name="left"/> is logically less than or equal to <paramref name="right"/></returns>
+        /// <param name="left">The first address to compare.</param>
+        /// <param name="right">The second address to compare.</param>
+        /// <returns><see langword="true" /> if <paramref name="left"/> is less than or equal to <paramref name="right"/>.</returns>
         public static bool IsLessThanOrEqualTo(this IPAddress left, IPAddress right)
         {
             return ReferenceEquals(left, right)
@@ -211,17 +210,16 @@ namespace Arcus.Math
         }
 
         /// <summary>
-        ///     Determine if the <paramref name="input"/> occurs numerically between the given high and low IP addresses
-        ///     Inclusivity contingent on inclusive bit
+        ///     Determines whether an address falls within a numeric range, inclusive by default.
         /// </summary>
-        /// <param name="input">IP address to test</param>
-        /// <param name="low">low value</param>
-        /// <param name="high">high value</param>
-        /// <param name="inclusive">true if bounds are inclusive (defaults to true)</param>
-        /// <exception cref="ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="low" /> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="high" /> is <see langword="null" />.</exception>
-        /// <returns>true if <paramref name="input"/> is between <paramref name="low"/> and <paramref name="high"/></returns>
+        /// <param name="input">The address to test.</param>
+        /// <param name="low">The lower bound of the range.</param>
+        /// <param name="high">The upper bound of the range.</param>
+        /// <param name="inclusive"><see langword="true" /> to include the bounds (default).</param>
+        /// <returns><see langword="true" /> if <paramref name="input"/> is between <paramref name="low"/> and <paramref name="high"/>.</returns>
+        /// <exception cref="ArgumentNullException">Any argument is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentException">Address families must match.</exception>
+        /// <exception cref="InvalidOperationException"><paramref name="low"/> is greater than <paramref name="high"/>.</exception>
         public static bool IsBetween(this IPAddress input, IPAddress low, IPAddress high, bool inclusive = true)
         {
             #region defense
@@ -267,14 +265,13 @@ namespace Arcus.Math
         }
 
         /// <summary>
-        ///     Get Maximum <see cref="IPAddress" /> (based on bytes)
+        ///     Returns the numerically greater of two <see cref="IPAddress"/> values.
         /// </summary>
-        /// <param name="left">first operand</param>
-        /// <param name="right">second operand</param>
-        /// <returns>the largest of the two operands</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="left" /> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="right" /> is <see langword="null" />.</exception>
-        /// <exception cref="InvalidOperationException">Address families must match</exception>
+        /// <param name="left">The first address.</param>
+        /// <param name="right">The second address.</param>
+        /// <returns>The larger of the two addresses.</returns>
+        /// <exception cref="ArgumentNullException">Either argument is <see langword="null" />.</exception>
+        /// <exception cref="InvalidOperationException">Address families must match.</exception>
         public static IPAddress Max(IPAddress left, IPAddress right)
         {
             #region defense
@@ -300,14 +297,13 @@ namespace Arcus.Math
         }
 
         /// <summary>
-        ///     Get Minimum IPAddress (based on bytes)
+        ///     Returns the numerically lesser of two <see cref="IPAddress"/> values.
         /// </summary>
-        /// <param name="left">first operand</param>
-        /// <param name="right">second operand</param>
-        /// <returns>the smallest of the two operands</returns>
-        /// <exception cref="ArgumentNullException"><paramref name="left" /> is <see langword="null" />.</exception>
-        /// <exception cref="ArgumentNullException"><paramref name="right" /> is <see langword="null" />.</exception>
-        /// <exception cref="InvalidOperationException">Address families must match</exception>
+        /// <param name="left">The first address.</param>
+        /// <param name="right">The second address.</param>
+        /// <returns>The smaller of the two addresses.</returns>
+        /// <exception cref="ArgumentNullException">Either argument is <see langword="null" />.</exception>
+        /// <exception cref="InvalidOperationException">Address families must match.</exception>
         public static IPAddress Min(IPAddress left, IPAddress right)
         {
             #region defense
@@ -337,7 +333,7 @@ namespace Arcus.Math
         #region limit deduction
 
         /// <summary>
-        ///     determine if IP address is at maximum value
+        ///     Determines whether an address is at the maximum value for its address family.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -347,10 +343,10 @@ namespace Arcus.Math
         ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
         ///     </para>
         /// </remarks>
-        /// <param name="address">the IP Address to test</param>
-        /// <returns>true if the address is the maximum value</returns>
-        /// <exception cref="InvalidOperationException">Address families must be InterNetwork or InternetworkV6</exception>
+        /// <param name="address">The address to test.</param>
+        /// <returns><see langword="true" /> if the address is the maximum value for its family.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="address" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Unsupported address family.</exception>
         public static bool IsAtMax(this IPAddress address)
         {
             #region defense
@@ -374,7 +370,7 @@ namespace Arcus.Math
         }
 
         /// <summary>
-        ///     determine if IP address is at minimum value
+        ///     Determines whether an address is at the minimum value for its address family.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -384,10 +380,10 @@ namespace Arcus.Math
         ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.1">RFC 4291 §2.1</see>.
         ///     </para>
         /// </remarks>
-        /// <param name="address">the IP Address to test</param>
-        /// <returns>true if the address is the minimum value</returns>
-        /// <exception cref="InvalidOperationException">Address families must be InterNetwork or InternetworkV6</exception>
+        /// <param name="address">The address to test.</param>
+        /// <returns><see langword="true" /> if the address is the minimum value for its family.</returns>
         /// <exception cref="ArgumentNullException"><paramref name="address" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentOutOfRangeException">Unsupported address family.</exception>
         public static bool IsAtMin(this IPAddress address)
         {
             #region defense

@@ -58,7 +58,7 @@ namespace Arcus
         #region FromNetMask
 
         /// <summary>
-        ///     Create a subnet from an IP Address and netmask
+        ///     Creates a subnet from an IP address and subnet mask.
         /// </summary>
         /// <remarks>
         ///     <para>
@@ -67,14 +67,14 @@ namespace Arcus
         ///         IPv4 only; use <see cref="Subnet.Subnet(IPAddress, int, int)"/> for IPv6.
         ///     </para>
         /// </remarks>
-        /// <param name="address">the ip address</param>
-        /// <param name="netmask">the net mask</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <returns>The created subnet</returns>
-        /// <exception cref="ArgumentNullException">ipAddress</exception>
-        /// <exception cref="ArgumentNullException">netmask</exception>
-        /// <exception cref="InvalidOperationException">the given IP Address is not IPv4</exception>
-        /// <exception cref="InvalidOperationException">the given netmask is invalid</exception>
+        /// <param name="address">The IP address.</param>
+        /// <param name="netmask">The subnet mask.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns>The created <see cref="Subnet"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="address"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="netmask"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentException"><paramref name="address"/> is not IPv4.</exception>
+        /// <exception cref="ArgumentException"><paramref name="netmask"/> is not a valid subnet mask.</exception>
         public static Subnet FromNetMask(
             IPAddress address,
             IPAddress netmask,
@@ -112,13 +112,13 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Try to create a subnet from an IP Address and netmask
+        ///     Attempts to create a subnet from an IP address and subnet mask.
         /// </summary>
-        /// <param name="address">the ip address</param>
-        /// <param name="netmask">the net mask</param>
-        /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <returns><see langword="true" /> on success</returns>
+        /// <param name="address">The IP address.</param>
+        /// <param name="netmask">The subnet mask.</param>
+        /// <param name="subnet">The created <see cref="Subnet" />, or <see langword="null" /> on failure.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns><see langword="true" /> if the subnet was created successfully.</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         public static bool TryFromNetMask(
             IPAddress address,
@@ -150,14 +150,12 @@ namespace Arcus
         #endregion // end: FromNetMask
 
         /// <summary>
-        ///     Construct the smallest possible subnet that would contain both IP addresses encoded as bytes typically the address
-        ///     specified are the Network and Broadcast addresses (lower and higher bounds) but this is not necessary. Addresses
-        ///     *MUST* be the same address family (either Internetwork or InternetworkV6)
+        ///     Creates the smallest subnet that contains both addresses encoded as byte arrays.
         /// </summary>
-        /// <param name="lowAddressBytes">the lower address <see cref="byte" /> array</param>
-        /// <param name="highAddressBytes">the high address <see cref="byte" /> array</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <returns>The created <see cref="Subnet"/></returns>
+        /// <param name="lowAddressBytes">The lower address as a byte array.</param>
+        /// <param name="highAddressBytes">The higher address as a byte array.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns>The created <see cref="Subnet"/>.</returns>
         public static Subnet FromBytes(
             byte[] lowAddressBytes,
             byte[] highAddressBytes,
@@ -213,15 +211,13 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Construct the smallest possible subnet that would contain both IP addresses encoded as bytes typically the address
-        ///     specified are the Network and Broadcast addresses (lower and higher bounds) but this is not necessary. Addresses
-        ///     *MUST* be the same address family (either Internetwork or InternetworkV6)
+        ///     Attempts to create the smallest subnet containing both addresses encoded as byte arrays.
         /// </summary>
-        /// <param name="lowAddressBytes">the lower address <see cref="byte" /> array</param>
-        /// <param name="highAddressBytes">the high address <see cref="byte" /> array</param>
-        /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <returns><see langword="true" /> on success</returns>
+        /// <param name="lowAddressBytes">The lower address as a byte array.</param>
+        /// <param name="highAddressBytes">The higher address as a byte array.</param>
+        /// <param name="subnet">The created <see cref="Subnet" />, or <see langword="null" /> on failure.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns><see langword="true" /> if the subnet was created successfully.</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         public static bool TryFromBytes(
             byte[] lowAddressBytes,
@@ -253,17 +249,20 @@ namespace Arcus
         #region Parse / TryParse
 
         /// <summary>
-        ///     Unsafe parsing of a string into a subnet
+        ///     Parses a subnet from a CIDR-notation string.
         /// </summary>
         /// <remarks>
         ///     <para>
         ///         Accepts CIDR notation (<c>a.b.c.d/n</c> or <c>addr::x/n</c>) as defined in
         ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///         If no prefix is provided, a host route (/32 for IPv4, /128 for IPv6) is assumed.
         ///     </para>
         /// </remarks>
-        /// <param name="subnetString">the string to parse a subnet from</param>
-        /// <returns>the parsed subnet</returns>
-        /// <exception cref="ArgumentException">could not parse input</exception>
+        /// <param name="subnetString">The string to parse.</param>
+        /// <returns>The parsed <see cref="Subnet"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="subnetString"/> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentException"><paramref name="subnetString"/> is empty or whitespace.</exception>
+        /// <exception cref="FormatException">The string could not be parsed as a valid subnet.</exception>
         public static Subnet Parse(string subnetString)
         {
             if (subnetString is null)
@@ -327,30 +326,22 @@ namespace Arcus
         }
 
         /// <summary>
-        /// Unsafe parsing of a string address and routing prefix into a subnet
+        ///     Parses a subnet from an address string and a CIDR prefix length.
         /// </summary>
         /// <remarks>
-        ///
-        /// <para>Parses a subnet from an address string and a separate CIDR prefix integer per
-        /// <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>. </para>
+        ///     <para>
+        ///         Parses a subnet from an address string and a separate CIDR prefix integer per
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc4632#section-2">RFC 4632 §2</see>.
+        ///     </para>
         /// </remarks>
-        /// <param name="addressString">the address string</param>
-        /// <param name="routingPrefix">the subnet routing prefix</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <exception cref="ArgumentException">
-        /// <paramref name="addressString" /> has an invalid <see cref="System.Net.Sockets.AddressFamily" />
-        /// </exception>
-        /// <exception cref="ArgumentNullException">
-        /// <paramref name="addressString" /> is <see langword="null" />.
-        /// </exception>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// <paramref name="routingPrefix" /> is less than <c>0</c>
-        /// </exception>
-        /// <exception cref="ArgumentOutOfRangeException">
-        /// <paramref name="routingPrefix" /> is out of range of the provided
-        /// <see cref="System.Net.Sockets.AddressFamily" />
-        /// </exception>
-        /// <returns>The parsed <see cref="Subnet"/></returns>
+        /// <param name="addressString">The address string to parse.</param>
+        /// <param name="routingPrefix">The CIDR routing prefix.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns>The parsed <see cref="Subnet"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="addressString" /> is <see langword="null" />.</exception>
+        /// <exception cref="FormatException"><paramref name="addressString" /> could not be parsed as an <see cref="IPAddress"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="addressString" /> has an unsupported address family.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="routingPrefix" /> is out of range for the address family.</exception>
         public static Subnet Parse(
             string addressString,
             int routingPrefix,
@@ -401,12 +392,12 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Unsafe parsing of two string as a new subnet
+        ///     Parses a subnet from two address strings (low and high bounds).
         /// </summary>
-        /// <param name="lowAddressString">the low address string</param>
-        /// <param name="highAddressString">the high address string</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <returns>The parsed <see cref="Subnet"/></returns>
+        /// <param name="lowAddressString">The low address string.</param>
+        /// <param name="highAddressString">The high address string.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns>The parsed <see cref="Subnet"/>.</returns>
         public static Subnet Parse(
             string lowAddressString,
             string highAddressString,
@@ -474,11 +465,11 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Attempt to parse a string into a subnet
+        ///     Attempts to parse a subnet from a CIDR-notation string.
         /// </summary>
-        /// <param name="subnetString">the string to parse</param>
-        /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
-        /// <returns><see langword="true" /> on success</returns>
+        /// <param name="subnetString">The string to parse.</param>
+        /// <param name="subnet">The parsed <see cref="Subnet" />, or <see langword="null" /> on failure.</param>
+        /// <returns><see langword="true" /> if parsing succeeded.</returns>
         public static bool TryParse(string subnetString,
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
             [NotNullWhen(true)]
@@ -498,14 +489,13 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Try to parse <paramref name="addressString" /> as an <see cref="IPAddress" /> for a Subnet with the given routing
-        ///     prefix
+        ///     Attempts to parse a subnet from an address string and CIDR prefix length.
         /// </summary>
-        /// <param name="addressString">the address string</param>
-        /// <param name="routingPrefix">the subnet routing prefix</param>
-        /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <returns><see langword="true" /> on success</returns>
+        /// <param name="addressString">The address string to parse.</param>
+        /// <param name="routingPrefix">The CIDR routing prefix.</param>
+        /// <param name="subnet">The parsed <see cref="Subnet" />, or <see langword="null" /> on failure.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns><see langword="true" /> if parsing succeeded.</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         public static bool TryParse(
             string addressString,
@@ -535,13 +525,13 @@ namespace Arcus
         }
 
         /// <summary>
-        ///     Try parse two strings as addresses
+        ///     Attempts to parse a subnet from two address strings (low and high bounds).
         /// </summary>
-        /// <param name="lowAddressString">the low address string</param>
-        /// <param name="highAddressString">the high address string</param>
-        /// <param name="subnet">the created subnet or <see langword="null" /> on failure</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <returns><see langword="true" /> on success</returns>
+        /// <param name="lowAddressString">The low address string.</param>
+        /// <param name="highAddressString">The high address string.</param>
+        /// <param name="subnet">The parsed <see cref="Subnet" />, or <see langword="null" /> on failure.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns><see langword="true" /> if parsing succeeded.</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         public static bool TryParse(
             string lowAddressString,
@@ -574,19 +564,19 @@ namespace Arcus
         #region From Partial
 
         /// <summary>
-        ///     Try to convert a partial IPv4 address into a subnet based on found provided partial octets
+        ///     Attempts to convert a partial IPv4 address into a subnet.
         /// </summary>
         /// <remarks>
         ///     <para>
-        ///         IPv4 dotted-quad structure (4 octets × 8 bits = 32 bits total) per
+        ///         Each supplied octet contributes 8 bits to the routing prefix per
         ///         <see href="https://www.rfc-editor.org/rfc/rfc791#section-2.3">RFC 791 §2.3</see>.
-        ///         Each supplied octet contributes 8 bits to the routing prefix.
+        ///         For example, <c>"10.0"</c> produces a /16 subnet, <c>"192.168.1"</c> produces a /24 subnet.
         ///     </para>
         /// </remarks>
-        /// <param name="input">the partial IP address to parse</param>
-        /// <param name="subnet">the subnet created</param>
-        /// <param name="maxEnumerationExponent">the maximum enumeration exponent</param>
-        /// <returns>true on success</returns>
+        /// <param name="input">The partial IP address string (e.g., <c>"10.0"</c>, <c>"192.168"</c>).</param>
+        /// <param name="subnet">The created <see cref="Subnet" />, or <see langword="null" /> on failure.</param>
+        /// <param name="maxEnumerationExponent">The maximum enumeration exponent (0-128).</param>
+        /// <returns><see langword="true" /> if the partial address was parsed successfully.</returns>
         public static bool TryIPv4FromPartial(
             string input,
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER

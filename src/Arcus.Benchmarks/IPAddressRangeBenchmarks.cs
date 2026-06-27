@@ -11,6 +11,9 @@ namespace Arcus.Benchmarks
     [SimpleJob(RuntimeMoniker.Net90)]
     [SimpleJob(RuntimeMoniker.Net10_0)]
     [MemoryDiagnoser]
+    /// <summary>
+    ///     Benchmarks for <see cref="IPAddressRange"/> collapse and exclusion operations.
+    /// </summary>
     public class IPAddressRangeBenchmarks
     {
         [Params(AddressFamily.InterNetwork, AddressFamily.InterNetworkV6)]

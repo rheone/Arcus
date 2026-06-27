@@ -35,11 +35,9 @@ namespace Arcus
         public int MaxEnumerationExponent { get; }
 
         /// <summary>
-        ///     <see langword="true" /> Gets a value indicating whether if the range describes a single ip address
+        ///     Gets a value indicating whether this range contains exactly one address.
         /// </summary>
-        /// <value>
-        /// <see langword="true" /> if the range describes a single ip address
-        /// </value>
+        /// <value><see langword="true" /> when <see cref="Length"/> equals 1.</value>
         public bool IsSingleIP => this.Length == 1;
 
         /// <inheritdoc />
@@ -63,29 +61,22 @@ namespace Arcus
         #region AddressTuple
 
         /// <summary>
-        ///     AddressTuple for moving around a pair of <see cref="IPAddress" /> objects as a unit
+        ///     Holds a pair of <see cref="IPAddress" /> objects as an immutable unit.
         /// </summary>
-        /// <remarks>
-        ///     Initializes a new instance of the <see cref="AddressTuple" /> struct.
-        /// </remarks>
-        /// <param name="head">the head address</param>
-        /// <param name="tail">the tail address</param>
+        /// <param name="head">The head address (must not be <see langword="null" />).</param>
+        /// <param name="tail">The tail address (must not be <see langword="null" />).</param>
         private protected readonly struct AddressTuple(IPAddress head, IPAddress tail) : IEquatable<AddressTuple>
         {
             /// <summary>
-            ///     Gets head
+            ///     Gets the head address of the pair.
             /// </summary>
-            /// <value>
-            /// Head
-            /// </value>
+            /// <value>The first (numerically lower) address.</value>
             public IPAddress Head { get; } = head ?? throw new ArgumentNullException(nameof(head));
 
             /// <summary>
-            ///     Gets tail
+            ///     Gets the tail address of the pair.
             /// </summary>
-            /// <value>
-            /// Tail
-            /// </value>
+            /// <value>The second (numerically higher) address.</value>
             public IPAddress Tail { get; } = tail ?? throw new ArgumentNullException(nameof(tail));
 
             /// <inheritdoc />
@@ -101,22 +92,22 @@ namespace Arcus
             }
 
             /// <summary>
-            ///     Equals operation
+            ///     Determines whether two <see cref="AddressTuple"/> instances are equal.
             /// </summary>
-            /// <param name="left">left operand</param>
-            /// <param name="right">right operand</param>
-            /// <returns><see langword="true" /> if <paramref name="left"></paramref> and <paramref name="right" />are equal</returns>
+            /// <param name="left">The first instance.</param>
+            /// <param name="right">The second instance.</param>
+            /// <returns><see langword="true" /> if the two pairs contain equal addresses.</returns>
             public static bool operator ==(AddressTuple left, AddressTuple right)
             {
                 return left.Equals(right);
             }
 
             /// <summary>
-            ///     Not Equals operation
+            ///     Determines whether two <see cref="AddressTuple"/> instances are not equal.
             /// </summary>
-            /// <param name="left">left operand</param>
-            /// <param name="right">right operand</param>
-            /// <returns><see langword="true" /> if <paramref name="left"></paramref> and <paramref name="right" /> are not equal</returns>
+            /// <param name="left">The first instance.</param>
+            /// <param name="right">The second instance.</param>
+            /// <returns><see langword="true" /> if the two pairs differ in either address.</returns>
             public static bool operator !=(AddressTuple left, AddressTuple right)
             {
                 return !(left == right);

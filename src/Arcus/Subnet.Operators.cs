@@ -6,11 +6,11 @@
     public partial class Subnet
     {
         /// <summary>
-        /// Determines whether two <see cref="Subnet"/> instances are equal.
+        ///     Determines whether two <see cref="Subnet"/> instances are equal.
         /// </summary>
-        /// <param name="left">The first <see cref="Subnet"/> instance.</param>
-        /// <param name="right">The second <see cref="Subnet"/> instance.</param>
-        /// <returns>true if both instances are equal; otherwise, false.</returns>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns><see langword="true" /> if the instances are equal; otherwise, <see langword="false" />.</returns>
         public static bool operator ==(Subnet left, Subnet right)
         {
             if (ReferenceEquals(left, right))
@@ -27,35 +27,35 @@
         }
 
         /// <summary>
-        /// Determines whether two <see cref="Subnet"/> instances are not equal.
+        ///     Determines whether two <see cref="Subnet"/> instances are not equal.
         /// </summary>
-        /// <param name="left">The first <see cref="Subnet"/> instance.</param>
-        /// <param name="right">The second <see cref="Subnet"/> instance.</param>
-        /// <returns>true if the instances are not equal; otherwise, false.</returns>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns><see langword="true" /> if the instances are not equal; otherwise, <see langword="false" />.</returns>
         public static bool operator !=(Subnet left, Subnet right) => !(left == right);
 
         /// <summary>
-        /// Compares two <see cref="Subnet"/> instances to determine if the first is less than the second.
+        ///     Determines whether one <see cref="Subnet"/> is strictly less than another.
         /// </summary>
-        /// <param name="left">The first <see cref="Subnet"/> instance.</param>
-        /// <param name="right">The second <see cref="Subnet"/> instance.</param>
-        /// <returns>true if the first instance is less than the second; otherwise, false.</returns>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns><see langword="true" /> if <paramref name="left"/> is less than <paramref name="right"/>.</returns>
         public static bool operator <(Subnet left, Subnet right)
         {
             if (left is null)
             {
-                return right is not null; // null is less than any non-null instance
+                return right is not null;
             }
 
             return left.CompareTo(right) < 0;
         }
 
         /// <summary>
-        /// Compares two <see cref="Subnet"/> instances to determine if the first is greater than the second.
+        ///     Determines whether one <see cref="Subnet"/> is strictly greater than another.
         /// </summary>
-        /// <param name="left">The first <see cref="Subnet"/> instance.</param>
-        /// <param name="right">The second <see cref="Subnet"/> instance.</param>
-        /// <returns>true if the first instance is greater than the second; otherwise, false.</returns>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns><see langword="true" /> if <paramref name="left"/> is greater than <paramref name="right"/>.</returns>
         public static bool operator >(Subnet left, Subnet right)
         {
             if (left is null)
@@ -67,19 +67,19 @@
         }
 
         /// <summary>
-        /// Compares two <see cref="Subnet"/> instances to determine if the first is less than or equal to the second.
+        ///     Determines whether one <see cref="Subnet"/> is less than or equal to another.
         /// </summary>
-        /// <param name="left">The first <see cref="Subnet"/> instance.</param>
-        /// <param name="right">The second <see cref="Subnet"/> instance.</param>
-        /// <returns>true if the first instance is less than or equal to the second; otherwise, false.</returns>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns><see langword="true" /> if <paramref name="left"/> is less than or equal to <paramref name="right"/>.</returns>
         public static bool operator <=(Subnet left, Subnet right) => left < right || left == right;
 
         /// <summary>
-        /// Compares two <see cref="Subnet"/> instances to determine if the first is greater than or equal to the second.
+        ///     Determines whether one <see cref="Subnet"/> is greater than or equal to another.
         /// </summary>
-        /// <param name="left">The first <see cref="Subnet"/> instance.</param>
-        /// <param name="right">The second <see cref="Subnet"/> instance.</param>
-        /// <returns>true if the first instance is greater than or equal to the second; otherwise, false.</returns>
+        /// <param name="left">The first instance.</param>
+        /// <param name="right">The second instance.</param>
+        /// <returns><see langword="true" /> if <paramref name="left"/> is greater than or equal to <paramref name="right"/>.</returns>
         public static bool operator >=(Subnet left, Subnet right) => left > right || left == right;
     }
 }

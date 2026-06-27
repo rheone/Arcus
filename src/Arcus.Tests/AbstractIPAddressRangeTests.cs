@@ -28,10 +28,10 @@ namespace Arcus.Tests
         #region Length / TryGetLength
 
         /// <summary>
-        ///     Gets parameters: expected (BigInteger), ipAddressRange (AbstractIPAddressRange)
+        ///     Gets theory data for length-related tests across IPv4, IPv6, and boundary values.
         /// </summary>
         /// <value>
-        ///     Parameters: expected (BigInteger), ipAddressRange (AbstractIPAddressRange)
+        ///     Pairs of expected length (<see cref="BigInteger"/>) and <see cref="IPAddressRange"/> instances.
         /// </value>
         public static TheoryData<BigInteger, IPAddressRange> Length_Test_Data
         {
