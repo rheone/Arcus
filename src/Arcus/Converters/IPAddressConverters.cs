@@ -30,7 +30,7 @@ namespace Arcus.Converters
         /// </remarks>
         /// <param name="netmask">the netmask to convert</param>
         /// <returns>the route prefix</returns>
-        /// <exception cref="InvalidOperationException"><paramref name="netmask" /> is <see langword="null" />.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="netmask" /> is <see langword="null" />.</exception>
         /// <exception cref="InvalidOperationException">not a valid netmask</exception>
         public static int NetmaskToCidrRoutePrefix(this IPAddress netmask)
         {
@@ -81,7 +81,7 @@ namespace Arcus.Converters
         ///     </para>
         /// </remarks>
         /// <param name="ipAddress">the ip address to convert</param>
-        /// <returns>Ascii85/Base85 representation of IPv6 Address, or an empty string on failure</returns>
+        /// <returns>Ascii85/Base85 representation of IPv6 Address, or <see langword="null" /> on failure</returns>
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
         [return: MaybeNull]
 #endif
@@ -355,13 +355,31 @@ namespace Arcus.Converters
             string IPv6ToString()
             {
                 var addressBytes = ipAddress.GetAddressBytes();
-
+#if NET8_0_OR_GREATER
+                Span<char> chars = stackalloc char[(IPAddressUtilities.IPv6HextetCount * 5) - 1];
+                var pos = 0;
+                for (var i = 0; i < IPAddressUtilities.IPv6HextetCount; i++)
+                {
+                    if (i > 0)
+                    {
+                        chars[pos++] = ':';
+                    }
+                    var b = addressBytes[i * 2];
+                    var b2 = addressBytes[(i * 2) + 1];
+                    chars[pos++] = "0123456789abcdef"[b >> 4];
+                    chars[pos++] = "0123456789abcdef"[b & 0x0F];
+                    chars[pos++] = "0123456789abcdef"[b2 >> 4];
+                    chars[pos++] = "0123456789abcdef"[b2 & 0x0F];
+                }
+                return new string(chars);
+#else
                 var hextets = Enumerable
                     .Range(0, IPAddressUtilities.IPv6HextetCount)
                     .Select(i => i * 2)
                     .Select(i => $"{addressBytes[i]:x2}{addressBytes[i + 1]:x2}");
 
                 return string.Join(":", hextets);
+#endif
             }
         }
 

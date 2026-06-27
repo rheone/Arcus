@@ -1,6 +1,7 @@
 ﻿using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
+using System.Runtime.CompilerServices;
 #if !NET8_0_OR_GREATER
 using System.Text;
 #endif
@@ -20,6 +21,9 @@ namespace Arcus
     ///         is bounded by <see cref="ByteWidth" />, not by the full 128-bit range.
     ///     </para>
     /// </remarks>
+#if NET8_0_OR_GREATER
+    [SkipLocalsInit]
+#endif
     [DebuggerDisplay("{DebuggerDisplay}")]
     internal readonly partial struct BigEndianBitWrapper
         : IComparable<BigEndianBitWrapper>,
@@ -252,6 +256,7 @@ namespace Arcus
         /// <param name="destination">A span of at least <see cref="ByteWidth" /> bytes to write into.</param>
         public void ToBytes(Span<byte> destination)
         {
+            Debug.Assert(destination.Length >= ByteWidth, "destination must be at least ByteWidth bytes");
             var v = _value;
             for (var i = ByteWidth - 1; i >= 0; i--)
             {

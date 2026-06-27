@@ -10,7 +10,7 @@ namespace Arcus.Comparers
     ///     Compares by <see cref="IIPAddressRange.Head" /> and then by range length ordinal
     /// </summary>
 #pragma warning disable S101 // Types should be named in PascalCase
-    public class DefaultIIPAddressRangeComparer : Comparer<IIPAddressRange>
+    public sealed class DefaultIIPAddressRangeComparer : Comparer<IIPAddressRange>
 #pragma warning restore S101 // Types should be named in PascalCase
     {
         /// <summary>

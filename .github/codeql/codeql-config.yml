@@ -1,0 +1,15 @@
+name: "Arcus CodeQL Configuration"
+
+query-filters:
+  - exclude:
+      problem.severity:
+        - warning
+      # Exclude low-severity alerts from test and benchmark code
+      path: /src/Arcus.Tests/
+  - exclude:
+      problem.severity:
+        - warning
+      path: /src/Arcus.Benchmarks/
+
+paths:
+  - src

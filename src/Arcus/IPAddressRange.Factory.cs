@@ -126,8 +126,8 @@ namespace Arcus
                 return false;
             }
 
-            // Cast to IList<T> to allow Count access and avoid materializing a lazy sequence twice.
-            var excludedList = excludedRanges as IList<IPAddressRange> ?? [.. excludedRanges];
+            // Materialize once: copying ensures we do not sort the caller's original collection.
+            var excludedList = excludedRanges.ToList();
 
             if (excludedList.Any(r => r is null || r.AddressFamily != initialRange.AddressFamily))
             {
@@ -146,9 +146,8 @@ namespace Arcus
             // Exclusions are processed in ascending order. Because each exclusion is to the right of
             // all previous ones, it can only ever affect the rightmost not-yet-trimmed segment -
             // earlier segments are entirely left of the current exclusion and are permanently settled.
-            var sortedExclusions = excludedList.ToList();
-            sortedExclusions.Sort();
-            foreach (var exclusion in sortedExclusions)
+            excludedList.Sort();
+            foreach (var exclusion in excludedList)
             {
                 var lastIndex = resultList.Count - 1;
                 var (done, segments) = ApplyExclusion(resultList[lastIndex], exclusion);

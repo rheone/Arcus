@@ -152,7 +152,11 @@ namespace Arcus
         /// <returns>true if the passed subnet is contained within this</returns>
         public bool Contains(Subnet subnet)
         {
-            return subnet != null && Contains(subnet.NetworkPrefixAddress) && Contains(subnet.BroadcastAddress);
+            return ReferenceEquals(this, subnet)
+                || (
+                    subnet != null
+                    && (Equals(subnet) || (Contains(subnet.NetworkPrefixAddress) && Contains(subnet.BroadcastAddress)))
+                );
         }
 
         /// <summary>

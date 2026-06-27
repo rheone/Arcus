@@ -230,7 +230,22 @@ namespace Arcus.Utilities
 
             var addressBytes = ipAddress.GetAddressBytes();
 
+#if NET8_0_OR_GREATER
+            return addressBytes[11] == 0xff
+                && addressBytes[10] == 0xff
+                && addressBytes[0] == 0x00
+                && addressBytes[1] == 0x00
+                && addressBytes[2] == 0x00
+                && addressBytes[3] == 0x00
+                && addressBytes[4] == 0x00
+                && addressBytes[5] == 0x00
+                && addressBytes[6] == 0x00
+                && addressBytes[7] == 0x00
+                && addressBytes[8] == 0x00
+                && addressBytes[9] == 0x00;
+#else
             return addressBytes.Take(10).All(b => b == 0x00) && addressBytes[10] == 0xff && addressBytes[11] == 0xff;
+#endif
         }
 
         /// <summary>
@@ -328,6 +343,10 @@ namespace Arcus.Utilities
                 throw new ArgumentException($"{nameof(input)} is in an unexpected format", nameof(input));
             }
 
+#if NET8_0_OR_GREATER
+            var bytes = Convert.FromHexString(byteString);
+            return Parse(bytes, addressFamily);
+#else
             // Convert each pair of hex characters into a byte.
             var byteArray = Enumerable
                 .Range(0, byteString.Length / 2)
@@ -335,6 +354,7 @@ namespace Arcus.Utilities
                 .ToArray();
 
             return Parse(byteArray, addressFamily);
+#endif
         }
 
         /// <summary>
@@ -497,6 +517,12 @@ namespace Arcus.Utilities
         public static bool TryParse(byte[] input, AddressFamily addressFamily, out IPAddress address)
 #endif
         {
+            if (input is null)
+            {
+                address = null;
+                return false;
+            }
+
             try
             {
                 address = Parse(input, addressFamily);

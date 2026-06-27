@@ -103,7 +103,7 @@ namespace Arcus.Math
                 address = input.Increment(delta);
                 return true;
             }
-            catch
+            catch (Exception ex) when (ex is ArgumentException or InvalidOperationException)
             {
                 address = null;
                 return false;
@@ -119,7 +119,7 @@ namespace Arcus.Math
         /// </summary>
         /// <param name="left">first operand</param>
         /// <param name="right">second operand</param>
-        /// <returns>true if <paramref name="left"/> is logically equal to <paramref name="left"/></returns>
+        /// <returns>true if <paramref name="left"/> is logically equal to <paramref name="right"/></returns>
         public static bool IsEqualTo(this IPAddress left, IPAddress right)
         {
             return ReferenceEquals(left, right) || (!ReferenceEquals(left, null) && left.Equals(right));
@@ -130,7 +130,7 @@ namespace Arcus.Math
         /// </summary>
         /// <param name="left">first operand</param>
         /// <param name="right">second operand</param>
-        /// <returns>true if <paramref name="left"/> is logically greater than <paramref name="left"/></returns>
+        /// <returns>true if <paramref name="left"/> is logically greater than <paramref name="right"/></returns>
         public static bool IsGreaterThan(this IPAddress left, IPAddress right)
         {
             if (
@@ -154,7 +154,7 @@ namespace Arcus.Math
         /// </summary>
         /// <param name="left">first operand</param>
         /// <param name="right">second operand</param>
-        /// <returns>true if <paramref name="left"/> is logically greater than or equal to <paramref name="left"/></returns>
+        /// <returns>true if <paramref name="left"/> is logically greater than or equal to <paramref name="right"/></returns>
         public static bool IsGreaterThanOrEqualTo(this IPAddress left, IPAddress right)
         {
             return ReferenceEquals(left, right)
@@ -172,11 +172,17 @@ namespace Arcus.Math
         /// </summary>
         /// <param name="left">first operand</param>
         /// <param name="right">second operand</param>
-        /// <returns>true if <paramref name="left"/> is logically less than <paramref name="left"/></returns>
+        /// <returns>true if <paramref name="left"/> is logically less than <paramref name="right"/></returns>
         /// <exception cref="InvalidOperationException">Address families must be InterNetwork or InternetworkV6</exception>
         public static bool IsLessThan(this IPAddress left, IPAddress right)
         {
-            if (ReferenceEquals(left, right) || left == null || right == null || left.AddressFamily != right.AddressFamily)
+            if (
+                ReferenceEquals(left, right)
+                || (!ReferenceEquals(left, null) && left.Equals(right))
+                || left == null
+                || right == null
+                || left.AddressFamily != right.AddressFamily
+            )
             {
                 return false;
             }
@@ -191,7 +197,7 @@ namespace Arcus.Math
         /// </summary>
         /// <param name="left">first operand</param>
         /// <param name="right">second operand</param>
-        /// <returns>true if <paramref name="left"/> is logically less than or equal to <paramref name="left"/></returns>
+        /// <returns>true if <paramref name="left"/> is logically less than or equal to <paramref name="right"/></returns>
         public static bool IsLessThanOrEqualTo(this IPAddress left, IPAddress right)
         {
             return ReferenceEquals(left, right)
@@ -237,7 +243,7 @@ namespace Arcus.Math
 
             if (low.AddressFamily != high.AddressFamily || input.AddressFamily != low.AddressFamily)
             {
-                throw new InvalidOperationException("address families do not match");
+                throw new ArgumentException("address families do not match");
             }
 
             var lowAddressBytes = low.GetAddressBytes();

@@ -6,10 +6,10 @@ namespace Arcus.Comparers
     ///     Default <see cref="AddressFamily" /> <see cref="Comparer{AddressFamily}" />
     ///     Executes the <see cref="Enum.CompareTo" /> of <see cref="AddressFamily" /> method
     /// </summary>
-    public class DefaultAddressFamilyComparer : Comparer<AddressFamily>
+    public sealed class DefaultAddressFamilyComparer : Comparer<AddressFamily>
     {
         /// <summary>
-        ///     Default instance of <see cref="DefaultAddressFamilyComparer"/> using <see cref="DefaultIPAddressComparer.Instance"/>
+        ///     Default instance of <see cref="DefaultAddressFamilyComparer"/> using <see cref="Instance"/>
         /// </summary>
         public static readonly DefaultAddressFamilyComparer Instance = new();
 

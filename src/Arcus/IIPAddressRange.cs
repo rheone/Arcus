@@ -69,10 +69,10 @@ namespace Arcus
         IPAddress Tail { get; }
 
         /// <summary>
-        ///     <see langword="true" /> Gets a value indicating whether if the subnet describes a single ip address
+        ///     <see langword="true" /> Gets a value indicating whether if the range describes a single ip address
         /// </summary>
         /// <value>
-        /// <see langword="true" /> if the subnet describes a single ip address
+        /// <see langword="true" /> if the range describes a single ip address
         /// </value>
         bool IsSingleIP { get; }
 

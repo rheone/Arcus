@@ -1,4 +1,6 @@
-﻿namespace Arcus.Tests
+﻿using System.Net;
+
+namespace Arcus.Tests
 {
     /// <content>
     ///     <see cref="IPAddressRange"/> tests for <see cref="System.IComparable{IPAddressRange}"/>
@@ -21,14 +23,17 @@
         {
             get
             {
-                var ipv4Slash16 = Subnet.Parse("192.168.0.0/16");
-                var ipv6Slash64 = Subnet.Parse("ab:cd::/64");
-                var ipv4Slash20 = Subnet.Parse("192.168.0.0/20");
-                var ipv6Slash96 = Subnet.Parse("ab:cd::/96");
-                var ipv4All = Subnet.Parse("0.0.0.0/0");
-                var ipv6All = Subnet.Parse("::/0");
-                var ipv4Single = Subnet.Parse("0.0.0.0/32");
-                var ipv6Single = Subnet.Parse("::/128");
+                var ipv4Slash16 = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.255.255"));
+                var ipv6Slash64 = new IPAddressRange(IPAddress.Parse("ab:cd::"), IPAddress.Parse("ab:cd::ffff:ffff:ffff:ffff"));
+                var ipv4Slash20 = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.15.255"));
+                var ipv6Slash96 = new IPAddressRange(IPAddress.Parse("ab:cd::"), IPAddress.Parse("ab:cd::ffff:ffff"));
+                var ipv4All = new IPAddressRange(IPAddress.Parse("0.0.0.0"), IPAddress.Parse("255.255.255.255"));
+                var ipv6All = new IPAddressRange(
+                    IPAddress.Parse("::"),
+                    IPAddress.Parse("ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")
+                );
+                var ipv4Single = new IPAddressRange(IPAddress.Parse("0.0.0.0"), IPAddress.Parse("0.0.0.0"));
+                var ipv6Single = new IPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::"));
 
                 var data = new TheoryData<int, IPAddressRange, IPAddressRange>
                 {
@@ -99,5 +104,49 @@
         }
 
         #endregion // end: CompareTo / Operators
+
+        #region CompareTo(object)
+
+        /// <summary>Verifies that <see cref="IPAddressRange.CompareTo(object)"/> throws <see cref="ArgumentException"/> when the argument is not an <see cref="IPAddressRange"/>.</summary>
+        [Fact]
+        public void CompareTo_Object_NonRange_Throws_ArgumentException_Test()
+        {
+            // Arrange
+            var range = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.255.255"));
+
+            // Act / Assert
+            Assert.Throws<ArgumentException>(() => range.CompareTo("not a range"));
+        }
+
+        /// <summary>Verifies that <see cref="IPAddressRange.CompareTo(object)"/> returns a positive value when compared to null.</summary>
+        [Fact]
+        public void CompareTo_Object_Null_ReturnsPositive_Test()
+        {
+            // Arrange
+            var range = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.255.255"));
+
+            // Act
+            var result = range.CompareTo((object)null);
+
+            // Assert
+            Assert.Equal(1, result);
+        }
+
+        /// <summary>Verifies that <see cref="IPAddressRange.CompareTo(object)"/> returns zero when compared to a boxed equivalent range.</summary>
+        [Fact]
+        public void CompareTo_Object_RangeBox_ReturnsZero_Test()
+        {
+            // Arrange
+            var range = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.255.255"));
+            object boxed = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.255.255"));
+
+            // Act
+            var result = range.CompareTo(boxed);
+
+            // Assert
+            Assert.Equal(0, result);
+        }
+
+        #endregion // end: CompareTo(object)
     }
 }

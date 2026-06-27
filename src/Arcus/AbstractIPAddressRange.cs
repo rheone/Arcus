@@ -35,10 +35,10 @@ namespace Arcus
         public int MaxEnumerationExponent { get; }
 
         /// <summary>
-        ///     <see langword="true" /> Gets a value indicating whether if the subnet describes a single ip address
+        ///     <see langword="true" /> Gets a value indicating whether if the range describes a single ip address
         /// </summary>
         /// <value>
-        /// <see langword="true" /> if the subnet describes a single ip address
+        /// <see langword="true" /> if the range describes a single ip address
         /// </value>
         public bool IsSingleIP => this.Length == 1;
 
@@ -116,7 +116,7 @@ namespace Arcus
             /// </summary>
             /// <param name="left">left operand</param>
             /// <param name="right">right operand</param>
-            /// <returns><see langword="true" /> if <paramref name="left"></paramref> and <paramref name="right" />are equal</returns>
+            /// <returns><see langword="true" /> if <paramref name="left"></paramref> and <paramref name="right" /> are not equal</returns>
             public static bool operator !=(AddressTuple left, AddressTuple right)
             {
                 return !(left == right);

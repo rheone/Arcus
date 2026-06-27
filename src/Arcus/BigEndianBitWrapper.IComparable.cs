@@ -5,22 +5,28 @@
     {
         /// <summary>
         ///     Compares this instance to <paramref name="other" /> as unsigned integers.
-        ///     If the two values have different <see cref="ByteWidth" /> values the shorter one is
-        ///     treated as zero-extended to the larger width.
+        ///     When numeric values are equal, <see cref="ByteWidth" /> is used as a tiebreaker so
+        ///     that the comparison order is consistent with <see cref="Equals(BigEndianBitWrapper)" />.
         /// </summary>
         /// <param name="other">The value to compare against.</param>
         /// <returns>A negative integer if less than, zero if equal, positive if greater than.</returns>
         public int CompareTo(BigEndianBitWrapper other)
         {
 #if NET8_0_OR_GREATER
-            return _value.CompareTo(other._value);
+            var result = _value.CompareTo(other._value);
+            return result != 0 ? result : ByteWidth.CompareTo(other.ByteWidth);
 #else
             if (_hi != other._hi)
             {
                 return _hi.CompareTo(other._hi);
             }
 
-            return _lo.CompareTo(other._lo);
+            if (_lo != other._lo)
+            {
+                return _lo.CompareTo(other._lo);
+            }
+
+            return ByteWidth.CompareTo(other.ByteWidth);
 #endif
         }
     }

@@ -570,7 +570,7 @@ namespace Arcus.Tests.Math
             // Arrange
             // Act
             // Assert
-            Assert.Throws<InvalidOperationException>(() => input.IsBetween(low, high));
+            Assert.Throws<ArgumentException>(() => input.IsBetween(low, high));
         }
 
         #endregion // end: IsBetween

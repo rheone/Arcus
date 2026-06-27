@@ -1,4 +1,6 @@
-﻿namespace Arcus.Tests
+﻿using System.Net;
+
+namespace Arcus.Tests
 {
     /// <content>
     ///     <see cref="IPAddressRange"/> tests for operators
@@ -104,5 +106,84 @@
         }
 
         #endregion // end: Operators
+
+        #region Null Operands
+
+        /// <summary>Verifies that the &lt; operator returns <see langword="true"/> when the left operand is null and the right is non-null.</summary>
+        [Fact]
+        public void Operator_LessThan_NullLeft_NonNullRight_ReturnsTrue_Test()
+        {
+            // Arrange
+            IPAddressRange left = null;
+            var right = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.255.255"));
+
+            // Act
+            var result = left < right;
+
+            // Assert
+            Assert.True(result);
+        }
+
+        /// <summary>Verifies that the &lt; operator returns <see langword="false"/> when both operands are null.</summary>
+        [Fact]
+        public void Operator_LessThan_BothNull_ReturnsFalse_Test()
+        {
+            // Arrange
+            IPAddressRange left = null;
+            IPAddressRange right = null;
+
+            // Act
+            var result = left < right;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        /// <summary>Verifies that the &gt; operator returns <see langword="false"/> when the left operand is null.</summary>
+        [Fact]
+        public void Operator_GreaterThan_NullLeft_ReturnsFalse_Test()
+        {
+            // Arrange
+            IPAddressRange left = null;
+            var right = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.255.255"));
+
+            // Act
+            var result = left > right;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        /// <summary>Verifies that the == operator returns <see langword="false"/> when one operand is null and the other is non-null.</summary>
+        [Fact]
+        public void Operator_Equals_NullLeft_NonNullRight_ReturnsFalse_Test()
+        {
+            // Arrange
+            IPAddressRange left = null;
+            var right = new IPAddressRange(IPAddress.Parse("192.168.0.0"), IPAddress.Parse("192.168.255.255"));
+
+            // Act
+            var result = left == right;
+
+            // Assert
+            Assert.False(result);
+        }
+
+        /// <summary>Verifies that the == operator returns <see langword="true"/> when both operands are null.</summary>
+        [Fact]
+        public void Operator_Equals_BothNull_ReturnsTrue_Test()
+        {
+            // Arrange
+            IPAddressRange left = null;
+            IPAddressRange right = null;
+
+            // Act
+            var result = left == right;
+
+            // Assert
+            Assert.True(result);
+        }
+
+        #endregion // end: Null Operands
     }
 }

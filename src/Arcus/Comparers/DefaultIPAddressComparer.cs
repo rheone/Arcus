@@ -11,7 +11,7 @@ namespace Arcus.Comparers
     ///     Compares the <see cref="AddressFamily" /> then the integer equivalent value of an <see cref="IPAddress" /> in
     ///     ordinal order
     /// </summary>
-    public class DefaultIPAddressComparer : Comparer<IPAddress>
+    public sealed class DefaultIPAddressComparer : Comparer<IPAddress>
     {
         /// <summary>
         ///     Default instance of <see cref="DefaultIPAddressComparer"/> using <see cref="DefaultAddressFamilyComparer.Instance"/>

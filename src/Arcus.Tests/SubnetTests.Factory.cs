@@ -146,7 +146,11 @@ namespace Arcus.Tests
             {
                 var sb = new StringBuilder();
 
+#if NET48
+                sb.Append(string.Join(":", Enumerable.Repeat("0", hextetCount)));
+#else
                 sb.AppendJoin(":", Enumerable.Repeat("0", hextetCount));
+#endif
 
                 if (hextetCount < 8)
                 {
@@ -759,10 +763,17 @@ namespace Arcus.Tests
         public void RoughSubnetStringPattern_Matches_ReturnsExpected_Test(bool expected, string input)
         {
             // Arrange
+            // Production RoughSubnetRegex options (keep in sync):
+            //   netstandard2.0: RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase
+            //   Other TFMs:     [GeneratedRegex(RoughSubnetStringPattern, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase)]
             var regex = new Regex(Subnet.RoughSubnetStringPattern, RegexOptions.CultureInvariant | RegexOptions.IgnoreCase);
 
             // Act
+#if NET48
+            var result = regex.Matches(input).Count == 1;
+#else
             var result = regex.Count(input) == 1;
+#endif
 
             // Assert
             Assert.Equal(expected, result);
@@ -1466,8 +1477,17 @@ namespace Arcus.Tests
             }
         }
 
+#if NET48
+        private static readonly Regex MyRegexField = new(
+            Subnet.Ipv4OctetPartialPattern,
+            RegexOptions.Compiled | RegexOptions.CultureInvariant
+        );
+
+        private static Regex MyRegex() => MyRegexField;
+#else
         [GeneratedRegex(Subnet.Ipv4OctetPartialPattern, RegexOptions.CultureInvariant)]
         private static partial Regex MyRegex();
+#endif
 
         #endregion // end: maxEnumerationExponent propagation
     }

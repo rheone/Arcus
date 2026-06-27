@@ -198,28 +198,12 @@ namespace Arcus
 
         private static bool AnyPrivateSubnet(Func<Subnet, bool> predicate)
         {
-            foreach (var subnet in SubnetUtilities.PrivateIPAddressRangesList)
-            {
-                if (predicate(subnet))
-                {
-                    return true;
-                }
-            }
-
-            return false;
+            return SubnetUtilities.PrivateIPAddressRangesList.Any(predicate);
         }
 
         private static bool AllPrivateSubnets(Func<Subnet, bool> predicate)
         {
-            foreach (var subnet in SubnetUtilities.PrivateIPAddressRangesList)
-            {
-                if (!predicate(subnet))
-                {
-                    return false;
-                }
-            }
-
-            return true;
+            return SubnetUtilities.PrivateIPAddressRangesList.All(predicate);
         }
 
         private bool OverlapsPrivateSubnet(Subnet subnet)

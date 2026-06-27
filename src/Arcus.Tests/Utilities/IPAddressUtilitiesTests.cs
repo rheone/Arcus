@@ -206,7 +206,13 @@ namespace Arcus.Tests.Utilities
 
         private static IEnumerable<AddressFamily> NonStandardAddressFamilies()
         {
+#if NET48
+            return Enum.GetValues(typeof(AddressFamily))
+                .Cast<AddressFamily>()
+                .Except([AddressFamily.InterNetwork, AddressFamily.InterNetworkV6]);
+#else
             return Enum.GetValues<AddressFamily>().Except([AddressFamily.InterNetwork, AddressFamily.InterNetworkV6]);
+#endif
         }
 
         private static IEnumerable<IPAddress> GeneralPurposeIPv4Addresses()
@@ -1233,8 +1239,17 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<ArgumentNullException>(() => address.IsPrivate());
         }
 
+#if NET48
+        private static readonly Regex MyRegexField = new(
+            IPAddressUtilities.HexLikePattern,
+            RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
+        );
+
+        private static Regex MyRegex() => MyRegexField;
+#else
         [GeneratedRegex(IPAddressUtilities.HexLikePattern, RegexOptions.IgnoreCase | RegexOptions.CultureInvariant)]
         private static partial Regex MyRegex();
+#endif
 
         #endregion // end: IsPrivate
     }

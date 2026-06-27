@@ -22,7 +22,7 @@ namespace Arcus.Tests
         /// <param name="thatTail">The tail address of the other range.</param>
         [Theory]
         [InlineData(false, "192.168.1.0", "255.255.255.255", null, null)]
-        [InlineData(false, "192.168.1.0", "255.255.255.255", "::", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff:")]
+        [InlineData(false, "192.168.1.0", "255.255.255.255", "::", "ffff:ffff:ffff:ffff:ffff:ffff:ffff:ffff")]
         [InlineData(false, "192.168.1.0", "255.255.255.255", "192.168.1.1", "255.255.255.255")]
         [InlineData(false, "192.168.1.0", "255.255.255.255", "0.0.0.0", "192.168.0.255")]
         [InlineData(true, "192.168.1.0", "255.255.255.255", "0.0.0.0", "255.255.255.255")]
