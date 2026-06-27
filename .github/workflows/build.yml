@@ -56,9 +56,13 @@ jobs:
       - name: Build
         run: dotnet build --no-restore -p:VersionFromCI="0.0.0-cibuild"
 
-      - name: Test (Ubuntu — net8.0, net9.0)
+      - name: Test (Ubuntu — net8.0)
         if: matrix.os == 'ubuntu-latest'
-        run: dotnet test --no-build --verbosity normal --logger trx --framework net8.0 --framework net9.0
+        run: dotnet test --no-build --verbosity normal --logger trx --framework net8.0
+
+      - name: Test (Ubuntu — net9.0)
+        if: matrix.os == 'ubuntu-latest'
+        run: dotnet test --no-build --verbosity normal --logger trx --framework net9.0
 
       - name: Test with coverage (Ubuntu — net10.0)
         if: matrix.os == 'ubuntu-latest'

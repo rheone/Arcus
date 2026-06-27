@@ -4,12 +4,11 @@ query-filters:
   - exclude:
       problem.severity:
         - warning
-      # Exclude low-severity alerts from test and benchmark code
-      path: /src/Arcus.Tests/
-  - exclude:
+        - recommendation
+        - note
+  - include:
       problem.severity:
-        - warning
-      path: /src/Arcus.Benchmarks/
+        - error
 
 paths:
   - src

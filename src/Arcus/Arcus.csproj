@@ -4,7 +4,6 @@
     <LangVersion>14.0</LangVersion>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
-    <OutputPath>bin\</OutputPath>
     <DocumentationFile>$(OutputPath)$(AssemblyName).xml</DocumentationFile>
   </PropertyGroup>
   <PropertyGroup Condition="'$(VersionFromCI)'!=''">
@@ -25,7 +24,6 @@
     <Title>Arcus</Title>
     <PackageId>Arcus</PackageId>
     <Description>Arcus is a C# manipulation library for calculating, parsing, formatting, converting, and comparing both IPv4 and Pv6 addresses and subnets. It accounts for 128-bit numbers on 32-bit platforms.</Description>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <NeutralLanguage>en</NeutralLanguage>
     <PackageLanguage>en-US</PackageLanguage>
     <PackageLicenseExpression>Apache-2.0</PackageLicenseExpression>
