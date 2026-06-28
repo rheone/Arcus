@@ -96,6 +96,7 @@
             // Act / Assert
             Assert.True(zero.CompareTo(one) < 0);
             Assert.True(one.CompareTo(max) < 0);
+            // CodeQL [cs/comparison-of-identical-expressions] Intentionally verifying that CompareTo returns 0 when comparing an object to itself — correct behavior
             Assert.Equal(0, zero.CompareTo(zero));
         }
 

@@ -21,3 +21,8 @@ jobs:
         with:
           fail-on-severity: high
           comment-summary-in-pr: true
+          # Suppress "unknown license" warnings — they are false positives:
+          #   1) GitHub Actions don't carry SPDX metadata the tool can read
+          #   2) Some preview NuGet packages lack modern <license> in nuspec
+          #   3) The Arcus smoke test references a placeholder version not on NuGet.org
+          allow-unknown-licenses: true

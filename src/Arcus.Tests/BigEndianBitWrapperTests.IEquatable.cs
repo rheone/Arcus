@@ -69,6 +69,7 @@
             var a = WrapIPv4("10.0.0.1");
 
             // Act / Assert
+            // CodeQL [cs/equals-on-unrelated-types] Intentionally verifying that Equals(object) returns false when comparing to a different type — correct behavior
             Assert.False(a.Equals("not a wrapper"));
         }
 

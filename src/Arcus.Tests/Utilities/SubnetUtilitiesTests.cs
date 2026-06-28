@@ -627,6 +627,30 @@ namespace Arcus.Tests.Utilities
             Assert.Throws<ArgumentNullException>(() => SubnetUtilities.FewestConsecutiveSubnetsFor(left, right));
         }
 
+        /// <summary>
+        ///     Verifies that <see cref="SubnetUtilities.FewestConsecutiveSubnetsFor"/> correctly decomposes
+        ///     a range ending at the IPv4 maximum address (255.255.255.255).
+        /// </summary>
+        [Fact]
+        public void FewestConsecutiveSubnetsFor_RangeEndingAtIPv4Max_ReturnsExpectedSubnets_Test()
+        {
+            // Arrange
+            var left = IPAddress.Parse("255.255.255.253");
+            var right = IPAddress.Parse("255.255.255.255");
+
+            // Act
+            var results = SubnetUtilities.FewestConsecutiveSubnetsFor(left, right).ToArray();
+
+            // Assert — correct decomposition:
+            //   255.255.255.253/32 (one address: 255.255.255.253)
+            //   255.255.255.254/31 (two addresses: 255.255.255.254-255.255.255.255)
+            Assert.Collection(
+                results,
+                subnet => Assert.Equal(new Subnet(IPAddress.Parse("255.255.255.253"), 32), subnet),
+                subnet => Assert.Equal(new Subnet(IPAddress.Parse("255.255.255.254"), 31), subnet)
+            );
+        }
+
         #endregion // end: FewestConsecutiveSubnetsFor
 
         #region LargestSubnet
@@ -682,6 +706,18 @@ namespace Arcus.Tests.Utilities
 
             // Act
             // Assert
+            Assert.Throws<ArgumentException>(() => SubnetUtilities.LargestSubnet(subnets));
+        }
+
+        /// <summary>Verifies that <see cref="SubnetUtilities.LargestSubnet"/> throws <see cref="ArgumentException"/> when a null element appears mid-sequence (not as the first element).</summary>
+        [Fact]
+        public void LargestSubnet_NullElementMidSequence_ThrowsArgumentException_Test()
+        {
+            // Arrange: the first element is valid, so the initial current check passes;
+            // the null appears mid-iteration, exercising the loop-level guard.
+            var subnets = new Subnet[] { Subnet.Parse("10.0.0.0/24"), null, Subnet.Parse("192.168.0.0/16") };
+
+            // Act / Assert
             Assert.Throws<ArgumentException>(() => SubnetUtilities.LargestSubnet(subnets));
         }
 

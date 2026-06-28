@@ -1,5 +1,6 @@
 ﻿using System.Globalization;
 using System.Net;
+using System.Reflection;
 
 namespace Arcus.Tests
 {
@@ -151,6 +152,46 @@ namespace Arcus.Tests
 
             // Act
             var success = zeroIPv6.TryAdd(-1, out _);
+
+            // Assert
+            Assert.False(success);
+        }
+
+        /// <summary>
+        ///     Verifies TryAdd with <see cref="long.MinValue"/> as delta correctly decrements an IPv6 address
+        ///     whose numeric value is >= the magnitude of <c>long.MinValue</c>.
+        ///     This exercises the <c>delta == long.MinValue</c> special-case branch in <see cref="BigEndianBitWrapper.TryAdd"/>
+        ///     which avoids <c>-(long.MinValue)</c> overflow.
+        /// </summary>
+        [Fact]
+        public void TryAdd_DeltaLongMinValue_IPv6_DecrementsByMagnitude_Test()
+        {
+            // Arrange: an IPv6 address with numeric value exactly 2^63 (0x8000_0000_0000_0000)
+            // Byte layout (big-endian, 16 bytes): 8 zero bytes, 0x80, 7 zero bytes
+            var bytes = new byte[16];
+            bytes[8] = 0x80;
+            var w = Wrap(bytes);
+
+            // Act: decrement by -long.MinValue (magnitude = 2^63)
+            var success = w.TryAdd(long.MinValue, out var result);
+
+            // Assert: value goes to 0
+            Assert.True(success);
+            Assert.Equal(Wrap(new byte[16]), result);
+        }
+
+        /// <summary>
+        ///     Verifies TryAdd with <see cref="long.MinValue"/> returns false when the value is smaller
+        ///     than the magnitude of <c>long.MinValue</c> (i.e. underflow).
+        /// </summary>
+        [Fact]
+        public void TryAdd_DeltaLongMinValue_Underflow_ReturnsFalse_Test()
+        {
+            // Arrange: IPv4 address has value way less than 2^63
+            var w = WrapIPv4("10.0.0.1");
+
+            // Act
+            var success = w.TryAdd(long.MinValue, out _);
 
             // Assert
             Assert.False(success);
@@ -380,5 +421,48 @@ namespace Arcus.Tests
         }
 
         #endregion // end: Subnet operations (combined)
+
+        #region DebuggerDisplay
+
+        /// <summary>Verifies the debugger display format for an IPv4 address produces the expected hex-with-underscore representation.</summary>
+        [Fact]
+        public void DebuggerDisplay_IPv4_ReturnsExpectedFormat_Test()
+        {
+            // Arrange
+            var w = WrapIPv4("192.168.1.1");
+            var prop = typeof(BigEndianBitWrapper).GetProperty(
+                "DebuggerDisplay",
+                BindingFlags.Instance | BindingFlags.NonPublic
+            );
+
+            // Act
+            var value = prop!.GetValue(w) as string;
+
+            // Assert
+            Assert.Equal("0xC0_A8_01_01 (4 bytes)", value);
+        }
+
+        /// <summary>Verifies the debugger display format for an IPv6 address produces the expected hex-with-underscore representation.</summary>
+        [Fact]
+        public void DebuggerDisplay_IPv6_ReturnsExpectedFormat_Test()
+        {
+            // Arrange
+            var w = WrapIPv6("2001:db8::1");
+            var prop = typeof(BigEndianBitWrapper).GetProperty(
+                "DebuggerDisplay",
+                BindingFlags.Instance | BindingFlags.NonPublic
+            );
+
+            // Act
+            var value = prop!.GetValue(w) as string;
+
+            // Assert: 16 bytes in a 128-bit IPv6 address
+            // Format: "0x" + 47 hex-and-underscore chars + " (16 bytes)" = 60
+            Assert.EndsWith("(16 bytes)", value!, StringComparison.Ordinal);
+            Assert.StartsWith("0x", value!, StringComparison.Ordinal);
+            Assert.Equal(60, value!.Length);
+        }
+
+        #endregion // end: DebuggerDisplay
     }
 }

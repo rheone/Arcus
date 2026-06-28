@@ -1,11 +1,10 @@
 ﻿# ![Arcus](src/Arcus/icon.png) Arcus
 
-![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/sandialabs/Arcus/build.yml?branch=main)
-[![nuget Version](https://img.shields.io/nuget/v/Arcus)](https://www.nuget.org/packages/Arcus)
-[![GitHub Release](https://img.shields.io/github/v/release/sandialabs/Arcus)](https://github.com/sandialabs/Arcus/releases)
-[![GitHub Tag](https://img.shields.io/github/v/tag/sandialabs/Arcus)](https://github.com/sandialabs/Arcus/tags)
-![Targets](https://img.shields.io/badge/.NET%20Standard%202.0%20|%20.NET%208.0%20|%20.NET%209.0%20|%20.NET%2010.0-blue)
-[![Apache 2.0 License](https://img.shields.io/github/license/sandialabs/Arcus?logo=apache)](https://github.com/sandialabs/Arcus/blob/main/LICENSE)
+[![Build](https://img.shields.io/github/actions/workflow/status/sandialabs/Arcus/build.yml?branch=main&logo=github)](https://github.com/sandialabs/Arcus/actions/workflows/build.yml)
+[![NuGet](https://img.shields.io/nuget/v/Arcus?logo=nuget)](https://www.nuget.org/packages/Arcus)
+[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/sandialabs/Arcus/badge)](https://securityscorecards.dev/viewer/?uri=github.com/sandialabs/Arcus)
+![Targets](https://img.shields.io/badge/.NET_Standard_2.0_%7C_.NET_8.0_%7C_.NET_9.0_%7C_.NET_10.0-blue)
+[![License](https://img.shields.io/github/license/sandialabs/Arcus?logo=apache)](https://github.com/sandialabs/Arcus/blob/main/LICENSE)
 
 ## About the Project
 

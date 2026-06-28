@@ -379,6 +379,7 @@ namespace Arcus.Tests
 
             // Act
             var enumerateResult = range.ToIPAddresses().ToArray();
+            // CodeQL [cs/useless-upcast] Intentionally casting to IEnumerable<IPAddress> to verify that the explicit interface implementation produces the same results as the public ToIPAddresses method
             var enumerableResult = ((IEnumerable<IPAddress>)range).ToArray();
 
             // Assert

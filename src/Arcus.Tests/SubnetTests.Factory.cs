@@ -144,6 +144,7 @@ namespace Arcus.Tests
 
             for (var hextetCount = 0; hextetCount <= 8; hextetCount++)
             {
+                // CodeQL [cs/stringbuilder-creation-in-loop] Intentional — each iteration builds a distinct string from scratch; sharing a StringBuilder would require resetting and complicate the per-iteration boundary
                 var sb = new StringBuilder();
 
 #if NET48
@@ -682,6 +683,7 @@ namespace Arcus.Tests
         {
             // Arrange
             // Act / Assert
+            // CodeQL [cs/useless-upcast] Explicit cast to string disambiguates overloads of Subnet.Parse when passing null — required for correct overload resolution
             Assert.Throws<ArgumentNullException>(() => Subnet.Parse((string)null));
         }
 

@@ -76,6 +76,9 @@ namespace Arcus.Tests
             }
         }
 
+        /// <summary>Verifies that <see cref="AbstractIPAddressRange.Length"/> returns the expected length for a range.</summary>
+        /// <param name="expected">The expected length.</param>
+        /// <param name="ipAddressRange">The range to measure.</param>
         [Theory]
         [MemberData(nameof(Length_Test_Data))]
         public void Length_Test(BigInteger expected, IPAddressRange ipAddressRange)

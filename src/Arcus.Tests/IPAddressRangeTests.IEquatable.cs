@@ -11,6 +11,20 @@ namespace Arcus.Tests
 
         #region Equals(IPAddressRange)
 
+        /// <summary>Verifies that <see cref="IPAddressRange.Equals(IPAddressRange)"/> returns <see langword="true"/> for self-comparison via the <see cref="object.ReferenceEquals"/> fast-path.</summary>
+        [Fact]
+        public void Equals_ReferenceEqualsSelf_ReturnsTrue_Test()
+        {
+            // Arrange
+            var range = new IPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.10"));
+
+            // Act
+            var result = range.Equals(range);
+
+            // Assert
+            Assert.True(result);
+        }
+
         /// <summary>Verifies Equals(IPAddressRange) returns the expected result for equal, null, and differing ranges.</summary>
         /// <param name="expected">Expected result.</param>
         /// <param name="xHead">The head address of the left range.</param>
@@ -73,6 +87,21 @@ namespace Arcus.Tests
 
             // Assert
             Assert.Equal(expected, result);
+        }
+
+        /// <summary>Verifies that <see cref="IPAddressRange.Equals(object)"/> returns <see langword="false"/> when the argument is not an <see cref="IPAddressRange"/>.</summary>
+        [Fact]
+        public void Equals_Object_NonIPAddressRangeType_ReturnsFalse_Test()
+        {
+            // Arrange
+            var range = new IPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.10"));
+
+            // Act
+            // CodeQL [cs/equals-on-unrelated-types] Intentionally verifying that Equals(object) returns false when comparing to a different type — correct behavior
+            var result = range.Equals("not an IP address range");
+
+            // Assert
+            Assert.False(result);
         }
 
         #endregion // end: Equals(object)

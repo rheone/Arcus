@@ -28,6 +28,7 @@ namespace Arcus.Benchmarks
         [GlobalSetup]
         public void Setup()
         {
+            // CodeQL [cs/missed-ternary-operator] if/else is clearer than nested ternaries for this setup logic — each branch has a distinct family-specific switch with documentation
             if (Family == AddressFamily.InterNetwork)
             {
                 // Non-power-of-two ranges force recursive binary subdivision.
