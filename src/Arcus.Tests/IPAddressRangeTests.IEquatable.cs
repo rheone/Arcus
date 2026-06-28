@@ -97,7 +97,7 @@ namespace Arcus.Tests
             var range = new IPAddressRange(IPAddress.Parse("192.168.1.1"), IPAddress.Parse("192.168.1.10"));
 
             // Act
-            // lgtm[cs/equals-on-unrelated-types] Intentionally verifying that Equals(object) returns false when comparing to a different type — correct behavior
+            // codeql[cs/equals-on-unrelated-types] Intentionally verifying that Equals(object) returns false when comparing to a different type — correct behavior
             var result = range.Equals("not an IP address range");
 
             // Assert
