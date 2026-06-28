@@ -43,7 +43,7 @@ namespace Arcus
             }
 
             // all families don't match match
-            if (rangeList.Any(r => r.AddressFamily != rangeList[0].AddressFamily))
+            if (rangeList.Any(range => range.AddressFamily != rangeList[0].AddressFamily))
             {
                 result = [];
                 return false;
@@ -128,7 +128,7 @@ namespace Arcus
             // Materialize once: copying ensures we do not sort the caller's original collection.
             var excludedList = excludedRanges.ToList();
 
-            if (excludedList.Any(r => r is null || r.AddressFamily != initialRange.AddressFamily))
+            if (excludedList.Any(range => range is null || range.AddressFamily != initialRange.AddressFamily))
             {
                 result = [];
                 return false;

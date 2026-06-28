@@ -244,7 +244,9 @@ namespace Arcus.Utilities
                 && addressBytes[8] == 0x00
                 && addressBytes[9] == 0x00;
 #else
-            return addressBytes.Take(10).All(b => b == 0x00) && addressBytes[10] == 0xff && addressBytes[11] == 0xff;
+            return addressBytes.Take(10).All(byteValue => byteValue == 0x00)
+                && addressBytes[10] == 0xff
+                && addressBytes[11] == 0xff;
 #endif
         }
 
@@ -350,7 +352,7 @@ namespace Arcus.Utilities
             // Convert each pair of hex characters into a byte.
             var byteArray = Enumerable
                 .Range(0, byteString.Length / 2)
-                .Select(i => Convert.ToByte(byteString.Substring(i * 2, 2), 16))
+                .Select(bytePairIndex => Convert.ToByte(byteString.Substring(bytePairIndex * 2, 2), 16))
                 .ToArray();
 
             return Parse(byteArray, addressFamily);

@@ -342,7 +342,7 @@ namespace Arcus.Converters
             };
             string IPv4ToString()
             {
-                var octets = ipAddress.GetAddressBytes().Select(b => $"{b:D3}");
+                var octets = ipAddress.GetAddressBytes().Select(octet => $"{octet:D3}");
 
                 return string.Join(".", octets); // join padded strings with '.' character
             }
@@ -359,19 +359,19 @@ namespace Arcus.Converters
                     {
                         chars[pos++] = ':';
                     }
-                    var b = addressBytes[i * 2];
-                    var b2 = addressBytes[(i * 2) + 1];
-                    chars[pos++] = "0123456789abcdef"[b >> 4];
-                    chars[pos++] = "0123456789abcdef"[b & 0x0F];
-                    chars[pos++] = "0123456789abcdef"[b2 >> 4];
-                    chars[pos++] = "0123456789abcdef"[b2 & 0x0F];
+                    var hiByte = addressBytes[i * 2];
+                    var loByte = addressBytes[(i * 2) + 1];
+                    chars[pos++] = "0123456789abcdef"[hiByte >> 4];
+                    chars[pos++] = "0123456789abcdef"[hiByte & 0x0F];
+                    chars[pos++] = "0123456789abcdef"[loByte >> 4];
+                    chars[pos++] = "0123456789abcdef"[loByte & 0x0F];
                 }
                 return new string(chars);
 #else
                 var hextets = Enumerable
                     .Range(0, IPAddressUtilities.IPv6HextetCount)
-                    .Select(i => i * 2)
-                    .Select(i => $"{addressBytes[i]:x2}{addressBytes[i + 1]:x2}");
+                    .Select(hextetIndex => hextetIndex * 2)
+                    .Select(byteOffset => $"{addressBytes[byteOffset]:x2}{addressBytes[byteOffset + 1]:x2}");
 
                 return string.Join(":", hextets);
 #endif

@@ -348,9 +348,9 @@ namespace Arcus
 #else
             var bytes = ToBytes();
             var sb = new StringBuilder(ByteWidth * 2);
-            foreach (var b in bytes)
+            foreach (var byteValue in bytes)
             {
-                sb.Append(b.ToString("X2", CultureInfo.InvariantCulture));
+                sb.Append(byteValue.ToString("X2", CultureInfo.InvariantCulture));
             }
 
             return sb.ToString();
@@ -377,12 +377,12 @@ namespace Arcus
             ToBytes(bytes);
             Span<char> chars = stackalloc char[ByteWidth * 8];
             var pos = 0;
-            foreach (var b in bytes)
+            foreach (var byteValue in bytes)
             {
                 for (var bit = 7; bit >= 0; bit--)
                 {
                     // Shift the target bit to position 0, mask to isolate it, then map 0→'0' and 1→'1'.
-                    chars[pos++] = (char)('0' + ((b >> bit) & 1));
+                    chars[pos++] = (char)('0' + ((byteValue >> bit) & 1));
                 }
             }
 
@@ -390,12 +390,12 @@ namespace Arcus
 #else
             var bytes = ToBytes();
             var sb = new StringBuilder(ByteWidth * 8);
-            foreach (var b in bytes)
+            foreach (var byteValue in bytes)
             {
                 for (var bit = 7; bit >= 0; bit--)
                 {
                     // Shift the target bit to position 0, mask to isolate it; Append(int) renders 0 or 1.
-                    sb.Append((b >> bit) & 1);
+                    sb.Append((byteValue >> bit) & 1);
                 }
             }
 
@@ -416,7 +416,10 @@ namespace Arcus
             get
             {
                 var bytes = ToBytes();
-                var hex = string.Join("_", Array.ConvertAll(bytes, b => b.ToString("X2", CultureInfo.InvariantCulture)));
+                var hex = string.Join(
+                    "_",
+                    Array.ConvertAll(bytes, byteValue => byteValue.ToString("X2", CultureInfo.InvariantCulture))
+                );
                 return $"0x{hex} ({ByteWidth} bytes)";
             }
         }

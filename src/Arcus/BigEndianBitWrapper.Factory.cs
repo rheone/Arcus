@@ -147,9 +147,9 @@ namespace Arcus
         {
 #if NET8_0_OR_GREATER
             UInt128 value = 0;
-            foreach (var b in bytes)
+            foreach (var byteValue in bytes)
             {
-                value = (value << 8) | b;
+                value = (value << 8) | byteValue;
             }
 
             return new BigEndianBitWrapper(value, byteWidth);
@@ -160,9 +160,9 @@ namespace Arcus
 
             if (len <= 8)
             {
-                foreach (var b in bytes)
+                foreach (var byteValue in bytes)
                 {
-                    lo = (lo << 8) | b;
+                    lo = (lo << 8) | byteValue;
                 }
             }
             else

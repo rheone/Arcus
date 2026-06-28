@@ -593,7 +593,7 @@ namespace Arcus
             }
 
             input = input.TrimEnd('.');
-            var octetCount = input.Count(c => c == '.') + 1;
+            var octetCount = input.Count(ch => ch == '.') + 1;
             var addressString = input + string.Concat(Enumerable.Repeat(".0", IPAddressUtilities.IPv4OctetCount - octetCount));
 
             try
@@ -808,7 +808,7 @@ namespace Arcus
                 return false;
             }
 
-            return input.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F');
+            return input.All(ch => ch is >= '0' and <= '9' or >= 'a' and <= 'f' or >= 'A' and <= 'F');
         }
 
         /// <summary>
