@@ -8,5 +8,6 @@
   <ItemGroup>
     <ProjectReference Include="..\Arcus\Arcus.csproj" />
     <PackageReference Include="BenchmarkDotNet" />
+    <PackageReference Include="Microsoft.NETFramework.ReferenceAssemblies" Condition="'$(TargetFramework)' == 'net48'" />
   </ItemGroup>
 </Project>

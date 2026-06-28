@@ -9,3 +9,6 @@ query-filters:
 
 paths:
   - src/Arcus
+paths-ignore:
+  - src/Arcus.Tests
+  - src/Arcus.Benchmarks

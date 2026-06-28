@@ -53,7 +53,7 @@ namespace Arcus.Tests.Converters
             IPAddress address = null;
 
             // Act
-            // CodeQL [cs/dereferenced-value-is-always-null] Extension methods are static calls in C# — invoking on null is valid and intentionally tests null-handling behavior
+            // lgtm[cs/dereferenced-value-is-always-null] Extension methods are static calls in C# — invoking on null is valid and intentionally tests null-handling behavior
             var result = address.ToUncompressedString();
 
             // Assert
@@ -101,7 +101,7 @@ namespace Arcus.Tests.Converters
             IPAddress address = null;
 
             // Act
-            // CodeQL [cs/dereferenced-value-is-always-null] Extension methods are static calls in C# — invoking on null is valid and intentionally tests null-handling behavior
+            // lgtm[cs/dereferenced-value-is-always-null] Extension methods are static calls in C# — invoking on null is valid and intentionally tests null-handling behavior
             var result = address.ToBase85String();
 
             // Assert
@@ -178,7 +178,7 @@ namespace Arcus.Tests.Converters
             IPAddress address = null;
 
             // Act
-            // CodeQL [cs/dereferenced-value-is-always-null] Extension methods are static calls in C# — invoking on null is valid and intentionally tests null-handling behavior
+            // lgtm[cs/dereferenced-value-is-always-null] Extension methods are static calls in C# — invoking on null is valid and intentionally tests null-handling behavior
             var result = address.ToDottedQuadString();
 
             // Assert
@@ -231,7 +231,7 @@ namespace Arcus.Tests.Converters
             IPAddress address = null;
 
             // Act
-            // CodeQL [cs/dereferenced-value-is-always-null] Extension methods are static calls in C# — invoking on null is valid and intentionally tests null-handling behavior
+            // lgtm[cs/dereferenced-value-is-always-null] Extension methods are static calls in C# — invoking on null is valid and intentionally tests null-handling behavior
             var result = address.ToHexString();
 
             // Assert
@@ -284,7 +284,7 @@ namespace Arcus.Tests.Converters
             IPAddress address = null;
 
             // Act
-            // CodeQL [cs/dereferenced-value-is-always-null] Extension methods are static calls in C# — invoking on null is valid and intentionally tests null-handling behavior
+            // lgtm[cs/dereferenced-value-is-always-null] Extension methods are static calls in C# — invoking on null is valid and intentionally tests null-handling behavior
             var result = address.ToNumericString();
 
             // Assert

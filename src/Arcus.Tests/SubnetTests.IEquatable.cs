@@ -140,7 +140,7 @@ namespace Arcus.Tests
             var subnet = Subnet.Parse("192.168.0.0/16");
 
             // Act
-            // CodeQL [cs/equals-on-unrelated-types] Intentionally verifying that Equals(object) returns false when comparing to a different type — correct behavior
+            // lgtm[cs/equals-on-unrelated-types] Intentionally verifying that Equals(object) returns false when comparing to a different type — correct behavior
             var result = subnet.Equals("not a subnet");
 
             // Assert
