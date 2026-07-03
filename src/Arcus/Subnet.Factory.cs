@@ -27,7 +27,7 @@ namespace Arcus
         ///     Regex pattern matching the rough shape of a subnet string: an address part followed by an optional slash-prefixed integer.
         ///     Applied with <see cref="RegexOptions.CultureInvariant"/> and <see cref="RegexOptions.IgnoreCase"/>.
         /// </summary>
-        public const string RoughSubnetStringPattern = @"^([\da-fA-F:.]+)(?:/([\d]+))?$";
+        public const string RoughSubnetStringPattern = @"^([\da-fA-F:.]+)(?:/(-?[\d]+))?$";
 
 #if !NET7_0_OR_GREATER
         private static readonly Regex IPv4OctetPartialRegex = new(
@@ -246,6 +246,22 @@ namespace Arcus
             }
         }
 
+        /// <summary>
+        ///     Creates a single-IP subnet from an <see cref="IPAddress"/> with a custom max enumeration exponent.
+        /// </summary>
+        /// <param name="address">the ip address</param>
+        /// <param name="maxEnumerationExponent">the maximum enumeration exponent (0-128); enumeration yields at most 2<sup>maxEnumerationExponent</sup> addresses</param>
+        /// <returns>A <see cref="Subnet"/> representing a single address.</returns>
+        public static Subnet FromIPAddress(IPAddress address, int maxEnumerationExponent = DefaultMaxEnumerationExponent)
+        {
+            if (address is null)
+            {
+                throw new ArgumentNullException(nameof(address));
+            }
+
+            return new Subnet(address, address, maxEnumerationExponent);
+        }
+
         #region Parse / TryParse
 
         /// <summary>
@@ -265,6 +281,8 @@ namespace Arcus
         /// <exception cref="FormatException">The string could not be parsed as a valid subnet.</exception>
         public static Subnet Parse(string subnetString)
         {
+            subnetString = subnetString?.Trim();
+
             if (subnetString is null)
             {
                 throw new ArgumentNullException(nameof(subnetString));
@@ -298,6 +316,11 @@ namespace Arcus
                 if (!int.TryParse(routePrefixString, out routingPrefix))
                 {
                     throw new FormatException($"cannot parse routing prefix \"{routePrefixString}\"");
+                }
+
+                if (routingPrefix < 0)
+                {
+                    throw new FormatException("Routing prefix must be non-negative.");
                 }
             }
             else // no routing prefix match, assume it is a single address
@@ -476,6 +499,8 @@ namespace Arcus
 #endif
             out Subnet subnet)
         {
+            subnetString = subnetString?.Trim();
+
             try
             {
                 subnet = Parse(subnetString);

@@ -148,16 +148,16 @@ namespace Arcus
         /// <returns>true if the passed subnet is contained within this</returns>
         public bool Contains(Subnet subnet)
         {
-            return ReferenceEquals(this, subnet)
-                || (
-                    subnet != null
-                    && (Equals(subnet) || (Contains(subnet.NetworkPrefixAddress) && Contains(subnet.BroadcastAddress)))
-                );
+            return Contains((IIPAddressRange)subnet);
         }
 
         /// <summary>
         ///     check if the given subnets overlaps this
         /// </summary>
+        /// <remarks>
+        ///     For CIDR subnets, two subnets are either disjoint or one fully contains the other.
+        ///     This method exploits that property for an efficient check.
+        /// </remarks>
         /// <param name="subnet">the subnet to check the overlap of</param>
         /// <returns>true if there is an overlap</returns>
         public bool Overlaps(Subnet subnet)
@@ -328,13 +328,47 @@ namespace Arcus
 
             #endregion // end: Defense
 
-            var result = NormalizeAndCreateNetMask(lowAddress, highAddress);
+            if (lowAddress.IsIPv4())
+            {
+                var result = NormalizeAndCreateNetMask(lowAddress, highAddress);
+                return new CtorFactoryResult(
+                    new AddressTuple(result.Head, result.Tail),
+                    result.Mask,
+                    result.Prefix,
+                    maxEnumerationExponent
+                );
+            }
+
+            var headBytes = lowAddress.GetAddressBytes();
+            var tailBytes = highAddress.GetAddressBytes();
+            var prefix = CalculateRoutingPrefix(headBytes, tailBytes);
+            var headWrap = BigEndianBitWrapper.FromBytes(headBytes);
+            var maskWrap = BigEndianBitWrapper.CreateMask(headWrap.ByteWidth, prefix);
             return new CtorFactoryResult(
-                new AddressTuple(result.Head, result.Tail),
-                result.Mask,
-                result.Prefix,
+                new AddressTuple(
+                    new IPAddress((headWrap & maskWrap).ToBytes()),
+                    new IPAddress((headWrap | ~maskWrap).ToBytes())
+                ),
+                null,
+                prefix,
                 maxEnumerationExponent
             );
+
+            static int CalculateRoutingPrefix(byte[] hb, byte[] tb)
+            {
+                var bitCount = hb.Length * 8;
+                for (var i = 0; i < bitCount; i++)
+                {
+                    var byteIndex = i / 8;
+                    var bitmask = (byte)(0x80 >> (i % 8));
+                    if ((hb[byteIndex] & bitmask) != (tb[byteIndex] & bitmask))
+                    {
+                        return i;
+                    }
+                }
+
+                return bitCount;
+            }
         }
 
         private static CtorFactoryResult CtorFactory(
@@ -375,10 +409,25 @@ namespace Arcus
 
             #endregion // end: Defense
 
-            var result = NormalizeAndCreateNetMask(address, routingPrefix);
+            if (address.IsIPv4())
+            {
+                var result = NormalizeAndCreateNetMask(address, routingPrefix);
+                return new CtorFactoryResult(
+                    new AddressTuple(result.Head, result.Tail),
+                    result.Mask,
+                    routingPrefix,
+                    maxEnumerationExponent
+                );
+            }
+
+            var headWrap = BigEndianBitWrapper.FromBytes(address.GetAddressBytes());
+            var maskWrap = BigEndianBitWrapper.CreateMask(headWrap.ByteWidth, routingPrefix);
             return new CtorFactoryResult(
-                new AddressTuple(result.Head, result.Tail),
-                result.Mask,
+                new AddressTuple(
+                    new IPAddress((headWrap & maskWrap).ToBytes()),
+                    new IPAddress((headWrap | ~maskWrap).ToBytes())
+                ),
+                null,
                 routingPrefix,
                 maxEnumerationExponent
             );

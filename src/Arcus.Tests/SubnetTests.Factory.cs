@@ -726,6 +726,60 @@ namespace Arcus.Tests
             Assert.Throws<ArgumentException>(() => Subnet.Parse("::/129"));
         }
 
+        #region S1 - Parse whitespace handling
+
+        /// <summary>Verifies that <see cref="Subnet.Parse(string)"/> succeeds with leading whitespace.</summary>
+        [Fact]
+        public void Parse_WithLeadingWhitespace_Succeeds()
+        {
+            var subnet = Subnet.Parse(" 192.168.1.0/24");
+            Assert.Equal(Subnet.Parse("192.168.1.0/24"), subnet);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.Parse(string)"/> succeeds with trailing whitespace.</summary>
+        [Fact]
+        public void Parse_WithTrailingWhitespace_Succeeds()
+        {
+            var subnet = Subnet.Parse("192.168.1.0/24 ");
+            Assert.Equal(Subnet.Parse("192.168.1.0/24"), subnet);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.Parse(string)"/> succeeds with leading newline.</summary>
+        [Fact]
+        public void Parse_WithLeadingNewline_Succeeds()
+        {
+            var subnet = Subnet.Parse("\n10.0.0.0/8");
+            Assert.Equal(Subnet.Parse("10.0.0.0/8"), subnet);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.Parse(string)"/> fails with internal whitespace.</summary>
+        [Fact]
+        public void Parse_WithInternalWhitespace_Fails()
+        {
+            Assert.Throws<FormatException>(() => Subnet.Parse("192.168. 1.0/24"));
+        }
+
+        #endregion // end: S1 - Parse whitespace handling
+
+        #region S5 - Negative routing prefix
+
+        /// <summary>Verifies that <see cref="Subnet.Parse(string)"/> throws <see cref="FormatException"/> for a negative routing prefix.</summary>
+        [Fact]
+        public void Parse_WithNegativeRoutingPrefix_ThrowsFormatException()
+        {
+            Assert.Throws<FormatException>(() => Subnet.Parse("192.168.1.0/-4"));
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.Parse(string)"/> throws a <see cref="FormatException"/> with a clear message for a negative prefix.</summary>
+        [Fact]
+        public void Parse_WithNegativeRoutingPrefix_MessageIsClear()
+        {
+            var ex = Assert.Throws<FormatException>(() => Subnet.Parse("192.168.1.0/-4"));
+            Assert.Contains("negative", ex.Message, StringComparison.OrdinalIgnoreCase);
+        }
+
+        #endregion // end: S5 - Negative routing prefix
+
         #endregion // end: Parse(string)
 
         #region RoughSubnetStringPattern
