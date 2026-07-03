@@ -202,5 +202,35 @@ namespace Arcus.Tests
         }
 
         #endregion // end: GetHashCode
+
+        #region Cross-type hash unification
+
+        /// <summary>
+        ///     Verifies that a <see cref="Subnet"/> and an <see cref="IPAddressRange"/> describing the
+        ///     same Head+Tail produce identical hash codes. This is the contract established by
+        ///     <see cref="AbstractIPAddressRange"/> which both subclasses delegate to.
+        /// </summary>
+        /// <remarks>
+        ///     R1 (MEDIUM) — Batch 7 equality unification. The hash *function* for <see cref="Subnet"/>
+        ///     changed from <c>HashCode.Combine(Head, RoutingPrefix)</c> to the shared
+        ///     <c>HashCode.Combine(Head, Tail)</c>, so a CIDR subnet and an equivalent inclusive range
+        ///     now collide in hash buckets.
+        /// </remarks>
+        [Fact]
+        public void Subnet_GetHashCode_Matches_IPAddressRange_GetHashCode_ForSameRange()
+        {
+            // Arrange
+            var sub = new Subnet(IPAddress.Parse("192.168.1.0"), 24);
+            var rng = new IPAddressRange(sub.Head, sub.Tail);
+
+            // Act
+            var subHash = sub.GetHashCode();
+            var rngHash = rng.GetHashCode();
+
+            // Assert
+            Assert.Equal(subHash, rngHash);
+        }
+
+        #endregion // end: Cross-type hash unification
     }
 }

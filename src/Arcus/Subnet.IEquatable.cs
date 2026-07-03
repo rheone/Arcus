@@ -1,6 +1,4 @@
-﻿using Arcus.Comparers;
-
-namespace Arcus
+﻿namespace Arcus
 {
     /// <content>
     ///     <see cref="Subnet"/> implementation of <see cref="IEquatable{Subnet}"/>
@@ -20,7 +18,7 @@ namespace Arcus
                 return true;
             }
 
-            return DefaultIIPAddressRangeComparer.Instance.Compare(this, other) == 0;
+            return this.Head.Equals(other.Head) && this.Tail.Equals(other.Tail);
         }
 
         /// <inheritdoc />
@@ -35,9 +33,6 @@ namespace Arcus
         }
 
         /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Head, this.RoutingPrefix);
-        }
+        public override int GetHashCode() => base.GetHashCode();
     }
 }

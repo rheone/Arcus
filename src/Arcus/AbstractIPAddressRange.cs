@@ -216,5 +216,42 @@ namespace Arcus
         }
 
         #endregion // end: Ctor
+
+        #region Equals / GetHashCode
+
+        /// <summary>
+        ///     Determines whether the specified object is equal to the current range by comparing
+        ///     <see cref="Head"/> and <see cref="Tail"/>. Two ranges of different concrete types
+        ///     (e.g. a <see cref="Subnet"/> and an <see cref="IPAddressRange"/>) with identical
+        ///     <see cref="Head"/> and <see cref="Tail"/> are considered equal by this base implementation.
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         Subclasses (<see cref="Subnet"/>, <see cref="IPAddressRange"/>) override this method
+        ///         to enforce type-specific equality; the shared algorithm lives here so that the
+        ///         <see cref="GetHashCode"/> contract is uniform across implementations.
+        ///     </para>
+        /// </remarks>
+        /// <param name="obj">The object to compare.</param>
+        /// <returns><see langword="true"/> if <paramref name="obj"/> is an <see cref="IIPAddressRange"/> with matching Head and Tail.</returns>
+        public override bool Equals(object obj)
+        {
+            if (obj is IIPAddressRange other)
+            {
+                return this.Head.Equals(other.Head) && this.Tail.Equals(other.Tail);
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        ///     Returns a hash code based on <see cref="Head"/> and <see cref="Tail"/>. All
+        ///     <see cref="AbstractIPAddressRange"/> subclasses use this same function so that
+        ///     value-equal ranges hash identically regardless of concrete type.
+        /// </summary>
+        /// <returns>A hash code for the current range.</returns>
+        public override int GetHashCode() => HashCode.Combine(this.Head, this.Tail);
+
+        #endregion // end: Equals / GetHashCode
     }
 }
