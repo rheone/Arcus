@@ -37,9 +37,6 @@
         }
 
         /// <inheritdoc />
-        public override int GetHashCode()
-        {
-            return HashCode.Combine(Head, Tail);
-        }
+        public override int GetHashCode() => base.GetHashCode();
     }
 }
