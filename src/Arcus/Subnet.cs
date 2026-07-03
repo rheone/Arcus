@@ -261,22 +261,29 @@ namespace Arcus
                 throw new ArgumentNullException(nameof(info));
             }
 
-            var broadcastAddress = new IPAddress((byte[])info.GetValue(nameof(BroadcastAddress), typeof(byte[])));
-            var routingPrefix = (int)info.GetValue(nameof(RoutingPrefix), typeof(int));
-
-            int maxEnumerationExponent;
+            int serVersion;
             try
             {
-                maxEnumerationExponent = info.GetInt32(nameof(MaxEnumerationExponent));
+                serVersion = info.GetInt32("SerVersion");
             }
             catch (SerializationException)
             {
-                // Old format (version 1): fall back to max exponent for address family
-                maxEnumerationExponent =
-                    broadcastAddress.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork ? 32 : 128;
+                // No version stamp: pre-versioning (v1) or v2 (BroadcastAddress) legacy data.
+                serVersion = 0;
             }
 
-            return CtorFactory(broadcastAddress, routingPrefix, maxEnumerationExponent);
+            if (serVersion != SerializationFormatVersion)
+            {
+                throw new SerializationException(
+                    $"Unsupported Subnet serialization version {serVersion}. Expected {SerializationFormatVersion}."
+                );
+            }
+
+            var networkAddress = new IPAddress((byte[])info.GetValue(nameof(NetworkPrefixAddress), typeof(byte[])));
+            var routingPrefix = (int)info.GetValue(nameof(RoutingPrefix), typeof(int));
+            var maxEnumerationExponent = info.GetInt32(nameof(MaxEnumerationExponent));
+
+            return CtorFactory(networkAddress, routingPrefix, maxEnumerationExponent);
         }
 #endif
 
