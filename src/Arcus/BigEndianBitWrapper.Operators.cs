@@ -1,4 +1,7 @@
-﻿namespace Arcus
+﻿using System;
+using System.Diagnostics;
+
+namespace Arcus
 {
     /// <content><see cref="BigEndianBitWrapper"/> operators</content>
     internal readonly partial struct BigEndianBitWrapper
@@ -9,10 +12,20 @@
         /// <returns>A new wrapper containing the bitwise AND of the two values.</returns>
         public static BigEndianBitWrapper operator &(BigEndianBitWrapper left, BigEndianBitWrapper right)
         {
+            if (left.ByteWidth != right.ByteWidth)
+            {
+                throw new ArgumentException("Operands must have the same ByteWidth.");
+            }
 #if NET8_0_OR_GREATER
-            return new BigEndianBitWrapper(left._value & right._value, left.ByteWidth);
+            var masked = (left._value & right._value) & left.MaxValueForWidth;
+            return new BigEndianBitWrapper(masked, left.ByteWidth);
 #else
-            return new BigEndianBitWrapper(left._hi & right._hi, left._lo & right._lo, left.ByteWidth);
+            var (maxHi, maxLo) = left.MaxHiLoForWidth;
+            return new BigEndianBitWrapper(
+                (left._hi & right._hi) & maxHi,
+                (left._lo & right._lo) & maxLo,
+                left.ByteWidth
+            );
 #endif
         }
 
@@ -22,10 +35,43 @@
         /// <returns>A new wrapper containing the bitwise OR of the two values.</returns>
         public static BigEndianBitWrapper operator |(BigEndianBitWrapper left, BigEndianBitWrapper right)
         {
+            if (left.ByteWidth != right.ByteWidth)
+            {
+                throw new ArgumentException("Operands must have the same ByteWidth.");
+            }
 #if NET8_0_OR_GREATER
-            return new BigEndianBitWrapper(left._value | right._value, left.ByteWidth);
+            var masked = (left._value | right._value) & left.MaxValueForWidth;
+            return new BigEndianBitWrapper(masked, left.ByteWidth);
 #else
-            return new BigEndianBitWrapper(left._hi | right._hi, left._lo | right._lo, left.ByteWidth);
+            var (maxHi, maxLo) = left.MaxHiLoForWidth;
+            return new BigEndianBitWrapper(
+                (left._hi | right._hi) & maxHi,
+                (left._lo | right._lo) & maxLo,
+                left.ByteWidth
+            );
+#endif
+        }
+
+        /// <summary>Computes the bitwise XOR of two wrappers; the result inherits the <see cref="ByteWidth" /> of <paramref name="left" />.</summary>
+        /// <param name="left">The left operand; its <see cref="ByteWidth" /> is used for the result.</param>
+        /// <param name="right">The right operand.</param>
+        /// <returns>A new wrapper containing the bitwise XOR of the two values.</returns>
+        public static BigEndianBitWrapper operator ^(BigEndianBitWrapper left, BigEndianBitWrapper right)
+        {
+            if (left.ByteWidth != right.ByteWidth)
+            {
+                throw new ArgumentException("Operands must have the same ByteWidth.");
+            }
+#if NET8_0_OR_GREATER
+            var masked = (left._value ^ right._value) & left.MaxValueForWidth;
+            return new BigEndianBitWrapper(masked, left.ByteWidth);
+#else
+            var (maxHi, maxLo) = left.MaxHiLoForWidth;
+            return new BigEndianBitWrapper(
+                (left._hi ^ right._hi) & maxHi,
+                (left._lo ^ right._lo) & maxLo,
+                left.ByteWidth
+            );
 #endif
         }
 

@@ -1,4 +1,5 @@
-﻿using System.Diagnostics;
+﻿using System;
+using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
 using System.Runtime.CompilerServices;
@@ -20,6 +21,7 @@ namespace Arcus
     ///         <see cref="ulong" /> fields (high / low) provide equivalent 128-bit arithmetic. All arithmetic
     ///         is bounded by <see cref="ByteWidth" />, not by the full 128-bit range.
     ///     </para>
+    ///     <para>All arithmetic operations rely on unchecked context for carry/borrow detection.</para>
     /// </remarks>
 #if NET8_0_OR_GREATER
     [SkipLocalsInit]
@@ -51,7 +53,18 @@ namespace Arcus
         ///     <c>(1 &lt;&lt; (ByteWidth × 8)) - 1</c>. Serves as the arithmetic ceiling for overflow
         ///     detection and as the all-ones base for bitwise NOT and mask operations.
         /// </value>
-        private UInt128 MaxValueForWidth => ByteWidth >= 16 ? UInt128.MaxValue : (UInt128.One << (ByteWidth * 8)) - 1;
+        private UInt128 MaxValueForWidth
+        {
+            get
+            {
+                if (ByteWidth == 0)
+                {
+                    return UInt128.Zero;
+                }
+
+                return ByteWidth >= 16 ? UInt128.MaxValue : (UInt128.One << (ByteWidth * 8)) - 1;
+            }
+        }
 #else
         private readonly ulong _hi; // most-significant 64 bits
         private readonly ulong _lo; // least-significant 64 bits
@@ -77,6 +90,11 @@ namespace Arcus
         {
             get
             {
+                if (ByteWidth == 0)
+                {
+                    return (0UL, 0UL);
+                }
+
                 if (ByteWidth >= 16)
                 {
                     return (ulong.MaxValue, ulong.MaxValue);
@@ -186,6 +204,11 @@ namespace Arcus
         /// <exception cref="InvalidOperationException">The subtraction would produce a negative result.</exception>
         public BigEndianBitWrapper Subtract(BigEndianBitWrapper other)
         {
+            Debug.Assert(ByteWidth > 0, "ByteWidth must be greater than zero.");
+            if (ByteWidth != other.ByteWidth)
+            {
+                throw new ArgumentException("Operands must have the same ByteWidth.");
+            }
             if (CompareTo(other) < 0)
             {
                 throw new InvalidOperationException("Subtraction would produce a negative result.");
@@ -256,7 +279,10 @@ namespace Arcus
         /// <param name="destination">A span of at least <see cref="ByteWidth" /> bytes to write into.</param>
         public void ToBytes(Span<byte> destination)
         {
-            Debug.Assert(destination.Length >= ByteWidth, "destination must be at least ByteWidth bytes");
+            if (destination.Length < ByteWidth)
+            {
+                throw new ArgumentException("Destination span is too short.", nameof(destination));
+            }
             var v = _value;
             for (var i = ByteWidth - 1; i >= 0; i--)
             {

@@ -91,6 +91,9 @@
     <Compile Update="BigEndianBitWrapperTests.IFormattable.cs">
       <DependentUpon>BigEndianBitWrapperTests.cs</DependentUpon>
     </Compile>
+    <Compile Update="BigEndianBitWrapperTests.Safety.cs">
+      <DependentUpon>BigEndianBitWrapperTests.cs</DependentUpon>
+    </Compile>
     <Compile Update="IPAddressRangeTests.ISerializable.cs">
       <DependentUpon>IPAddressRangeTests.cs</DependentUpon>
     </Compile>
