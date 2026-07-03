@@ -17,6 +17,14 @@ namespace Arcus
     ///         <see href="https://www.rfc-editor.org/info/rfc4291/#section-2">RFC 4291 §2</see>;
     ///         <see cref="BigInteger"/> is used throughout because IPv6 ranges can exceed <see cref="long.MaxValue"/>.
     ///     </para>
+    ///     <para>
+    ///         This class is <see langword="abstract"/> to enforce a concrete subtype
+    ///         (<see cref="Subnet"/> or <see cref="IPAddressRange"/>) for instantiation.
+    ///         Although it has no <see langword="abstract"/> members, the abstract modifier
+    ///         prevents direct construction, ensures each instance carries a meaningful
+    ///         concrete type for equality, comparison, and serialization, and reserves
+    ///         the <see cref="IIPAddressRange"/> contract for the two supported implementations.
+    ///     </para>
     /// </remarks>
     public abstract partial class AbstractIPAddressRange : IIPAddressRange
     {

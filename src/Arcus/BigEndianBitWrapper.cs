@@ -22,6 +22,10 @@ namespace Arcus
     ///         is bounded by <see cref="ByteWidth" />, not by the full 128-bit range.
     ///     </para>
     ///     <para>All arithmetic operations rely on unchecked context for carry/borrow detection.</para>
+    ///     <para>
+    ///         The non-generic <see cref="System.IComparable"/> is intentionally not implemented because
+    ///         this type is <see langword="internal"/> and only used in strongly-typed comparison sites.
+    ///     </para>
     /// </remarks>
 #if NET8_0_OR_GREATER
     [SkipLocalsInit]

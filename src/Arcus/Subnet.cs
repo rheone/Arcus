@@ -44,6 +44,11 @@ namespace Arcus
         ///         Excludes the network address and broadcast address as defined in
         ///         <see href="https://www.rfc-editor.org/rfc/rfc950#section-2">RFC 950 §2</see>.
         ///     </para>
+        ///     <para>
+        ///         /31 subnets return 0 usable hosts per RFC 950.
+        ///         <see href="https://www.rfc-editor.org/rfc/rfc3021">RFC 3021</see> allows /31
+        ///         for point-to-point links; this library follows RFC 950 for usable host count.
+        ///     </para>
         /// </remarks>
         public BigInteger UsableHostAddressCount => Length >= 2 ? Length - 2 : 0;
 
