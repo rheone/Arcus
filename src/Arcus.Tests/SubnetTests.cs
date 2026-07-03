@@ -89,6 +89,19 @@ namespace Arcus.Tests
 
         #endregion // end: CompareTo / Operators
 
+        #region S6 - CompareTo typo fix
+
+        /// <summary>Verifies that <see cref="Subnet.CompareTo(object)"/> uses the correct article ("a" not "an") in the exception message.</summary>
+        [Fact]
+        public void CompareTo_WithNonSubnet_ExceptionMessageUsesCorrectArticle()
+        {
+            var subnet = Subnet.Parse("192.168.1.0/24");
+            var ex = Assert.Throws<ArgumentException>(() => subnet.CompareTo((object)"not a subnet"));
+            Assert.Equal("Object is not a Subnet", ex.Message);
+        }
+
+        #endregion // end: S6 - CompareTo typo fix
+
         #region Netmask
 
         /// <summary>Verifies that <see cref="Subnet.Netmask"/> is null for an IPv6 subnet.</summary>
@@ -121,6 +134,18 @@ namespace Arcus.Tests
         }
 
         #endregion // end: Netmask
+
+        #region S9 - IPv6 netmask skip
+
+        /// <summary>Verifies that constructing an IPv6 subnet does not allocate a netmask.</summary>
+        [Fact]
+        public void IPv6Subnet_Construction_DoesNotAllocateNetmask()
+        {
+            var subnet = new Subnet(IPAddress.IPv6Loopback, 64);
+            Assert.Null(subnet.Netmask);
+        }
+
+        #endregion // end: S9 - IPv6 netmask skip
 
         #region NetworkPrefixAddress / BroadcastAddress
 
@@ -403,6 +428,27 @@ namespace Arcus.Tests
 
         #endregion // end: Contains(Subnet)
 
+        #region S2 - Contains delegation
+
+        /// <summary>Verifies that <see cref="Subnet.Contains(Subnet)"/> delegates to the base class <see cref="AbstractIPAddressRange.Contains(IIPAddressRange)"/>.</summary>
+        /// <param name="expected">Expected result.</param>
+        /// <param name="subnetAString">CIDR string for the outer subnet.</param>
+        /// <param name="subnetBString">CIDR string for the inner subnet.</param>
+        [Theory]
+        [InlineData(true, "192.168.0.0/16", "192.168.0.0/24")]
+        [InlineData(true, "192.168.0.0/16", "192.168.0.0/16")]
+        [InlineData(false, "192.168.0.0/24", "192.168.0.0/16")]
+        [InlineData(false, "10.0.0.0/8", "::/0")]
+        public void Contains_IsDelegatedToBaseContains(bool expected, string subnetAString, string subnetBString)
+        {
+            var subnetA = Subnet.Parse(subnetAString);
+            var subnetB = Subnet.Parse(subnetBString);
+            Assert.Equal(expected, subnetA.Contains(subnetB));
+            Assert.Equal(((IIPAddressRange)subnetA).Contains(subnetB), subnetA.Contains(subnetB));
+        }
+
+        #endregion // end: S2 - Contains delegation
+
         #endregion // end: Contains
 
         #region Ctor
@@ -498,6 +544,26 @@ namespace Arcus.Tests
         }
 
         #endregion // end: Ctor(IPAddress)
+
+        #region S10 - Single-IP constructor with custom exponent
+
+        /// <summary>Verifies that the single-IP constructor uses the default max enumeration exponent.</summary>
+        [Fact]
+        public void Subnet_SingleIPConstructor_DefaultExponent()
+        {
+            var subnet = new Subnet(IPAddress.Parse("192.168.1.1"));
+            Assert.Equal(12, subnet.MaxEnumerationExponent);
+        }
+
+        /// <summary>Verifies that <see cref="Subnet.FromIPAddress(IPAddress, int)"/> sets the expected exponent.</summary>
+        [Fact]
+        public void Subnet_SingleIPConstructor_CustomExponent()
+        {
+            var subnet = Subnet.FromIPAddress(IPAddress.Parse("192.168.1.1"), 5);
+            Assert.Equal(5, subnet.MaxEnumerationExponent);
+        }
+
+        #endregion // end: S10 - Single-IP constructor with custom exponent
 
         #region Ctor(IPAddress, int)
 

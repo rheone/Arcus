@@ -72,7 +72,7 @@
         /// <param name="left">The first instance.</param>
         /// <param name="right">The second instance.</param>
         /// <returns><see langword="true" /> if <paramref name="left"/> is less than or equal to <paramref name="right"/>.</returns>
-        public static bool operator <=(Subnet left, Subnet right) => left < right || left == right;
+        public static bool operator <=(Subnet left, Subnet right) => !(left > right);
 
         /// <summary>
         ///     Determines whether one <see cref="Subnet"/> is greater than or equal to another.
@@ -80,6 +80,6 @@
         /// <param name="left">The first instance.</param>
         /// <param name="right">The second instance.</param>
         /// <returns><see langword="true" /> if <paramref name="left"/> is greater than or equal to <paramref name="right"/>.</returns>
-        public static bool operator >=(Subnet left, Subnet right) => left > right || left == right;
+        public static bool operator >=(Subnet left, Subnet right) => !(left < right);
     }
 }

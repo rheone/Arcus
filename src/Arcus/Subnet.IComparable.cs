@@ -27,7 +27,7 @@ namespace Arcus
                 return CompareTo(other);
             }
 
-            throw new ArgumentException("Object is not an Subnet");
+            throw new ArgumentException("Object is not a Subnet");
         }
 
         /// <inheritdoc />
