@@ -20,10 +20,19 @@ namespace Arcus
             return EnumerateCore(_maxCount.Value);
         }
 
-        /// <inheritdoc />
-#pragma warning disable S1133 // Do not forget to remove this deprecated code someday
+/// <inheritdoc />
+        /// <remarks>
+        ///     <para>
+        ///         Marked <see cref="ObsoleteAttribute"/> to steer callers toward
+        ///         <see cref="ToIPAddresses()"/>, which is non-breaking and respects
+        ///         <see cref="AbstractIPAddressRange.MaxEnumerationExponent"/>. Direct
+        ///         <c>foreach</c> on range types remains supported via this method for
+        ///         back-compat but is discouraged for large ranges.
+        ///     </para>
+        /// </remarks>
+        #pragma warning disable S1133 // Do not forget to remove this deprecated code someday
         [Obsolete("Use ToIPAddresses() instead")]
-#pragma warning restore S1133
+        #pragma warning restore S1133
         public IEnumerator<IPAddress> GetEnumerator()
         {
             return ToIPAddresses().GetEnumerator();
