@@ -82,6 +82,11 @@ namespace Arcus
             /// <inheritdoc />
             public bool Equals(AddressTuple other)
             {
+                if (other.Head is null || other.Tail is null)
+                {
+                    return false;
+                }
+
                 return this.Head.Equals(other.Head) && this.Tail.Equals(other.Tail);
             }
 
@@ -116,7 +121,7 @@ namespace Arcus
             /// <inheritdoc />
             public override int GetHashCode()
             {
-                return HashCode.Combine(this.Head, this.Tail);
+                return HashCode.Combine(this.Head ?? IPAddress.None, this.Tail ?? IPAddress.None);
             }
         }
 
@@ -151,6 +156,9 @@ namespace Arcus
                 throw new ArgumentOutOfRangeException(nameof(maxEnumerationExponent));
             }
 
+            var maxExponentForFamily = head.AddressFamily == AddressFamily.InterNetwork ? 32 : 128;
+            this.MaxEnumerationExponent = maxEnumerationExponent < maxExponentForFamily ? maxEnumerationExponent : maxExponentForFamily;
+
             #region defense
 
             if (!IPAddressUtilities.ValidAddressFamilies.Contains(head.AddressFamily))
@@ -181,7 +189,6 @@ namespace Arcus
 
             #endregion // end: defense
 
-            this.MaxEnumerationExponent = maxEnumerationExponent;
             this.Head = head;
             this.Tail = tail;
             this.Length = CalculateLength();
