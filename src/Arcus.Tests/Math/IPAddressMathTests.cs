@@ -151,7 +151,8 @@ namespace Arcus.Tests.Math
                 data.Add(true, IPAddress.Parse("10.0.0.1"), IPAddress.Parse("10.0.0.1"));
                 data.Add(true, IPAddress.Parse("def::456"), IPAddress.Parse("def::456"));
 
-                // null comparisons
+                // null comparisons: a single null operand returns false (consistent with IsGreaterThan).
+                // Two nulls are reference equal which satisfies the inclusive comparison.
                 data.Add(false, null, IPAddress.Parse("192.168.1.1"));
                 data.Add(false, null, IPAddress.Parse("abc::123"));
                 data.Add(false, IPAddress.Parse("192.168.1.1"), null);
@@ -279,7 +280,8 @@ namespace Arcus.Tests.Math
                 data.Add(true, IPAddress.Parse("10.0.0.1"), IPAddress.Parse("10.0.0.1"));
                 data.Add(true, IPAddress.Parse("def::456"), IPAddress.Parse("def::456"));
 
-                // null comparisons
+                // null comparisons: a single null operand returns false (consistent with IsLessThan).
+                // Two nulls are reference equal which satisfies the inclusive comparison.
                 data.Add(true, null, null);
                 data.Add(false, IPAddress.Parse("192.168.1.1"), null);
                 data.Add(false, IPAddress.Parse("abc::123"), null);
@@ -323,6 +325,70 @@ namespace Arcus.Tests.Math
         }
 
         #endregion // end: IsLessThanOrEqualTo
+
+        #region IsGreaterThanOrEqualTo / IsLessThanOrEqualTo null-handling
+
+        /// <summary>Verifies that <c>IsGreaterThanOrEqualTo</c> returns <see langword="false"/> when the left operand is <see langword="null"/>.</summary>
+        [Fact]
+        public void IsGreaterThanOrEqualTo_WithNullLeft_ReturnsFalse()
+        {
+            // Arrange
+            IPAddress left = null;
+            var right = IPAddress.Parse("192.168.1.1");
+
+            // Act
+            var result = left.IsGreaterThanOrEqualTo(right);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        /// <summary>Verifies that <c>IsGreaterThanOrEqualTo</c> returns <see langword="false"/> when the right operand is <see langword="null"/>.</summary>
+        [Fact]
+        public void IsGreaterThanOrEqualTo_WithNullRight_ReturnsFalse()
+        {
+            // Arrange
+            var left = IPAddress.Parse("192.168.1.1");
+            IPAddress right = null;
+
+            // Act
+            var result = left.IsGreaterThanOrEqualTo(right);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        /// <summary>Verifies that <c>IsLessThanOrEqualTo</c> returns <see langword="false"/> when the left operand is <see langword="null"/>.</summary>
+        [Fact]
+        public void IsLessThanOrEqualTo_WithNullLeft_ReturnsFalse()
+        {
+            // Arrange
+            IPAddress left = null;
+            var right = IPAddress.Parse("192.168.1.1");
+
+            // Act
+            var result = left.IsLessThanOrEqualTo(right);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        /// <summary>Verifies that <c>IsLessThanOrEqualTo</c> returns <see langword="false"/> when the right operand is <see langword="null"/>.</summary>
+        [Fact]
+        public void IsLessThanOrEqualTo_WithNullRight_ReturnsFalse()
+        {
+            // Arrange
+            var left = IPAddress.Parse("192.168.1.1");
+            IPAddress right = null;
+
+            // Act
+            var result = left.IsLessThanOrEqualTo(right);
+
+            // Assert
+            Assert.False(result);
+        }
+
+        #endregion // end: IsGreaterThanOrEqualTo / IsLessThanOrEqualTo null-handling
 
         #region IsBetween
 

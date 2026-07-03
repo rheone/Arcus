@@ -1,4 +1,5 @@
 ﻿using System.Net;
+using System.Numerics;
 using Arcus.Utilities;
 using static System.Net.Sockets.AddressFamily;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
@@ -40,6 +41,13 @@ namespace Arcus.Math
         /// <param name="input">The IP address to adjust.</param>
         /// <param name="delta">The signed increment value; negative for decrement.</param>
         /// <returns>The adjusted IP address.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         <paramref name="delta"/> is a signed 64-bit integer (<see cref="long"/>).
+        ///         For IPv6 ranges exceeding <c>2^63 - 1</c>, callers must issue multiple
+        ///         increment calls; there is no <see cref="BigInteger"/>-delta overload.
+        ///     </para>
+        /// </remarks>
         /// <exception cref="InvalidOperationException">Increment would overflow or underflow the address space.</exception>
         /// <exception cref="ArgumentNullException"><paramref name="input" /> is <see langword="null" />.</exception>
         public static IPAddress Increment(this IPAddress input, long delta = 1)
@@ -155,14 +163,24 @@ namespace Arcus.Math
         /// <returns><see langword="true" /> if <paramref name="left"/> is greater than or equal to <paramref name="right"/>.</returns>
         public static bool IsGreaterThanOrEqualTo(this IPAddress left, IPAddress right)
         {
-            return ReferenceEquals(left, right)
-                || (!ReferenceEquals(left, null) && left.Equals(right))
-                || (
-                    left?.AddressFamily == right?.AddressFamily
-                    && BigEndianBitWrapper
-                        .FromBytes(left.GetAddressBytes())
-                        .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) >= 0
-                );
+            if (ReferenceEquals(left, right))
+            {
+                return true;
+            }
+
+            if (left == null || right == null || left.AddressFamily != right.AddressFamily)
+            {
+                return false;
+            }
+
+            if (left.Equals(right))
+            {
+                return true;
+            }
+
+            return BigEndianBitWrapper
+                    .FromBytes(left.GetAddressBytes())
+                    .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) >= 0;
         }
 
         /// <summary>
@@ -199,14 +217,24 @@ namespace Arcus.Math
         /// <returns><see langword="true" /> if <paramref name="left"/> is less than or equal to <paramref name="right"/>.</returns>
         public static bool IsLessThanOrEqualTo(this IPAddress left, IPAddress right)
         {
-            return ReferenceEquals(left, right)
-                || (!ReferenceEquals(left, null) && left.Equals(right))
-                || (
-                    left?.AddressFamily == right?.AddressFamily
-                    && BigEndianBitWrapper
-                        .FromBytes(left.GetAddressBytes())
-                        .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) <= 0
-                );
+            if (ReferenceEquals(left, right))
+            {
+                return true;
+            }
+
+            if (left == null || right == null || left.AddressFamily != right.AddressFamily)
+            {
+                return false;
+            }
+
+            if (left.Equals(right))
+            {
+                return true;
+            }
+
+            return BigEndianBitWrapper
+                    .FromBytes(left.GetAddressBytes())
+                    .CompareTo(BigEndianBitWrapper.FromBytes(right.GetAddressBytes())) <= 0;
         }
 
         /// <summary>

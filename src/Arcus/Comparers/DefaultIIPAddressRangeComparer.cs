@@ -1,4 +1,5 @@
-﻿using System.Net;
+﻿using System.Diagnostics;
+using System.Net;
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -62,6 +63,8 @@ namespace Arcus.Comparers
             {
                 return 1;
             }
+
+            Debug.Assert(x.Head is not null && y.Head is not null, "IIPAddressRange.Head is contractually non-null.");
 
             var headComparison = this._ipAddressComparer.Compare(x.Head, y.Head);
             return headComparison != 0 ? headComparison : x.Length.CompareTo(y.Length);

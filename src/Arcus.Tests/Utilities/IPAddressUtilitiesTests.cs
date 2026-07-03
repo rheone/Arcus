@@ -381,6 +381,28 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(expected, result);
         }
 
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ParseFromHexString"/> parses all-zero input as the zero address rather than throwing.</summary>
+        /// <param name="input">An all-zero hex string (optionally "0x"-prefixed).</param>
+        /// <param name="addressFamily">The target address family.</param>
+        [Theory]
+        [InlineData("0", AddressFamily.InterNetwork)]
+        [InlineData("00", AddressFamily.InterNetwork)]
+        [InlineData("0x0", AddressFamily.InterNetwork)]
+        [InlineData("0x00", AddressFamily.InterNetwork)]
+        [InlineData("0", AddressFamily.InterNetworkV6)]
+        [InlineData("0x0", AddressFamily.InterNetworkV6)]
+        public void ParseFromHexString_AllZeroInput_ReturnsZeroAddress_Test(string input, AddressFamily addressFamily)
+        {
+            // Arrange
+            var expected = addressFamily == AddressFamily.InterNetwork ? IPAddress.Any : IPAddress.IPv6Any;
+
+            // Act
+            var result = IPAddressUtilities.ParseFromHexString(input, addressFamily);
+
+            // Assert
+            Assert.Equal(expected, result);
+        }
+
         /// <summary>Verifies that <see cref="IPAddressUtilities.ParseFromHexString"/> throws <see cref="ArgumentNullException"/> when given a null input.</summary>
         [Fact]
         public void ParseFromHexString_NullInput_Throws_ArgumentNullException_Test()
@@ -1182,6 +1204,18 @@ namespace Arcus.Tests.Utilities
             Assert.Equal(2, validAddressFamilies.Count);
             Assert.Contains(AddressFamily.InterNetworkV6, validAddressFamilies);
             Assert.Contains(AddressFamily.InterNetwork, validAddressFamilies);
+        }
+
+        /// <summary>Verifies that <see cref="IPAddressUtilities.ValidAddressFamilies"/> is backed by an immutable array rather than a wrapped <see cref="List{AddressFamily}"/>.</summary>
+        [Fact]
+        public void ValidAddressFamilies_IsImmutable_Test()
+        {
+            // Arrange
+            // Act
+            var validAddressFamilies = IPAddressUtilities.ValidAddressFamilies;
+
+            // Assert
+            Assert.IsType<AddressFamily[]>(validAddressFamilies);
         }
 
         #endregion // end: ValidAddressFamilies

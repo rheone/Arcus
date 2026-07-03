@@ -135,11 +135,8 @@ namespace Arcus.Utilities
         /// <summary>
         ///     The set of address families supported by Arcus.
         /// </summary>
-        public static readonly IReadOnlyCollection<AddressFamily> ValidAddressFamilies = new List<AddressFamily>
-        {
-            AddressFamily.InterNetwork,
-            AddressFamily.InterNetworkV6,
-        }.AsReadOnly();
+        public static readonly IReadOnlyCollection<AddressFamily> ValidAddressFamilies =
+            new[] { AddressFamily.InterNetwork, AddressFamily.InterNetworkV6 };
 
         /// <summary>
         ///     Minimum IPv6 address: :: (all zeros).
@@ -332,6 +329,12 @@ namespace Arcus.Utilities
             var byteString = (
                 input.StartsWith("0x", StringComparison.OrdinalIgnoreCase) ? input.Substring(2) : input
             ).TrimStart('0');
+
+            // Preserve a single "0" when the input was all zeros (TrimStart would otherwise empty the string).
+            if (byteString.Length == 0)
+            {
+                byteString = "0";
+            }
 
             // If the byte string has an odd number of characters, provide a single significant 0.
             if (byteString.Length % 2 != 0)

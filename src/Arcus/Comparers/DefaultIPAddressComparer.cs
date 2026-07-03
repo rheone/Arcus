@@ -31,8 +31,7 @@ namespace Arcus.Comparers
                 throw new ArgumentNullException(nameof(addressFamilyComparer));
             }
 
-            this._addressFamilyComparer =
-                addressFamilyComparer ?? throw new ArgumentNullException(nameof(addressFamilyComparer));
+            this._addressFamilyComparer = addressFamilyComparer;
         }
 
         /// <summary>
