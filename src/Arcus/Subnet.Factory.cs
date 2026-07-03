@@ -29,7 +29,7 @@ namespace Arcus
         /// </summary>
         public const string RoughSubnetStringPattern = @"^([\da-fA-F:.]+)(?:/([\d]+))?$";
 
-#if NETSTANDARD2_0
+#if !NET7_0_OR_GREATER
         private static readonly Regex IPv4OctetPartialRegex = new(
             Ipv4OctetPartialPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant
@@ -41,7 +41,7 @@ namespace Arcus
         private static partial Regex GetIPv4OctetPartialRegex();
 #endif
 
-#if NETSTANDARD2_0
+#if !NET7_0_OR_GREATER
         private static readonly Regex RoughSubnetRegex = new(
             RoughSubnetStringPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant | RegexOptions.IgnoreCase

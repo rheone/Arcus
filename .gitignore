@@ -223,6 +223,10 @@ TestResults/
 # Git worktrees
 .worktrees/
 
+# Agent instruction files (root-level only, prevent accidental staging)
+/AGENTS.md
+/CLAUDE.md
+
 # Generated XML doc (in-tree artifact)
 src/Arcus/Arcus.xml
 

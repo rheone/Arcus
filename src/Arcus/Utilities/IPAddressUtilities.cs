@@ -78,7 +78,7 @@ namespace Arcus.Utilities
         /// </remarks>
         public const int IPv6HextetCount = 8;
 
-#if NETSTANDARD2_0
+#if !NET7_0_OR_GREATER
         private static readonly Regex HexLikeRegularExpression = new(
             HexLikePattern,
             RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.CultureInvariant
@@ -90,7 +90,7 @@ namespace Arcus.Utilities
         private static partial Regex GetHexLikeRegularExpression();
 #endif
 
-#if NETSTANDARD2_0
+#if !NET7_0_OR_GREATER
         private static readonly Regex DottedQuadLeadingZerosRegularExpression = new(
             DottedQuadLeadingZerosPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant
@@ -102,7 +102,7 @@ namespace Arcus.Utilities
         private static partial Regex GetDottedQuadLeadingZerosRegularExpression();
 #endif
 
-#if NETSTANDARD2_0
+#if !NET7_0_OR_GREATER
         private static readonly Regex DottedQuadStringRegularExpression = new(
             DottedQuadRegularExpressionPattern,
             RegexOptions.Compiled | RegexOptions.CultureInvariant
