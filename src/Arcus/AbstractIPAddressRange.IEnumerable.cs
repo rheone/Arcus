@@ -1,8 +1,6 @@
 ﻿using System.Collections;
 using System.Net;
 using System.Numerics;
-using Arcus.Math;
-using Arcus.Utilities;
 
 namespace Arcus
 {
@@ -11,12 +9,15 @@ namespace Arcus
     /// </content>
     public abstract partial class AbstractIPAddressRange
     {
+        private BigInteger? _maxCount;
+
         #region IEnumerable / IEnumerable<IPAddress>
 
         /// <inheritdoc />
         public IEnumerable<IPAddress> ToIPAddresses()
         {
-            return EnumerateCore(BigInteger.One << this.MaxEnumerationExponent);
+            _maxCount ??= BigInteger.One << this.MaxEnumerationExponent;
+            return EnumerateCore(_maxCount.Value);
         }
 
         /// <inheritdoc />
@@ -38,11 +39,7 @@ namespace Arcus
 
         private IEnumerable<IPAddress> EnumerateCore(BigInteger maxCount)
         {
-            var limitWrap = BigEndianBitWrapper.FromBytes(
-                IPAddressMath
-                    .Min(this.Tail, this.IsIPv4 ? IPAddressUtilities.IPv4MaxAddress : IPAddressUtilities.IPv6MaxAddress)
-                    .GetAddressBytes()
-            );
+            var limitWrap = BigEndianBitWrapper.FromBytes(this.Tail.GetAddressBytes());
 
             var current = BigEndianBitWrapper.FromBytes(this.Head.GetAddressBytes());
 
@@ -50,10 +47,13 @@ namespace Arcus
             var buffer = new byte[current.ByteWidth];
 #endif
 
-            BigInteger count = 0;
+            BigInteger? bigCount = null;
+            long longCount = 0;
+            var useLong = maxCount <= long.MaxValue;
+
             while (current.CompareTo(limitWrap) <= 0)
             {
-                if (count >= maxCount)
+                if (useLong ? longCount >= (long)maxCount : bigCount >= maxCount)
                 {
                     throw new InvalidOperationException(
                         $"Enumeration limit of {maxCount} addresses (2^{this.MaxEnumerationExponent}) reached. "
@@ -75,7 +75,14 @@ namespace Arcus
                 }
 
                 current = next;
-                count++;
+                if (useLong)
+                {
+                    longCount++;
+                }
+                else
+                {
+                    bigCount = (bigCount ?? BigInteger.Zero) + 1;
+                }
             }
         }
 

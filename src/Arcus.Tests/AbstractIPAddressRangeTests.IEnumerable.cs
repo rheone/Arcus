@@ -273,16 +273,28 @@ namespace Arcus.Tests
             Assert.Equal(0, range.MaxEnumerationExponent);
         }
 
-        /// <summary>Verifies that constructing with exponent 128 is valid.</summary>
+        /// <summary>
+        ///     Verifies that constructing with exponent 128 is valid for IPv6 (stays 128)
+        ///     and for IPv4 is clamped to 32.
+        /// </summary>
         [Fact]
         public void Ctor_Exponent128_IsValid_Test()
         {
-            var range = new IPAddressRange(
+            // IPv6: exponent 128 should stay 128
+            var ipv6Range = new IPAddressRange(
+                IPAddress.Parse("::"),
+                IPAddress.Parse("::5"),
+                maxEnumerationExponent: 128
+            );
+            Assert.Equal(128, ipv6Range.MaxEnumerationExponent);
+
+            // IPv4: exponent 128 should clamp to 32
+            var ipv4Range = new IPAddressRange(
                 IPAddress.Parse("10.0.0.0"),
                 IPAddress.Parse("10.0.0.5"),
                 maxEnumerationExponent: 128
             );
-            Assert.Equal(128, range.MaxEnumerationExponent);
+            Assert.Equal(32, ipv4Range.MaxEnumerationExponent);
         }
 
         /// <summary>Verifies that the default exponent is 12.</summary>

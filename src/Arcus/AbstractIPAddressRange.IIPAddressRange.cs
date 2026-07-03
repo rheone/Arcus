@@ -93,6 +93,13 @@ namespace Arcus
         }
 
         /// <inheritdoc />
+        /// <remarks>
+        ///     <para>
+        ///         This method calls <c>addressRange.Contains(this)</c> on the provided range.
+        ///         Implementations that call <see cref="Overlaps"/> within their <c>Contains</c> may
+        ///         cause mutual recursion.
+        ///     </para>
+        /// </remarks>
         public bool Overlaps(IIPAddressRange addressRange)
         {
             return ReferenceEquals(this, addressRange)
@@ -172,6 +179,11 @@ namespace Arcus
         ///         contained within any single entry in <see cref="SubnetUtilities.PrivateIPAddressRangesList" />.
         ///         Because private subnets are disjoint, any range spanning two private blocks includes a
         ///         public gap, so this method returns <see langword="true" /> in that case.
+        ///     </para>
+        ///     <para>
+        ///         The private subnet ranges (RFC 1918 IPv4, RFC 4193 IPv6) are non-overlapping.
+        ///         This method assumes containment by <em>any single</em> private subnet implies the
+        ///         entire range is private.
         ///     </para>
         /// </remarks>
         public bool ContainsAnyPublicAddresses()

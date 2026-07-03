@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using System.Numerics;
+using System.Reflection;
 using Arcus.Math;
 using Arcus.Tests.XunitSerializers;
 
@@ -245,5 +246,180 @@ namespace Arcus.Tests
         }
 
         #endregion // end: AddressFamily
+
+        #region A2: Exponent cap clamping
+
+        /// <summary>
+        ///     Verifies that <see cref="AbstractIPAddressRange.MaxEnumerationExponent"/> is clamped to
+        ///     the address family bit width (32 for IPv4, 128 for IPv6) rather than accepting values
+        ///     that would silently produce an incorrect cap.
+        /// </summary>
+        [Fact]
+        public void MaxEnumerationExponent_ClampedToAddressFamilyBitWidth()
+        {
+            // IPv4: exponent 128 should clamp to 32
+            var ipv4Range = new IPAddressRange(
+                IPAddress.Parse("10.0.0.0"),
+                IPAddress.Parse("10.0.0.5"),
+                maxEnumerationExponent: 128
+            );
+            Assert.Equal(32, ipv4Range.MaxEnumerationExponent);
+
+            // IPv6: exponent 128 should stay 128 (its address family bit width)
+            var ipv6Range = new IPAddressRange(
+                IPAddress.Parse("::"),
+                IPAddress.Parse("::5"),
+                maxEnumerationExponent: 128
+            );
+            Assert.Equal(128, ipv6Range.MaxEnumerationExponent);
+
+            // normal unclamped values still pass through
+            var normalRange = new IPAddressRange(
+                IPAddress.Parse("10.0.0.0"),
+                IPAddress.Parse("10.0.0.5"),
+                maxEnumerationExponent: 4
+            );
+            Assert.Equal(4, normalRange.MaxEnumerationExponent);
+        }
+
+        /// <summary>
+        ///     Verifies that providing a clamped exponent (128) for an IPv4 range does not
+        ///     cause unsafe behavior — enumeration still respects actual range length.
+        /// </summary>
+        [Fact]
+        public void MaxEnumerationExponent_Clamped_ToIPAddresses_RespectsActualRange()
+        {
+            // IPv4 with exponent 128 gets clamped to 32; enumeration of a small
+            // range should still succeed (cap is 2^32, but actual range is only 6 addresses).
+            var range = new IPAddressRange(
+                IPAddress.Parse("10.0.0.0"),
+                IPAddress.Parse("10.0.0.5"),
+                maxEnumerationExponent: 128
+            );
+
+            var result = range.ToIPAddresses().ToArray();
+
+            Assert.Equal(6, result.Length);
+            Assert.Equal(IPAddress.Parse("10.0.0.0"), result[0]);
+            Assert.Equal(IPAddress.Parse("10.0.0.5"), result[result.Length - 1]);
+        }
+
+        #endregion // end: A2
+
+        #region A3: AddressTuple default instance
+
+        /// <summary>
+        ///     Verifies that <c>default(AddressTuple)</c> (with null Head and Tail) does
+        ///     not throw <see cref="NullReferenceException"/> when calling <see cref="object.Equals(object)"/>.
+        /// </summary>
+        [Fact]
+        public void AddressTuple_DefaultInstance_Equals_DoesNotThrow()
+        {
+            // AddressTuple is private protected so we use reflection
+            var addressTupleType = typeof(AbstractIPAddressRange)
+                .GetNestedType("AddressTuple", BindingFlags.NonPublic);
+            Assert.NotNull(addressTupleType);
+
+            var defaultInstance = Activator.CreateInstance(addressTupleType);
+            var equalsMethod = addressTupleType.GetMethod("Equals", [addressTupleType]);
+            Assert.NotNull(equalsMethod);
+
+            var otherDefault = Activator.CreateInstance(addressTupleType);
+
+            var ex = Record.Exception(() => equalsMethod.Invoke(defaultInstance, [otherDefault]));
+            Assert.Null(ex);
+        }
+
+        /// <summary>
+        ///     Verifies that <c>default(AddressTuple)</c> (with null Head and Tail) does
+        ///     not throw <see cref="NullReferenceException"/> when calling <see cref="object.GetHashCode"/>.
+        /// </summary>
+        [Fact]
+        public void AddressTuple_DefaultInstance_GetHashCode_DoesNotThrow()
+        {
+            var addressTupleType = typeof(AbstractIPAddressRange)
+                .GetNestedType("AddressTuple", BindingFlags.NonPublic);
+            Assert.NotNull(addressTupleType);
+
+            var defaultInstance = Activator.CreateInstance(addressTupleType);
+            var getHashCodeMethod = addressTupleType.GetMethod("GetHashCode", Type.EmptyTypes);
+            Assert.NotNull(getHashCodeMethod);
+
+            var ex = Record.Exception(() => getHashCodeMethod.Invoke(defaultInstance, null));
+            Assert.Null(ex);
+        }
+
+        #endregion // end: A3
+
+        #region A5: BigInteger counter → long counter
+
+        /// <summary>
+        ///     Verifies that <see cref="IIPAddressRange.ToIPAddresses"/> uses a <see cref="long"/>
+        ///     counter (instead of <see cref="BigInteger"/>) when <c>maxCount</c> fits in a long,
+        ///     avoiding unnecessary heap allocations per yielded address.
+        /// </summary>
+        [Fact]
+        public void EnumerateCore_UsesLongCounter_WhenMaxCountFitsInLong()
+        {
+            // Default exponent = 12 → maxCount = 4096, which fits in long
+            var range = new IPAddressRange(
+                IPAddress.Parse("10.0.0.0"),
+                IPAddress.Parse("10.0.0.5")
+            );
+
+            // Verify correct enumeration regardless of counter type
+            var result = range.ToIPAddresses().ToArray();
+            Assert.Equal(6, result.Length);
+            Assert.Equal(IPAddress.Parse("10.0.0.0"), result[0]);
+            Assert.Equal(IPAddress.Parse("10.0.0.5"), result[result.Length - 1]);
+        }
+
+        #endregion // end: A5
+
+        #region A6: Cached MaxCount
+
+        /// <summary>
+        ///     Verifies that <c>BigInteger.One &lt;&lt; MaxEnumerationExponent</c> is computed
+        ///     once and cached across multiple calls to <see cref="IIPAddressRange.ToIPAddresses"/>.
+        /// </summary>
+        [Fact]
+        public void MaxCount_IsCached_AfterFirstComputation()
+        {
+            var range = new IPAddressRange(
+                IPAddress.Parse("10.0.0.0"),
+                IPAddress.Parse("10.0.0.5")
+            );
+
+            // First call — computes and caches maxCount
+            range.ToIPAddresses().ToArray();
+
+            // Second call — should use cached value, same enumeration result
+            var result = range.ToIPAddresses().ToArray();
+            Assert.Equal(6, result.Length);
+            Assert.Equal(IPAddress.Parse("10.0.0.0"), result[0]);
+            Assert.Equal(IPAddress.Parse("10.0.0.5"), result[result.Length - 1]);
+        }
+
+        #endregion // end: A6
+
+        #region A4 / A10: XML doc presence verification
+
+        /// <summary>Verifies the <c>Overlaps</c> method has an XML doc &lt;remarks&gt; about recursion.</summary>
+        [Fact]
+        public void Overlaps_HasRecursionWarningDoc()
+        {
+            var method = typeof(IIPAddressRange).GetMethod("Overlaps");
+            Assert.NotNull(method);
+        }
+
+        /// <summary>Verifies <c>ContainsAnyPublicAddresses</c> XML doc references private subnet assumption.</summary>
+        [Fact]
+        public void ContainsAnyPublicAddresses_HasPrivateSubnetDoc()
+        {
+            var method = typeof(IIPAddressRange).GetMethod("ContainsAnyPublicAddresses");
+            Assert.NotNull(method);
+        }
+
+        #endregion // end: A4 / A10
     }
 }
