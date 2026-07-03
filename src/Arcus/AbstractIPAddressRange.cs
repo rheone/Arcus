@@ -56,6 +56,12 @@ namespace Arcus
         public IPAddress Tail { get; }
 
         /// <inheritdoc />
+        /// <remarks>
+        ///     <para>
+        ///         <see cref="Length"/> is computed once in the constructor and cached by the readonly
+        ///         backing field; subsequent reads are O(1) and allocation-free.
+        ///     </para>
+        /// </remarks>
         public BigInteger Length { get; }
 
         #region AddressTuple

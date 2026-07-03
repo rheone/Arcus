@@ -1,5 +1,6 @@
 ﻿using System.Net;
 using Arcus.Comparers;
+using Arcus.Math;
 using Arcus.Utilities;
 
 namespace Arcus.Tests.Utilities
@@ -649,6 +650,107 @@ namespace Arcus.Tests.Utilities
                 subnet => Assert.Equal(new Subnet(IPAddress.Parse("255.255.255.253"), 32), subnet),
                 subnet => Assert.Equal(new Subnet(IPAddress.Parse("255.255.255.254"), 31), subnet)
             );
+        }
+
+        /// <summary>
+        ///     Sentinel for the C2 perf refactor (recursive <c>Concat</c> -> <c>yield return</c>):
+        ///     enumerating an asymmetric IPv4 range that requires many splits must produce the same
+        ///     count and a contiguous, gap-free, overlap-free cover of the closed interval
+        ///     [10.0.0.1, 10.1.255.254]. The golden count (32) was recorded against the pre-refactor
+        ///     implementation and must not change. No timing assertion (flaky in CI); the linear-time
+        ///     property is established by code inspection and benchmarks.
+        /// </summary>
+        [Fact]
+        public void FewestConsecutiveSubnetsFor_AsymmetricManySplits_ReturnsExpectedCount_Test()
+        {
+            // Arrange
+            var left = IPAddress.Parse("10.0.0.1");
+            var right = IPAddress.Parse("10.1.255.254");
+
+            // Act
+            var subnets = SubnetUtilities.FewestConsecutiveSubnetsFor(left, right).ToList();
+
+            // Assert — golden count recorded against the pre-refactor (Concat) implementation.
+            const int expectedCount = 32;
+            Assert.Equal(expectedCount, subnets.Count);
+
+            AssertContiguousCover(subnets, left, right);
+        }
+
+        /// <summary>
+        ///     Regression sentinel for the C2 refactor: a large bounded IPv4 range
+        ///     (<c>0.0.0.1</c> -> <c>255.255.255.254</c>) must yield the golden count (62)
+        ///     recorded against the pre-refactor (Concat) implementation. Verifies count and
+        ///     contiguous coverage so the Concat -> yield-return change cannot alter behavior.
+        /// </summary>
+        [Fact]
+        public void FewestConsecutiveSubnetsFor_LargeBoundedRange_ReturnsExpectedCount_Test()
+        {
+            // Arrange
+            var left = IPAddress.Parse("0.0.0.1");
+            var right = IPAddress.Parse("255.255.255.254");
+
+            // Act
+            var subnets = SubnetUtilities.FewestConsecutiveSubnetsFor(left, right).ToList();
+
+            // Assert — golden count recorded against the pre-refactor (Concat) implementation.
+            const int expectedCount = 62;
+            Assert.Equal(expectedCount, subnets.Count);
+
+            AssertContiguousCover(subnets, left, right);
+        }
+
+        /// <summary>
+        ///     Asserts that <paramref name="subnets"/> forms an ascending, gap-free, overlap-free
+        ///     cover of the closed interval [<paramref name="left"/>, <paramref name="right"/>].
+        /// </summary>
+        /// <remarks>
+        ///     <para>
+        ///         The C2 refactor (Concat -> yield return) is a pure performance change; this
+        ///         helper codifies the behavioral contract that must not regress: ordered by
+        ///         <see cref="Subnet.NetworkPrefixAddress"/>, the head of each subnet equals the
+        ///         tail of its predecessor plus one, the first head equals the lower bound, and
+        ///         the last tail equals the upper bound.
+        ///     </para>
+        /// </remarks>
+        private static void AssertContiguousCover(List<Subnet> subnets, IPAddress left, IPAddress right)
+        {
+            Assert.NotEmpty(subnets);
+            Assert.All(subnets, Assert.NotNull);
+
+            var lowerBound = IPAddressMath.Min(left, right);
+            var upperBound = IPAddressMath.Max(left, right);
+
+            // First head equals the lower bound; last tail equals the upper bound.
+            Assert.Equal(lowerBound, subnets[0].Head);
+            Assert.Equal(upperBound, subnets[^1].Tail);
+
+            // Sorted ascending by NetworkPrefixAddress, gap-free, no overlap.
+            for (var i = 0; i < subnets.Count; i++)
+            {
+                Assert.True(
+                    subnets[i].Tail.IsGreaterThanOrEqualTo(subnets[i].Head),
+                    $"subnet {i} tail {subnets[i].Tail} is below its head {subnets[i].Head}"
+                );
+                Assert.True(
+                    subnets[i].Head.IsGreaterThanOrEqualTo(lowerBound),
+                    $"subnet {i} head {subnets[i].Head} is below the range lower bound {lowerBound}"
+                );
+                Assert.True(
+                    subnets[i].Tail.IsLessThanOrEqualTo(upperBound),
+                    $"subnet {i} tail {subnets[i].Tail} exceeds range upper bound {upperBound}"
+                );
+
+                // gap-free: next head = this tail + 1
+                if (i < subnets.Count - 1)
+                {
+                    Assert.True(
+                        IPAddressMath.TryIncrement(subnets[i].Tail, out var nextHead),
+                        $"overflow incrementing tail {subnets[i].Tail} at index {i}"
+                    );
+                    Assert.Equal(nextHead, subnets[i + 1].Head);
+                }
+            }
         }
 
         #endregion // end: FewestConsecutiveSubnetsFor

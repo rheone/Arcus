@@ -147,6 +147,14 @@ namespace Arcus.Utilities
             // recursive function call
             // Works by verifying that passed subnet isn't bounded by head, tail IP Addresses
             // if not breaks subnet in half and recursively tests, building in essence a binary tree of testable subnet paths
+            //
+            // Implemented as a yield-return iterator rather than a recursive Concat chain. The previous
+            // `return a.Concat(b)` form produced an O(N) iterator-wrapper depth — each level wrapped its
+            // predecessor — so enumerating the full result was O(N^2) (one Concat MoveNext per emitted
+            // element, multiplied across the recursion depth). Yielding directly lets the compiler emit a
+            // single state machine per branch with O(1) amortized work per element and no intermediate
+            // Concat allocations, while preserving the exact same subnet sequence (ascending by
+            // NetworkPrefixAddress, no gaps, no overlaps).
 
             static IEnumerable<Subnet> FilledSubnets(IPAddress head, IPAddress tail, Subnet subnet, int exponent)
             {
@@ -156,7 +164,8 @@ namespace Arcus.Utilities
                 // the given subnet is the perfect size for the head/tail (not papa bear, not mama bear, but just right with baby bear)
                 if (networkPrefixAddress.IsGreaterThanOrEqualTo(head) && broadcastAddress.IsLessThanOrEqualTo(tail))
                 {
-                    return [subnet];
+                    yield return subnet;
+                    yield break;
                 }
 
                 // increasing the route prefix by 1 creates a subnet of half the initial size (due 2^(max-n) route prefix sizing)
@@ -168,7 +177,7 @@ namespace Arcus.Utilities
                     || (subnet.IsIPv4 && nextSmallestRoutePrefix > IPAddressUtilities.IPv4BitCount)
                 )
                 {
-                    return []; // no subnets to be found here, stop investigating branch of tree
+                    yield break; // no subnets to be found here, stop investigating branch of tree
                 }
 
                 // build head subnet
@@ -183,7 +192,15 @@ namespace Arcus.Utilities
                 var tailSubnet = new Subnet(tailStartingAddress, nextSmallestRoutePrefix, exponent);
 
                 // break into binary search tree, searching both head subnet and tail subnet for ownership of head and tail ip
-                return FilledSubnets(head, tail, headSubnet, exponent).Concat(FilledSubnets(head, tail, tailSubnet, exponent));
+                foreach (var s in FilledSubnets(head, tail, headSubnet, exponent))
+                {
+                    yield return s;
+                }
+
+                foreach (var s in FilledSubnets(head, tail, tailSubnet, exponent))
+                {
+                    yield return s;
+                }
             }
         }
 
