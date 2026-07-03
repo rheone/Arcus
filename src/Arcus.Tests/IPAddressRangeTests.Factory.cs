@@ -220,6 +220,19 @@ namespace Arcus.Tests
             Assert.Equal(enumerable, [.. ranges]);
         }
 
+        /// <summary>Verifies TryCollapseAll treats a null ranges collection as an empty input, returning true with an empty result.</summary>
+        [Fact]
+        public void TryCollapseAll_WithNullInput_ReturnsTrue_WithEmptyResult()
+        {
+            // Act
+            var success = IPAddressRange.TryCollapseAll(null!, out var results);
+
+            // Assert
+            Assert.True(success);
+            Assert.NotNull(results);
+            Assert.False(results.Any());
+        }
+
         #endregion // end: TryCollapseAll
 
         #region TryExcludeAll
@@ -476,6 +489,38 @@ namespace Arcus.Tests
             Assert.Single(list);
             Assert.Equal(IPAddress.Parse("8000::1"), list[0].Head);
             Assert.Equal(IPAddress.Parse("f000::"), list[0].Tail);
+        }
+
+        /// <summary>Verifies TryExcludeAll returns false (rather than throwing) when an exclusion does not overlap the initial range.</summary>
+        [Fact]
+        public void TryExcludeAll_WithNonOverlappingExclusion_ReturnsFalse()
+        {
+            // Arrange
+            var initialRange = new IPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"));
+            var exclusion = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("10.255.255.255"));
+
+            // Act
+            var success = IPAddressRange.TryExcludeAll(initialRange, [exclusion], out var results);
+
+            // Assert
+            Assert.False(success);
+            Assert.NotNull(results);
+            Assert.False(results.Any());
+        }
+
+        /// <summary>Verifies TryExcludeAll with a non-overlapping exclusion does not throw.</summary>
+        [Fact]
+        public void TryExcludeAll_WithNonOverlappingExclusion_DoesNotThrow()
+        {
+            // Arrange
+            var initialRange = new IPAddressRange(IPAddress.Parse("192.168.1.0"), IPAddress.Parse("192.168.1.255"));
+            var exclusion = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("10.255.255.255"));
+
+            // Act
+            var exception = Record.Exception(() => IPAddressRange.TryExcludeAll(initialRange, [exclusion], out _));
+
+            // Assert
+            Assert.Null(exception);
         }
 
         #endregion // end: TryExcludeAll

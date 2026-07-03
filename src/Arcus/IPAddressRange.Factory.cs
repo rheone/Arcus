@@ -26,7 +26,13 @@ namespace Arcus
             int maxEnumerationExponent = DefaultMaxEnumerationExponent
         )
         {
-            var rangeList = (ranges ?? []).ToList();
+            if (ranges is null)
+            {
+                result = [];
+                return true;
+            }
+
+            var rangeList = ranges.ToList();
 
             // item null check
             if (rangeList.Contains(null))
@@ -111,6 +117,10 @@ namespace Arcus
         ///         The method returns <see langword="true" /> with only the trailing segment in <paramref name="result" />
         ///         (which may itself be empty if the exclusion also covers the end of the range).
         ///     </para>
+        ///     <para>
+        ///         A non-overlapping exclusion in <paramref name="excludedRanges" /> causes the method
+        ///         to return <see langword="false" /> rather than throwing.
+        ///     </para>
         /// </remarks>
         public static bool TryExcludeAll(
             IPAddressRange initialRange,
@@ -149,7 +159,13 @@ namespace Arcus
             foreach (var exclusion in excludedList)
             {
                 var lastIndex = resultList.Count - 1;
-                var (done, segments) = ApplyExclusion(resultList[lastIndex], exclusion);
+                var (error, done, segments) = ApplyExclusion(resultList[lastIndex], exclusion);
+
+                if (error)
+                {
+                    result = [];
+                    return false;
+                }
 
                 resultList.RemoveAt(lastIndex);
                 resultList.AddRange(segments);
@@ -166,39 +182,46 @@ namespace Arcus
             result = resultList;
             return true;
 
-            (bool Done, IPAddressRange[] Segments) ApplyExclusion(IPAddressRange segment, IPAddressRange exclusion)
+            (bool Error, bool Done, IPAddressRange[] Segments) ApplyExclusion(IPAddressRange segment, IPAddressRange exclusion)
             {
                 // exclusion covers the entire segment
                 if (exclusion.Contains(segment))
                 {
-                    return (true, []);
+                    return (false, true, []);
                 }
 
                 // exclusion covers the tail; no trailing portion can exist after this point
                 if (exclusion.Contains(segment.Tail))
                 {
-                    return (true, LeadingFragment(segment, exclusion));
+                    return (false, true, LeadingFragment(segment, exclusion));
                 }
 
                 // exclusion covers the head; advance the segment's head past the exclusion's tail
                 if (exclusion.Contains(segment.Head))
                 {
                     var trailing = TrailingFragment(segment, exclusion);
-                    return (trailing.Length == 0, trailing);
+                    return (false, trailing.Length == 0, trailing);
                 }
 
-                // Remaining case: exclusion is strictly interior - split into leading and trailing pieces.
-                // The Overlaps guard is a defensive invariant check; reaching this point without overlap
-                // would indicate a bug in the caller's pre-filtering or sort order.
+                // Non-overlapping exclusion: signal an error to the caller instead of throwing.
+                // Per the documented contract, an exclusion that does not intersect the initial range
+                // causes TryExcludeAll to return false rather than failing at runtime.
                 if (!segment.Overlaps(exclusion))
                 {
-                    throw new System.InvalidOperationException("An unexpected overlap check operation occurred");
+                    return (true, false, []);
                 }
 
-                return (false, [.. LeadingFragment(segment, exclusion), .. TrailingFragment(segment, exclusion)]);
+                // Strictly interior exclusion: split into leading and trailing pieces.
+                // The collection-expression spread is bounded: at most one leading and one trailing
+                // fragment (<=2 elements), so there is no unbounded allocation concern here.
+                return (false, false, [.. LeadingFragment(segment, exclusion), .. TrailingFragment(segment, exclusion)]);
             }
 
-            // Increment(-1) yields the address immediately before exclusion.Head, bounding the leading fragment.
+            // The boundary guards IsAtMin() and IsAtMax() below must remain synchronized with
+            // IPAddressMath.Increment's underflow/overflow detection: when the exclusion's head
+            // sits at the family minimum (or its tail sits at the family maximum), the
+            // Increment(-1)/Increment() step would otherwise underflow/overflow and produce
+            // an out-of-range address. The guards short-circuit to an empty fragment instead.
             IPAddressRange[] LeadingFragment(IPAddressRange segment, IPAddressRange exclusion) =>
                 exclusion.Head.IsAtMin()
                     ? []

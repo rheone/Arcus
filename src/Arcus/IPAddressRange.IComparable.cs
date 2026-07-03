@@ -37,6 +37,11 @@ namespace Arcus
         #region From Interface IComparable<IPAddressRange>
 
         /// <inheritdoc />
+        /// <remarks>
+        ///     Comparison delegates to <see cref="DefaultIIPAddressRangeComparer" />. Direct
+        ///     <see cref="BigEndianBitWrapper" /> head-address comparison could reduce allocations
+        ///     if performance becomes a concern.
+        /// </remarks>
         public int CompareTo(
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
             [AllowNull]
