@@ -1,4 +1,6 @@
-﻿namespace Arcus.Tests
+﻿using System.Reflection;
+
+namespace Arcus.Tests
 {
     /// <content>
     ///     <see cref="BigEndianBitWrapper"/> tests for bitwise operators (<c>&amp;</c>, <c>|</c>, <c>~</c>) and
@@ -179,6 +181,133 @@
         }
 
         #endregion // end: Bitwise NOT
+
+        #region B3: ByteWidth validation for binary operators
+
+        /// <summary>Verifies the &amp; operator throws ArgumentException when operands have different ByteWidth.</summary>
+        [Fact]
+        public void AndOperator_WithDifferentByteWidth_ThrowsArgumentException_Test()
+        {
+            var ipv4 = BigEndianBitWrapper.FromBytes(new byte[] { 192, 168, 1, 1 });
+            var ipv6 = BigEndianBitWrapper.CreateMask(16, 64);
+            Assert.Throws<ArgumentException>(() => ipv4 & ipv6);
+        }
+
+        /// <summary>Verifies the | operator throws ArgumentException when operands have different ByteWidth.</summary>
+        [Fact]
+        public void OrOperator_WithDifferentByteWidth_ThrowsArgumentException_Test()
+        {
+            var ipv4 = BigEndianBitWrapper.FromBytes(new byte[] { 192, 168, 1, 1 });
+            var ipv6 = BigEndianBitWrapper.CreateMask(16, 64);
+            Assert.Throws<ArgumentException>(() => ipv4 | ipv6);
+        }
+
+        #endregion
+
+        #region B4: Operator result masking
+
+#if NET8_0_OR_GREATER
+        private static BigEndianBitWrapper CreateWrapperWithHighBits(int byteWidth)
+        {
+            var ctor = typeof(BigEndianBitWrapper).GetConstructors(
+                    BindingFlags.Instance | BindingFlags.NonPublic
+                )
+                .Single(c => c.GetParameters().Length == 2);
+            return (BigEndianBitWrapper)ctor.Invoke([UInt128.MaxValue, byteWidth]);
+        }
+#else
+        private static BigEndianBitWrapper CreateWrapperWithHighBits(int byteWidth)
+        {
+            var ctor = typeof(BigEndianBitWrapper).GetConstructors(
+                    BindingFlags.Instance | BindingFlags.NonPublic
+                )
+                .Single(c => c.GetParameters().Length == 3);
+            var hi = byteWidth > 8 ? ulong.MaxValue : 1UL;
+            var lo = ulong.MaxValue;
+            return (BigEndianBitWrapper)ctor.Invoke(new object[] { hi, lo, byteWidth });
+        }
+#endif
+
+        /// <summary>
+        ///     Verifies the &amp; operator masks the result to the operand's ByteWidth.  The backing
+        ///     value of a wrapper should never have bits set beyond its ByteWidth, so a bitwise AND
+        ///     between two wrappers with high backing bits produces a result that equals the
+        ///     correctly-bounded version.
+        /// </summary>
+        [Fact]
+        public void AndOperator_ResultIsMaskedToByteWidth_Test()
+        {
+            var a = CreateWrapperWithHighBits(4);
+            var b = CreateWrapperWithHighBits(4);
+            var result = a & b;
+            var expected = BigEndianBitWrapper.FromBytes(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }, 4);
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>
+        ///     Verifies the | operator masks the result to the operand's ByteWidth.  Without masking,
+        ///     ORing a high-bits wrapper with a bounded wrapper would produce a result whose backing
+        ///     value has bits beyond the byte width.
+        /// </summary>
+        [Fact]
+        public void OrOperator_ResultIsMaskedToByteWidth_Test()
+        {
+            var a = CreateWrapperWithHighBits(4);
+            var normal = BigEndianBitWrapper.FromBytes(new byte[] { 0x00, 0x00, 0x00, 0xFF }, 4);
+            var result = normal | a;
+            var expected = BigEndianBitWrapper.FromBytes(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }, 4);
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>Verifies the ~ operator result is correctly bounded to ByteWidth.</summary>
+        [Fact]
+        public void NotOperator_ResultIsMaskedToByteWidth_Test()
+        {
+            var w = BigEndianBitWrapper.FromBytes(new byte[] { 0x00, 0x00, 0x00, 0xFF }, 4);
+            var result = ~w;
+            // Inverse of 0x000000FF for 4 bytes = 0xFFFFFF00
+            var expected = BigEndianBitWrapper.FromBytes(new byte[] { 0xFF, 0xFF, 0xFF, 0x00 }, 4);
+            Assert.Equal(expected, result);
+            Assert.Equal(4, result.ByteWidth);
+        }
+
+        #endregion
+
+        #region B5: XOR operator
+
+        /// <summary>Verifies the ^ operator produces the correct XOR result for two IPv4 wrappers.</summary>
+        [Fact]
+        public void XorOperator_ProducesCorrectResult_Test()
+        {
+            // 0xFF00FF00 ^ 0x0F0F0F0F = 0xF00FF00F
+            var a = BigEndianBitWrapper.FromBytes(new byte[] { 0xFF, 0x00, 0xFF, 0x00 }, 4);
+            var b = BigEndianBitWrapper.FromBytes(new byte[] { 0x0F, 0x0F, 0x0F, 0x0F }, 4);
+            var result = a ^ b;
+            var expected = BigEndianBitWrapper.FromBytes(new byte[] { 0xF0, 0x0F, 0xF0, 0x0F }, 4);
+            Assert.Equal(expected, result);
+        }
+
+        /// <summary>Verifies the ^ operator throws ArgumentException when operands have different ByteWidth.</summary>
+        [Fact]
+        public void XorOperator_WithDifferentByteWidth_ThrowsArgumentException_Test()
+        {
+            var ipv4 = BigEndianBitWrapper.FromBytes(new byte[] { 192, 168, 1, 1 });
+            var ipv6 = BigEndianBitWrapper.CreateMask(16, 64);
+            Assert.Throws<ArgumentException>(() => ipv4 ^ ipv6);
+        }
+
+        /// <summary>Verifies the ^ operator masks the result to the operand's ByteWidth.</summary>
+        [Fact]
+        public void XorOperator_ResultIsMaskedToByteWidth_Test()
+        {
+            var a = CreateWrapperWithHighBits(4);
+            var normal = BigEndianBitWrapper.FromBytes(new byte[] { 0x00, 0x00, 0x00, 0xFF }, 4);
+            var result = a ^ normal;
+            var expected = BigEndianBitWrapper.FromBytes(new byte[] { 0xFF, 0xFF, 0xFF, 0x00 }, 4);
+            Assert.Equal(expected, result);
+        }
+
+        #endregion
 
         #region Operators: < > <= >=
 

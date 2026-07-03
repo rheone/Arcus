@@ -1,4 +1,6 @@
-﻿namespace Arcus
+﻿using System.Diagnostics;
+
+namespace Arcus
 {
     /// <content><see cref="BigEndianBitWrapper"/> implementation of <see cref="System.IComparable{BigEndianBitWrapper}"/></content>
     internal readonly partial struct BigEndianBitWrapper
@@ -12,6 +14,7 @@
         /// <returns>A negative integer if less than, zero if equal, positive if greater than.</returns>
         public int CompareTo(BigEndianBitWrapper other)
         {
+            Debug.Assert(ByteWidth > 0, "ByteWidth must be greater than zero.");
 #if NET8_0_OR_GREATER
             var result = _value.CompareTo(other._value);
             return result != 0 ? result : ByteWidth.CompareTo(other.ByteWidth);
