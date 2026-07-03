@@ -258,6 +258,13 @@ namespace Arcus
         ///     zero-padded on the most-significant side.
         /// </summary>
         /// <returns>A new byte array of length <see cref="ByteWidth" />.</returns>
+        /// <remarks>
+        ///     <para>
+        ///         This overload allocates a fresh byte array. On .NET 8+ where the caller has a fixed-size
+        ///         buffer, prefer <c>ToBytes(Span&lt;byte&gt;)</c> to avoid the allocation. Pre-.NET 8
+        ///         callers must continue using this allocating overload.
+        ///     </para>
+        /// </remarks>
         public byte[] ToBytes()
         {
             var result = new byte[ByteWidth];

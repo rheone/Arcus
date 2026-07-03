@@ -518,7 +518,17 @@ namespace Arcus
             var tailBytes = tail.GetAddressBytes();
 
             var routingPrefix = CalculateRoutingPrefix(headBytes, tailBytes);
-            var result = NormalizeAndCreateNetMask(head, routingPrefix);
+
+            // Reuse the already-fetched headBytes instead of re-calling head.GetAddressBytes()
+            // via the (IPAddress, int) overload. This avoids a redundant allocation on the IPv4
+            // hot path; the AND/OR/mask computation is identical to NormalizeAndCreateNetMask(IPAddress, int).
+            var headWrap = BigEndianBitWrapper.FromBytes(headBytes);
+            var maskWrap = BigEndianBitWrapper.CreateMask(headWrap.ByteWidth, routingPrefix);
+            var result = new AddressAndMaskTuple(
+                new IPAddress((headWrap & maskWrap).ToBytes()),
+                new IPAddress((headWrap | ~maskWrap).ToBytes()),
+                new IPAddress(maskWrap.ToBytes())
+            );
             return new AddressMaskAndPrefixTuple(result.Head, result.Tail, result.Mask, routingPrefix);
 
             static int CalculateRoutingPrefix(byte[] hb, byte[] tb)
