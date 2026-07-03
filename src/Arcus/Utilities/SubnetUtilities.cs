@@ -8,9 +8,32 @@ namespace Arcus.Utilities
     /// </summary>
     public static class SubnetUtilities
     {
+        private static readonly Lazy<IReadOnlyList<Subnet>> PrivateRanges = new(
+            () => new[]
+            {
+                // IPv4 RFC 1918
+                Subnet.Parse("10.0.0.0", 8),
+                Subnet.Parse("172.16.0.0", 12),
+                Subnet.Parse("192.168.0.0", 16),
+                // IPv6 RFC 4193
+                Subnet.Parse("fd00::", 8),
+            }.ToList().AsReadOnly()
+        );
+
+        private static readonly Lazy<IReadOnlyList<Subnet>> LinkLocalRanges = new(
+            () => new[]
+            {
+                // RFC 3927
+                Subnet.Parse("169.254.0.0", 16),
+                // RFC 4291
+                Subnet.Parse("fe80::", 10),
+            }.ToList().AsReadOnly()
+        );
+
         /// <summary>
-        ///     A collection of all known private IP Address ranges.
+        ///     Gets a collection of all known private IP Address ranges.
         /// </summary>
+        /// <value>A <see cref="IReadOnlyList{Subnet}" /> of the RFC 1918 / RFC 4193 private ranges.</value>
         /// <remarks>
         ///     <para>
         ///         Contains the four RFC-defined private/ULA address blocks:
@@ -20,27 +43,22 @@ namespace Arcus.Utilities
         ///         <see href="https://www.rfc-editor.org/rfc/rfc4193#section-8">RFC 4193 §8</see>.
         ///     </para>
         ///     <para>
-        ///         <b>Breaking change (readonly):</b> This field is now <see langword="readonly" />.
-        ///         Prior to this version the field reference could be reassigned by external code.
-        ///         Code that assigned to <c>SubnetUtilities.PrivateIPAddressRangesList = ...</c>
-        ///         will no longer compile. The <see cref="IReadOnlyList{Subnet}" /> contract already
-        ///         prevented mutation of the list contents; this change extends that guarantee to
-        ///         the field reference itself.
+        ///         <b>Breaking change (lazy):</b> This member is now a lazily-initialized static
+        ///         property backed by <see cref="Lazy{T}"/>. Prior to this version it was a
+        ///         <see langword="static readonly"/> field whose reference could be reassigned
+        ///         by external code. Code that assigned to
+        ///         <c>SubnetUtilities.PrivateIPAddressRangesList = ...</c> will no longer compile.
+        ///         The <see cref="IReadOnlyList{Subnet}" /> contract already prevented mutation of
+        ///         the list contents; this change extends that guarantee to the backing reference
+        ///         and defers construction until first access.
         ///     </para>
         /// </remarks>
-        public static readonly IReadOnlyList<Subnet> PrivateIPAddressRangesList = new[]
-        {
-            // IPv4 RFC 1918
-            Subnet.Parse("10.0.0.0", 8),
-            Subnet.Parse("172.16.0.0", 12),
-            Subnet.Parse("192.168.0.0", 16),
-            // IPv6 RFC 4193
-            Subnet.Parse("fd00::", 8),
-        }.ToList().AsReadOnly();
+        public static IReadOnlyList<Subnet> PrivateIPAddressRangesList => PrivateRanges.Value;
 
         /// <summary>
-        ///     A collection of all known Link Local IP Address ranges.
+        ///     Gets a collection of all known Link Local IP Address ranges.
         /// </summary>
+        /// <value>A <see cref="IReadOnlyList{Subnet}" /> of the RFC 3927 / RFC 4291 link-local ranges.</value>
         /// <remarks>
         ///     <para>
         ///         Contains <c>169.254.0.0/16</c> (IPv4 link-local) per
@@ -49,19 +67,14 @@ namespace Arcus.Utilities
         ///         <see href="https://www.rfc-editor.org/rfc/rfc4291#section-2.4">RFC 4291 §2.4</see>.
         ///     </para>
         ///     <para>
-        ///         <b>Breaking change (readonly):</b> This field is now <see langword="readonly" />.
-        ///         Prior to this version the field reference could be reassigned by external code.
-        ///         Code that assigned to <c>SubnetUtilities.LinkLocalIPAddressRangesList = ...</c>
-        ///         will no longer compile.
+        ///         <b>Breaking change (lazy):</b> This member is now a lazily-initialized static
+        ///         property backed by <see cref="Lazy{T}"/>. Prior to this version it was a
+        ///         <see langword="static readonly"/> field whose reference could be reassigned
+        ///         by external code. Code that assigned to
+        ///         <c>SubnetUtilities.LinkLocalIPAddressRangesList = ...</c> will no longer compile.
         ///     </para>
         /// </remarks>
-        public static readonly IReadOnlyList<Subnet> LinkLocalIPAddressRangesList = new[]
-        {
-            // RFC 3927
-            Subnet.Parse("169.254.0.0", 16),
-            // RFC 4291
-            Subnet.Parse("fe80::", 10),
-        }.ToList().AsReadOnly();
+        public static IReadOnlyList<Subnet> LinkLocalIPAddressRangesList => LinkLocalRanges.Value;
 
         /// <summary>
         ///     Computes the fewest consecutive CIDR subnets that exactly cover the range from <paramref name="left"/> to <paramref name="right"/> (inclusive).

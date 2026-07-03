@@ -29,7 +29,7 @@ namespace Arcus.Converters
         /// <param name="netmask">The subnet mask to convert (IPv4 only).</param>
         /// <returns>The CIDR route prefix length (0-32).</returns>
         /// <exception cref="ArgumentNullException"><paramref name="netmask" /> is <see langword="null" />.</exception>
-        /// <exception cref="InvalidOperationException"><paramref name="netmask" /> is not a valid subnet mask.</exception>
+        /// <exception cref="ArgumentException"><paramref name="netmask" /> is not a valid subnet mask.</exception>
         public static int NetmaskToCidrRoutePrefix(this IPAddress netmask)
         {
             #region defense
@@ -41,7 +41,7 @@ namespace Arcus.Converters
 
             if (!netmask.IsValidNetMask())
             {
-                throw new InvalidOperationException("not a valid netmask");
+                throw new ArgumentException("The provided address is not a valid netmask.", nameof(netmask));
             }
 
             #endregion // end: defense
@@ -166,7 +166,10 @@ namespace Arcus.Converters
 
 #if NET8_0_OR_GREATER
             Span<byte> bytes = stackalloc byte[16];
-            ipAddress.TryWriteBytes(bytes, out _);
+            if (!ipAddress.TryWriteBytes(bytes, out var bytesWritten) || bytesWritten != 16)
+            {
+                return ipAddress.ToString();
+            }
             Span<ushort> hextets = stackalloc ushort[6];
 #else
             var bytes = ipAddress.GetAddressBytes();

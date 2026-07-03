@@ -330,27 +330,28 @@ namespace Arcus.Tests.Converters
             Assert.Equal(expected, result);
         }
 
-        /// <summary>Gets theory data for <see cref="NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsInvalidOperationException_Test"/>.</summary>
+        /// <summary>Gets theory data for <see cref="NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsArgumentException_Test"/>.</summary>
         /// <value>Parameters: input (string).</value>
-        public static TheoryData<string> NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsInvalidOperationException_Test_Values =>
+        public static TheoryData<string> NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsArgumentException_Test_Values =>
             new()
             {
                 { "::" },
                 { "192.168.1.1" },
                 { "0.0.0.255" },
+                { "255.0.255.0" }, // non-contiguous mask
             };
 
-        /// <summary>Verifies that <c>NetmaskToCidrRoutePrefix</c> throws <see cref="InvalidOperationException"/> for an address that is not a valid contiguous netmask.</summary>
+        /// <summary>Verifies that <c>NetmaskToCidrRoutePrefix</c> throws <see cref="ArgumentException"/> for an address that is not a valid contiguous netmask.</summary>
         /// <param name="input">The invalid netmask IP address string to parse.</param>
         [Theory]
-        [MemberData(nameof(NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsInvalidOperationException_Test_Values))]
-        public void NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsInvalidOperationException_Test(string input)
+        [MemberData(nameof(NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsArgumentException_Test_Values))]
+        public void NetmaskToCidrRoutePrefix_InvalidNetmask_ThrowsArgumentException_Test(string input)
         {
             // Arrange
             var address = IPAddress.Parse(input);
 
             // Act / Assert
-            Assert.Throws<InvalidOperationException>(() => address.NetmaskToCidrRoutePrefix());
+            Assert.Throws<ArgumentException>(() => address.NetmaskToCidrRoutePrefix());
         }
 
         /// <summary>Verifies that <c>NetmaskToCidrRoutePrefix</c> throws <see cref="ArgumentNullException"/> when the input address is <see langword="null"/>.</summary>
