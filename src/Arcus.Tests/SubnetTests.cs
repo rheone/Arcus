@@ -7,6 +7,7 @@ using System.Runtime.Serialization;
 #endif
 
 [assembly: RegisterXunitSerializer(typeof(SubnetXunitSerializer), typeof(Subnet))]
+[assembly: RegisterXunitSerializer(typeof(SubnetEnumerableXunitSerializer), typeof(IEnumerable<Subnet>))]
 [assembly: RegisterXunitSerializer(typeof(FormatProviderXunitSerializer), typeof(IFormatProvider))]
 
 namespace Arcus.Tests

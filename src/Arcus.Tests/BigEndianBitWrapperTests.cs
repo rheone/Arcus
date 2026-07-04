@@ -458,8 +458,8 @@ namespace Arcus.Tests
 
             // Assert: 16 bytes in a 128-bit IPv6 address
             // Format: "0x" + 47 hex-and-underscore chars + " (16 bytes)" = 60
-            Assert.EndsWith("(16 bytes)", value!, StringComparison.Ordinal);
-            Assert.StartsWith("0x", value!, StringComparison.Ordinal);
+            Assert.EndsWith("(16 bytes)", value, StringComparison.Ordinal);
+            Assert.StartsWith("0x", value, StringComparison.Ordinal);
             Assert.Equal(60, value!.Length);
         }
 

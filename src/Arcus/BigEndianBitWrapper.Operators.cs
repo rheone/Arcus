@@ -1,7 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-
-namespace Arcus
+﻿namespace Arcus
 {
     /// <content><see cref="BigEndianBitWrapper"/> operators</content>
     internal readonly partial struct BigEndianBitWrapper
@@ -17,15 +14,11 @@ namespace Arcus
                 throw new ArgumentException("Operands must have the same ByteWidth.");
             }
 #if NET8_0_OR_GREATER
-            var masked = (left._value & right._value) & left.MaxValueForWidth;
+            var masked = left._value & right._value & left.MaxValueForWidth;
             return new BigEndianBitWrapper(masked, left.ByteWidth);
 #else
             var (maxHi, maxLo) = left.MaxHiLoForWidth;
-            return new BigEndianBitWrapper(
-                (left._hi & right._hi) & maxHi,
-                (left._lo & right._lo) & maxLo,
-                left.ByteWidth
-            );
+            return new BigEndianBitWrapper(left._hi & right._hi & maxHi, left._lo & right._lo & maxLo, left.ByteWidth);
 #endif
         }
 
@@ -44,11 +37,7 @@ namespace Arcus
             return new BigEndianBitWrapper(masked, left.ByteWidth);
 #else
             var (maxHi, maxLo) = left.MaxHiLoForWidth;
-            return new BigEndianBitWrapper(
-                (left._hi | right._hi) & maxHi,
-                (left._lo | right._lo) & maxLo,
-                left.ByteWidth
-            );
+            return new BigEndianBitWrapper((left._hi | right._hi) & maxHi, (left._lo | right._lo) & maxLo, left.ByteWidth);
 #endif
         }
 
@@ -67,11 +56,7 @@ namespace Arcus
             return new BigEndianBitWrapper(masked, left.ByteWidth);
 #else
             var (maxHi, maxLo) = left.MaxHiLoForWidth;
-            return new BigEndianBitWrapper(
-                (left._hi ^ right._hi) & maxHi,
-                (left._lo ^ right._lo) & maxLo,
-                left.ByteWidth
-            );
+            return new BigEndianBitWrapper((left._hi ^ right._hi) & maxHi, (left._lo ^ right._lo) & maxLo, left.ByteWidth);
 #endif
         }
 

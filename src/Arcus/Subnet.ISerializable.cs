@@ -1,5 +1,4 @@
 ﻿#if NETSTANDARD2_0
-using System;
 using System.Runtime.Serialization;
 
 namespace Arcus
@@ -41,8 +40,7 @@ namespace Arcus
         /// <summary>Reconstructs a <see cref="Subnet"/> from serialization info - test affordance.</summary>
         /// <param name="info">serialization info populated by <see cref="GetObjectData"/> (or hand-built for version tests).</param>
         /// <returns>The deserialized <see cref="Subnet"/>.</returns>
-        internal static Subnet DeserializeFromInfo(SerializationInfo info)
-            => new Subnet(DeserializeSubnet(info));
+        internal static Subnet DeserializeFromInfo(SerializationInfo info) => new(DeserializeSubnet(info));
     }
 }
 #endif

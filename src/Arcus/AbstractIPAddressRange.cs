@@ -105,10 +105,7 @@ namespace Arcus
             }
 
             /// <inheritdoc />
-            public override bool Equals(object obj)
-            {
-                return obj is AddressTuple other && this.Equals(other);
-            }
+            public override bool Equals(object obj) => obj is AddressTuple other && this.Equals(other);
 
             /// <summary>
             ///     Determines whether two <see cref="AddressTuple"/> instances are equal.
@@ -116,10 +113,7 @@ namespace Arcus
             /// <param name="left">The first instance.</param>
             /// <param name="right">The second instance.</param>
             /// <returns><see langword="true" /> if the two pairs contain equal addresses.</returns>
-            public static bool operator ==(AddressTuple left, AddressTuple right)
-            {
-                return left.Equals(right);
-            }
+            public static bool operator ==(AddressTuple left, AddressTuple right) => left.Equals(right);
 
             /// <summary>
             ///     Determines whether two <see cref="AddressTuple"/> instances are not equal.
@@ -127,16 +121,10 @@ namespace Arcus
             /// <param name="left">The first instance.</param>
             /// <param name="right">The second instance.</param>
             /// <returns><see langword="true" /> if the two pairs differ in either address.</returns>
-            public static bool operator !=(AddressTuple left, AddressTuple right)
-            {
-                return !(left == right);
-            }
+            public static bool operator !=(AddressTuple left, AddressTuple right) => !(left == right);
 
             /// <inheritdoc />
-            public override int GetHashCode()
-            {
-                return HashCode.Combine(this.Head ?? IPAddress.None, this.Tail ?? IPAddress.None);
-            }
+            public override int GetHashCode() => HashCode.Combine(this.Head ?? IPAddress.None, this.Tail ?? IPAddress.None);
         }
 
         #endregion // end: AddressTuple
@@ -171,7 +159,8 @@ namespace Arcus
             }
 
             var maxExponentForFamily = head.AddressFamily == AddressFamily.InterNetwork ? 32 : 128;
-            this.MaxEnumerationExponent = maxEnumerationExponent < maxExponentForFamily ? maxEnumerationExponent : maxExponentForFamily;
+            this.MaxEnumerationExponent =
+                maxEnumerationExponent < maxExponentForFamily ? maxEnumerationExponent : maxExponentForFamily;
 
             #region defense
 

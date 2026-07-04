@@ -188,7 +188,7 @@ namespace Arcus.Tests
         [Fact]
         public void AndOperator_WithDifferentByteWidth_ThrowsArgumentException_Test()
         {
-            var ipv4 = BigEndianBitWrapper.FromBytes(new byte[] { 192, 168, 1, 1 });
+            var ipv4 = BigEndianBitWrapper.FromBytes([192, 168, 1, 1]);
             var ipv6 = BigEndianBitWrapper.CreateMask(16, 64);
             Assert.Throws<ArgumentException>(() => ipv4 & ipv6);
         }
@@ -197,7 +197,7 @@ namespace Arcus.Tests
         [Fact]
         public void OrOperator_WithDifferentByteWidth_ThrowsArgumentException_Test()
         {
-            var ipv4 = BigEndianBitWrapper.FromBytes(new byte[] { 192, 168, 1, 1 });
+            var ipv4 = BigEndianBitWrapper.FromBytes([192, 168, 1, 1]);
             var ipv6 = BigEndianBitWrapper.CreateMask(16, 64);
             Assert.Throws<ArgumentException>(() => ipv4 | ipv6);
         }
@@ -209,22 +209,20 @@ namespace Arcus.Tests
 #if NET8_0_OR_GREATER
         private static BigEndianBitWrapper CreateWrapperWithHighBits(int byteWidth)
         {
-            var ctor = typeof(BigEndianBitWrapper).GetConstructors(
-                    BindingFlags.Instance | BindingFlags.NonPublic
-                )
+            var ctor = typeof(BigEndianBitWrapper)
+                .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
                 .Single(c => c.GetParameters().Length == 2);
             return (BigEndianBitWrapper)ctor.Invoke([UInt128.MaxValue, byteWidth]);
         }
 #else
         private static BigEndianBitWrapper CreateWrapperWithHighBits(int byteWidth)
         {
-            var ctor = typeof(BigEndianBitWrapper).GetConstructors(
-                    BindingFlags.Instance | BindingFlags.NonPublic
-                )
+            var ctor = typeof(BigEndianBitWrapper)
+                .GetConstructors(BindingFlags.Instance | BindingFlags.NonPublic)
                 .Single(c => c.GetParameters().Length == 3);
             var hi = byteWidth > 8 ? ulong.MaxValue : 1UL;
-            var lo = ulong.MaxValue;
-            return (BigEndianBitWrapper)ctor.Invoke(new object[] { hi, lo, byteWidth });
+            const ulong lo = ulong.MaxValue;
+            return (BigEndianBitWrapper)ctor.Invoke([hi, lo, byteWidth]);
         }
 #endif
 
@@ -240,7 +238,7 @@ namespace Arcus.Tests
             var a = CreateWrapperWithHighBits(4);
             var b = CreateWrapperWithHighBits(4);
             var result = a & b;
-            var expected = BigEndianBitWrapper.FromBytes(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }, 4);
+            var expected = BigEndianBitWrapper.FromBytes([0xFF, 0xFF, 0xFF, 0xFF], 4);
             Assert.Equal(expected, result);
         }
 
@@ -253,9 +251,9 @@ namespace Arcus.Tests
         public void OrOperator_ResultIsMaskedToByteWidth_Test()
         {
             var a = CreateWrapperWithHighBits(4);
-            var normal = BigEndianBitWrapper.FromBytes(new byte[] { 0x00, 0x00, 0x00, 0xFF }, 4);
+            var normal = BigEndianBitWrapper.FromBytes([0x00, 0x00, 0x00, 0xFF], 4);
             var result = normal | a;
-            var expected = BigEndianBitWrapper.FromBytes(new byte[] { 0xFF, 0xFF, 0xFF, 0xFF }, 4);
+            var expected = BigEndianBitWrapper.FromBytes([0xFF, 0xFF, 0xFF, 0xFF], 4);
             Assert.Equal(expected, result);
         }
 
@@ -263,10 +261,10 @@ namespace Arcus.Tests
         [Fact]
         public void NotOperator_ResultIsMaskedToByteWidth_Test()
         {
-            var w = BigEndianBitWrapper.FromBytes(new byte[] { 0x00, 0x00, 0x00, 0xFF }, 4);
+            var w = BigEndianBitWrapper.FromBytes([0x00, 0x00, 0x00, 0xFF], 4);
             var result = ~w;
             // Inverse of 0x000000FF for 4 bytes = 0xFFFFFF00
-            var expected = BigEndianBitWrapper.FromBytes(new byte[] { 0xFF, 0xFF, 0xFF, 0x00 }, 4);
+            var expected = BigEndianBitWrapper.FromBytes([0xFF, 0xFF, 0xFF, 0x00], 4);
             Assert.Equal(expected, result);
             Assert.Equal(4, result.ByteWidth);
         }
@@ -280,10 +278,10 @@ namespace Arcus.Tests
         public void XorOperator_ProducesCorrectResult_Test()
         {
             // 0xFF00FF00 ^ 0x0F0F0F0F = 0xF00FF00F
-            var a = BigEndianBitWrapper.FromBytes(new byte[] { 0xFF, 0x00, 0xFF, 0x00 }, 4);
-            var b = BigEndianBitWrapper.FromBytes(new byte[] { 0x0F, 0x0F, 0x0F, 0x0F }, 4);
+            var a = BigEndianBitWrapper.FromBytes([0xFF, 0x00, 0xFF, 0x00], 4);
+            var b = BigEndianBitWrapper.FromBytes([0x0F, 0x0F, 0x0F, 0x0F], 4);
             var result = a ^ b;
-            var expected = BigEndianBitWrapper.FromBytes(new byte[] { 0xF0, 0x0F, 0xF0, 0x0F }, 4);
+            var expected = BigEndianBitWrapper.FromBytes([0xF0, 0x0F, 0xF0, 0x0F], 4);
             Assert.Equal(expected, result);
         }
 
@@ -291,7 +289,7 @@ namespace Arcus.Tests
         [Fact]
         public void XorOperator_WithDifferentByteWidth_ThrowsArgumentException_Test()
         {
-            var ipv4 = BigEndianBitWrapper.FromBytes(new byte[] { 192, 168, 1, 1 });
+            var ipv4 = BigEndianBitWrapper.FromBytes([192, 168, 1, 1]);
             var ipv6 = BigEndianBitWrapper.CreateMask(16, 64);
             Assert.Throws<ArgumentException>(() => ipv4 ^ ipv6);
         }
@@ -301,9 +299,9 @@ namespace Arcus.Tests
         public void XorOperator_ResultIsMaskedToByteWidth_Test()
         {
             var a = CreateWrapperWithHighBits(4);
-            var normal = BigEndianBitWrapper.FromBytes(new byte[] { 0x00, 0x00, 0x00, 0xFF }, 4);
+            var normal = BigEndianBitWrapper.FromBytes([0x00, 0x00, 0x00, 0xFF], 4);
             var result = a ^ normal;
-            var expected = BigEndianBitWrapper.FromBytes(new byte[] { 0xFF, 0xFF, 0xFF, 0x00 }, 4);
+            var expected = BigEndianBitWrapper.FromBytes([0xFF, 0xFF, 0xFF, 0x00], 4);
             Assert.Equal(expected, result);
         }
 

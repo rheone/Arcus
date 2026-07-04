@@ -266,11 +266,7 @@ namespace Arcus.Tests
             Assert.Equal(32, ipv4Range.MaxEnumerationExponent);
 
             // IPv6: exponent 128 should stay 128 (its address family bit width)
-            var ipv6Range = new IPAddressRange(
-                IPAddress.Parse("::"),
-                IPAddress.Parse("::5"),
-                maxEnumerationExponent: 128
-            );
+            var ipv6Range = new IPAddressRange(IPAddress.Parse("::"), IPAddress.Parse("::5"), maxEnumerationExponent: 128);
             Assert.Equal(128, ipv6Range.MaxEnumerationExponent);
 
             // normal unclamped values still pass through
@@ -316,8 +312,7 @@ namespace Arcus.Tests
         public void AddressTuple_DefaultInstance_Equals_DoesNotThrow()
         {
             // AddressTuple is private protected so we use reflection
-            var addressTupleType = typeof(AbstractIPAddressRange)
-                .GetNestedType("AddressTuple", BindingFlags.NonPublic);
+            var addressTupleType = typeof(AbstractIPAddressRange).GetNestedType("AddressTuple", BindingFlags.NonPublic);
             Assert.NotNull(addressTupleType);
 
             var defaultInstance = Activator.CreateInstance(addressTupleType);
@@ -337,8 +332,7 @@ namespace Arcus.Tests
         [Fact]
         public void AddressTuple_DefaultInstance_GetHashCode_DoesNotThrow()
         {
-            var addressTupleType = typeof(AbstractIPAddressRange)
-                .GetNestedType("AddressTuple", BindingFlags.NonPublic);
+            var addressTupleType = typeof(AbstractIPAddressRange).GetNestedType("AddressTuple", BindingFlags.NonPublic);
             Assert.NotNull(addressTupleType);
 
             var defaultInstance = Activator.CreateInstance(addressTupleType);
@@ -362,10 +356,7 @@ namespace Arcus.Tests
         public void EnumerateCore_UsesLongCounter_WhenMaxCountFitsInLong()
         {
             // Default exponent = 12 → maxCount = 4096, which fits in long
-            var range = new IPAddressRange(
-                IPAddress.Parse("10.0.0.0"),
-                IPAddress.Parse("10.0.0.5")
-            );
+            var range = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("10.0.0.5"));
 
             // Verify correct enumeration regardless of counter type
             var result = range.ToIPAddresses().ToArray();
@@ -385,13 +376,10 @@ namespace Arcus.Tests
         [Fact]
         public void MaxCount_IsCached_AfterFirstComputation()
         {
-            var range = new IPAddressRange(
-                IPAddress.Parse("10.0.0.0"),
-                IPAddress.Parse("10.0.0.5")
-            );
+            var range = new IPAddressRange(IPAddress.Parse("10.0.0.0"), IPAddress.Parse("10.0.0.5"));
 
             // First call — computes and caches maxCount
-            range.ToIPAddresses().ToArray();
+            _ = range.ToIPAddresses().ToArray();
 
             // Second call — should use cached value, same enumeration result
             var result = range.ToIPAddresses().ToArray();

@@ -128,7 +128,7 @@ namespace Arcus.Math
         /// <returns><see langword="true" /> if the addresses are equal.</returns>
         public static bool IsEqualTo(this IPAddress left, IPAddress right)
         {
-            return ReferenceEquals(left, right) || (!ReferenceEquals(left, null) && left.Equals(right));
+            return ReferenceEquals(left, right) || (left?.Equals(right) == true);
         }
 
         /// <summary>
@@ -141,7 +141,7 @@ namespace Arcus.Math
         {
             if (
                 ReferenceEquals(left, right)
-                || (!ReferenceEquals(left, null) && left.Equals(right))
+                || (left?.Equals(right) == true)
                 || left == null
                 || right == null
                 || left.AddressFamily != right.AddressFamily
@@ -195,7 +195,7 @@ namespace Arcus.Math
         {
             if (
                 ReferenceEquals(left, right)
-                || (!ReferenceEquals(left, null) && left.Equals(right))
+                || (left?.Equals(right) == true)
                 || left == null
                 || right == null
                 || left.AddressFamily != right.AddressFamily

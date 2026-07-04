@@ -17,8 +17,8 @@
 
             // Act / Assert
             Assert.True(a.Equals(b));
-            Assert.True(a == b); // SWEEP-AMBIGUITY: intentional == operator test; Assert.Equal would bypass the operator
-            Assert.False(a != b); // SWEEP-AMBIGUITY: intentional != operator test; Assert.NotEqual would bypass the operator
+            Assert.True(a == b); // intentional == operator test; Assert.Equal would bypass the operator
+            Assert.False(a != b); // intentional != operator test; Assert.NotEqual would bypass the operator
         }
 
         /// <summary>Verifies that Equals, ==, and != all agree when two wrappers have different values.</summary>
@@ -31,8 +31,8 @@
 
             // Act / Assert
             Assert.False(a.Equals(b));
-            Assert.False(a == b); // SWEEP-AMBIGUITY: intentional == operator test; Assert.Equal would bypass the operator
-            Assert.True(a != b); // SWEEP-AMBIGUITY: intentional != operator test; Assert.NotEqual would bypass the operator
+            Assert.False(a == b); // intentional == operator test; Assert.Equal would bypass the operator
+            Assert.True(a != b); // intentional != operator test; Assert.NotEqual would bypass the operator
         }
 
         /// <summary>Verifies that wrappers with the same numeric value but different byte widths are not equal.</summary>
@@ -45,8 +45,8 @@
 
             // Act / Assert
             Assert.False(ipv4.Equals(ipv6));
-            Assert.False(ipv4 == ipv6); // SWEEP-AMBIGUITY: intentional == operator test; Assert.Equal would bypass the operator
-            Assert.True(ipv4 != ipv6); // SWEEP-AMBIGUITY: intentional != operator test; Assert.NotEqual would bypass the operator
+            Assert.False(ipv4 == ipv6); // intentional == operator test; Assert.Equal would bypass the operator
+            Assert.True(ipv4 != ipv6); // intentional != operator test; Assert.NotEqual would bypass the operator
         }
 
         /// <summary>Verifies that Equals(object) returns true when the boxed object is an equal wrapper.</summary>

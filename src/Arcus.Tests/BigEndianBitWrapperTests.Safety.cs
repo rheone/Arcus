@@ -1,6 +1,4 @@
-﻿using Xunit;
-
-namespace Arcus.Tests
+﻿namespace Arcus.Tests
 {
     /// <content>
     ///     <see cref="BigEndianBitWrapper"/> tests for safety and robustness: span validation,
@@ -63,9 +61,8 @@ namespace Arcus.Tests
         [Fact]
         public void Subtract_WithDifferentByteWidth_ThrowsArgumentException_Test()
         {
-            var ipv4 = BigEndianBitWrapper.FromBytes(new byte[] { 192, 168, 1, 1 });
-            var ipv6 = BigEndianBitWrapper.FromBytes(
-            [
+            var ipv4 = BigEndianBitWrapper.FromBytes([192, 168, 1, 1]);
+            var ipv6 = BigEndianBitWrapper.FromBytes([
                 0x20,
                 0x01,
                 0x0D,
@@ -99,18 +96,18 @@ namespace Arcus.Tests
         public void BigIntegerArithmetic_ReliesOnUncheckedContext_Test()
         {
             // 0 - 1 underflow detection
-            var zero = BigEndianBitWrapper.FromBytes(new byte[] { 0, 0, 0, 0 }, 4);
+            var zero = BigEndianBitWrapper.FromBytes([0, 0, 0, 0], 4);
             var success = zero.TryAdd(-1, out _);
             Assert.False(success);
 
             // Equal-value subtraction (no borrow)
-            var a = BigEndianBitWrapper.FromBytes(new byte[] { 0, 0, 0, 5 }, 4);
-            var b = BigEndianBitWrapper.FromBytes(new byte[] { 0, 0, 0, 5 }, 4);
+            var a = BigEndianBitWrapper.FromBytes([0, 0, 0, 5], 4);
+            var b = BigEndianBitWrapper.FromBytes([0, 0, 0, 5], 4);
             var diff = a.Subtract(b);
             Assert.Equal(0, (int)diff.ToBigInteger());
 
             // Large delta subtract below zero
-            var small = BigEndianBitWrapper.FromBytes(new byte[] { 0, 0, 0, 1 }, 4);
+            var small = BigEndianBitWrapper.FromBytes([0, 0, 0, 1], 4);
             success = small.TryAdd(-2, out _);
             Assert.False(success);
         }

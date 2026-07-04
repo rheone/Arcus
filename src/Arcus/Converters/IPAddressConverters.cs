@@ -93,7 +93,8 @@ namespace Arcus.Converters
                 return null;
             }
 
-            const string alphabet = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~";
+            const string base85Alphabet =
+                "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz!#$%&()*+-;<=>?@^_`{|}~";
             var chars = new char[20];
             var addressBytes = ipAddress.GetAddressBytes();
 
@@ -114,7 +115,7 @@ namespace Arcus.Converters
             for (var i = 19; i >= 0; i--)
             {
                 (value128, var remainder) = UInt128.DivRem(value128, 85);
-                chars[i] = alphabet[(int)remainder];
+                chars[i] = base85Alphabet[(int)remainder];
             }
 #else
             var leBytes = new byte[17]; // zero-initialized; index 16 stays 0 (sign byte)
@@ -127,7 +128,7 @@ namespace Arcus.Converters
             for (var i = 19; i >= 0; i--)
             {
                 value = BigInteger.DivRem(value, 85, out var remainder);
-                chars[i] = alphabet[(int)remainder];
+                chars[i] = base85Alphabet[(int)remainder];
             }
 #endif
 
@@ -201,8 +202,6 @@ namespace Arcus.Converters
             sb.Append(addressBytes[15]);
 
             return sb.ToString();
-
-            // --- local helpers ---
 
 #if NET8_0_OR_GREATER
             static (int BestStart, int BestLen) FindLongestZeroRun(ReadOnlySpan<ushort> hextets)

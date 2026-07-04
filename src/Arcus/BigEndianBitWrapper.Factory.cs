@@ -1,8 +1,4 @@
-﻿#if !NET8_0_OR_GREATER
-using System.Text;
-#endif
-
-namespace Arcus
+﻿namespace Arcus
 {
     /// <content><see cref="BigEndianBitWrapper"/> static factory methods</content>
     internal readonly partial struct BigEndianBitWrapper
@@ -37,13 +33,13 @@ namespace Arcus
 
         /// <summary>
         ///     Creates a <see cref="BigEndianBitWrapper" /> from a big-endian byte array, zero-padding
-///     the most-significant side to reach <paramref name="targetWidth" />.
-    ///     <see cref="ByteWidth" /> is set to <paramref name="targetWidth" />.
-    /// </summary>
-    /// <remarks>
-    ///     An empty <paramref name="bigEndianBytes" /> with a positive <paramref name="targetWidth" />
-    ///     produces an all-zero wrapper (value 0, ByteWidth = targetWidth).
-    /// </remarks>
+        ///     the most-significant side to reach <paramref name="targetWidth" />.
+        ///     <see cref="ByteWidth" /> is set to <paramref name="targetWidth" />.
+        /// </summary>
+        /// <remarks>
+        ///     An empty <paramref name="bigEndianBytes" /> with a positive <paramref name="targetWidth" />
+        ///     produces an all-zero wrapper (value 0, ByteWidth = targetWidth).
+        /// </remarks>
         /// <param name="bigEndianBytes">
         ///     A non-null big-endian byte array whose length does not exceed
         ///     <paramref name="targetWidth" />.

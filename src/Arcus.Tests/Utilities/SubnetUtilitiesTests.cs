@@ -84,7 +84,7 @@ namespace Arcus.Tests.Utilities
         {
             // single IPv4 address (same left and right)
             yield return new TheoryDataRow<IEnumerable<Subnet>, IPAddress, IPAddress>(
-                new[] { Subnet.Parse("128.64.20.3/32") },
+                [Subnet.Parse("128.64.20.3/32")],
                 IPAddress.Parse("128.64.20.3"),
                 IPAddress.Parse("128.64.20.3")
             );
@@ -112,14 +112,14 @@ namespace Arcus.Tests.Utilities
 
             // single IPv6 address (same left and right)
             yield return new TheoryDataRow<IEnumerable<Subnet>, IPAddress, IPAddress>(
-                new[] { Subnet.Parse("2001:400:4402::/128") },
+                [Subnet.Parse("2001:400:4402::/128")],
                 IPAddress.Parse("2001:400:4402::"),
                 IPAddress.Parse("2001:400:4402::")
             );
 
             // full IPv6 /48 block - exact subnet boundary
             yield return new TheoryDataRow<IEnumerable<Subnet>, IPAddress, IPAddress>(
-                new[] { Subnet.Parse("2001:400:4402::/48") },
+                [Subnet.Parse("2001:400:4402::/48")],
                 IPAddress.Parse("2001:400:4402::"),
                 IPAddress.Parse("2001:400:4402:ffff:ffff:ffff:ffff:ffff")
             );
