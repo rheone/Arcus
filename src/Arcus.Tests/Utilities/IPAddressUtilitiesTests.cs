@@ -1201,7 +1201,7 @@ namespace Arcus.Tests.Utilities
 
             // Assert
             Assert.IsAssignableFrom<IReadOnlyCollection<AddressFamily>>(validAddressFamilies);
-            Assert.Equal(2, validAddressFamilies.Count);
+            Assert.Equal(2, validAddressFamilies.Length);
             Assert.Contains(AddressFamily.InterNetworkV6, validAddressFamilies);
             Assert.Contains(AddressFamily.InterNetwork, validAddressFamilies);
         }

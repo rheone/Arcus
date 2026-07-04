@@ -1,8 +1,9 @@
-﻿using System;
-using System.Diagnostics;
+﻿using System.Diagnostics;
 using System.Globalization;
 using System.Numerics;
+#if NET9_0_OR_GREATER
 using System.Runtime.CompilerServices;
+#endif
 #if !NET8_0_OR_GREATER
 using System.Text;
 #endif
@@ -27,7 +28,7 @@ namespace Arcus
     ///         this type is <see langword="internal"/> and only used in strongly-typed comparison sites.
     ///     </para>
     /// </remarks>
-#if NET8_0_OR_GREATER
+#if NET9_0_OR_GREATER
     [SkipLocalsInit]
 #endif
     [DebuggerDisplay("{DebuggerDisplay}")]

@@ -135,8 +135,11 @@ namespace Arcus.Utilities
         /// <summary>
         ///     The set of address families supported by Arcus.
         /// </summary>
-        public static readonly IReadOnlyCollection<AddressFamily> ValidAddressFamilies =
-            new[] { AddressFamily.InterNetwork, AddressFamily.InterNetworkV6 };
+        public static readonly AddressFamily[] ValidAddressFamilies =
+        [
+            AddressFamily.InterNetwork,
+            AddressFamily.InterNetworkV6,
+        ];
 
         /// <summary>
         ///     Minimum IPv6 address: :: (all zeros).

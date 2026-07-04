@@ -284,9 +284,32 @@ namespace Arcus
                 );
             }
 
-            var networkAddress = new IPAddress((byte[])info.GetValue(nameof(NetworkPrefixAddress), typeof(byte[])));
-            var routingPrefix = (int)info.GetValue(nameof(RoutingPrefix), typeof(int));
+            var networkAddressBytes = (byte[])info.GetValue(nameof(NetworkPrefixAddress), typeof(byte[]));
+
+            if (networkAddressBytes is null)
+            {
+                throw new SerializationException($"Serialization info does not contain '{nameof(NetworkPrefixAddress)}'.");
+            }
+
+            var networkAddress = new IPAddress(networkAddressBytes);
+            var routingPrefix = info.GetInt32(nameof(RoutingPrefix));
             var maxEnumerationExponent = info.GetInt32(nameof(MaxEnumerationExponent));
+
+            if (!IPAddressUtilities.ValidAddressFamilies.Contains(networkAddress.AddressFamily))
+            {
+                throw new SerializationException(
+                    $"Deserialized '{nameof(NetworkPrefixAddress)}' has unsupported address family '{networkAddress.AddressFamily}'."
+                );
+            }
+
+            var maxPrefixLength = networkAddress.IsIPv4() ? IPAddressUtilities.IPv4BitCount : IPAddressUtilities.IPv6BitCount;
+
+            if (routingPrefix < 0 || routingPrefix > maxPrefixLength)
+            {
+                throw new SerializationException(
+                    $"Deserialized '{nameof(RoutingPrefix)}' value {routingPrefix} is out of range [0, {maxPrefixLength}]."
+                );
+            }
 
             return CtorFactory(networkAddress, routingPrefix, maxEnumerationExponent);
         }
@@ -464,7 +487,9 @@ namespace Arcus
 
         private readonly struct AddressMaskAndPrefixTuple
         {
+#pragma warning disable S5766 // Data validated upstream in DeserializeSubnet -> CtorFactory chain
             public AddressMaskAndPrefixTuple(IPAddress head, IPAddress tail, IPAddress mask, int prefix)
+#pragma warning restore S5766
             {
                 this.Head = head ?? throw new ArgumentNullException(nameof(head));
                 this.Tail = tail ?? throw new ArgumentNullException(nameof(tail));

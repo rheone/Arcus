@@ -8,27 +8,27 @@ namespace Arcus.Utilities
     /// </summary>
     public static class SubnetUtilities
     {
-        private static readonly Lazy<IReadOnlyList<Subnet>> PrivateRanges = new(
-            () => new[]
+        private static readonly Lazy<IReadOnlyList<Subnet>> PrivateRanges = new(() => new[]
             {
                 // IPv4 RFC 1918
+#pragma warning disable S1313 // IP addresses should not be hardcoded
                 Subnet.Parse("10.0.0.0", 8),
                 Subnet.Parse("172.16.0.0", 12),
                 Subnet.Parse("192.168.0.0", 16),
                 // IPv6 RFC 4193
                 Subnet.Parse("fd00::", 8),
-            }.ToList().AsReadOnly()
-        );
+#pragma warning restore S1313 // IP addresses should not be hardcoded
+            }.ToList().AsReadOnly());
 
-        private static readonly Lazy<IReadOnlyList<Subnet>> LinkLocalRanges = new(
-            () => new[]
+        private static readonly Lazy<IReadOnlyList<Subnet>> LinkLocalRanges = new(() => new[]
             {
                 // RFC 3927
+#pragma warning disable S1313 // IP addresses should not be hardcoded
                 Subnet.Parse("169.254.0.0", 16),
                 // RFC 4291
                 Subnet.Parse("fe80::", 10),
-            }.ToList().AsReadOnly()
-        );
+#pragma warning restore S1313 // IP addresses should not be hardcoded
+            }.ToList().AsReadOnly());
 
         /// <summary>
         ///     Gets a collection of all known private IP Address ranges.
