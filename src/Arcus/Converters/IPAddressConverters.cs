@@ -1,7 +1,10 @@
 ﻿using System.Net;
 using System.Net.Sockets;
-using System.Numerics;
 using Arcus.Utilities;
+#if !NET8_0_OR_GREATER
+using System.Numerics;
+#endif
+
 #if NETSTANDARD2_1_OR_GREATER || NETCOREAPP3_0_OR_GREATER
 using System.Diagnostics.CodeAnalysis;
 #endif
@@ -85,7 +88,7 @@ namespace Arcus.Converters
 #endif
         public static string ToBase85String(this IPAddress ipAddress)
         {
-            if (ipAddress?.IsIPv6() != true)
+            if (ipAddress?.IsIPv6() is not true)
             {
                 return null;
             }
@@ -154,137 +157,159 @@ namespace Arcus.Converters
 #endif
         public static string ToDottedQuadString(this IPAddress ipAddress)
         {
-            if (ipAddress == null)
+            if (ipAddress?.IsIPv6() is not true)
             {
-                return null;
-            }
-
-            if (!ipAddress.IsIPv6())
-            {
-                return ipAddress.ToString();
+                return ipAddress?.ToString();
             }
 
 #if NET8_0_OR_GREATER
-            Span<byte> bytes = stackalloc byte[16];
-            if (!ipAddress.TryWriteBytes(bytes, out var bytesWritten) || bytesWritten != 16)
+            Span<byte> addressBytes = stackalloc byte[16];
+            if (!ipAddress.TryWriteBytes(addressBytes, out var bytesWritten) || bytesWritten != 16)
             {
                 return ipAddress.ToString();
             }
             Span<ushort> hextets = stackalloc ushort[6];
 #else
-            var bytes = ipAddress.GetAddressBytes();
+            var addressBytes = ipAddress.GetAddressBytes();
             var hextets = new ushort[6];
 #endif
 
             for (var i = 0; i < 6; i++)
             {
-                hextets[i] = (ushort)((bytes[i * 2] << 8) | bytes[(i * 2) + 1]);
+                hextets[i] = (ushort)((addressBytes[i * 2] << 8) | addressBytes[(i * 2) + 1]);
             }
 
-            // Find the longest consecutive run of zero hextets for :: compression
-            var bestStart = -1;
-            var bestLen = 0;
-            var runStart = -1;
-            var runLen = 0;
+            var (bestStart, bestLen) = FindLongestZeroRun(hextets);
 
-            for (var i = 0; i < 6; i++)
-            {
-                if (hextets[i] == 0)
-                {
-                    if (runStart < 0)
-                    {
-                        runStart = i;
-                    }
-
-                    runLen++;
-                    if (runLen > bestLen)
-                    {
-                        bestStart = runStart;
-                        bestLen = runLen;
-                    }
-                }
-                else
-                {
-                    runStart = -1;
-                    runLen = 0;
-                }
-            }
+#if NET8_0_OR_GREATER
+            Span<char> hexBuffer = stackalloc char[4];
+#endif
 
             var sb = new System.Text.StringBuilder(45);
-
 #if NET8_0_OR_GREATER
-            Span<char> hexBuf = stackalloc char[4];
-#endif
-
-            if (bestLen >= 1)
-            {
-                for (var i = 0; i < bestStart; i++)
-                {
-                    if (i > 0)
-                    {
-                        sb.Append(':');
-                    }
-
-#if NET8_0_OR_GREATER
-                    hextets[i].TryFormat(hexBuf, out var hexLen, "x");
-                    sb.Append(hexBuf[..hexLen]);
+            AppendIPv6Prefix(sb, hextets, bestStart, bestLen, hexBuffer);
 #else
-                    sb.Append(hextets[i].ToString("x"));
+            AppendIPv6Prefix(sb, hextets, bestStart, bestLen);
 #endif
+
+            sb.Append(addressBytes[12]);
+            sb.Append('.');
+            sb.Append(addressBytes[13]);
+            sb.Append('.');
+            sb.Append(addressBytes[14]);
+            sb.Append('.');
+            sb.Append(addressBytes[15]);
+
+            return sb.ToString();
+
+            // --- local helpers ---
+
+#if NET8_0_OR_GREATER
+            static (int BestStart, int BestLen) FindLongestZeroRun(ReadOnlySpan<ushort> hextets)
+#else
+            static (int BestStart, int BestLen) FindLongestZeroRun(ushort[] hextets)
+#endif
+            {
+                var bestStart = -1;
+                var bestLength = 0;
+                var runStart = -1;
+                var runLength = 0;
+
+                for (var i = 0; i < 6; i++)
+                {
+                    if (hextets[i] == 0)
+                    {
+                        if (runStart < 0)
+                        {
+                            runStart = i;
+                        }
+
+                        runLength++;
+                        if (runLength > bestLength)
+                        {
+                            bestStart = runStart;
+                            bestLength = runLength;
+                        }
+                    }
+                    else
+                    {
+                        runStart = -1;
+                        runLength = 0;
+                    }
                 }
 
+                return (bestStart, bestLength);
+            }
+
+#if NET8_0_OR_GREATER
+            static void AppendIPv6Prefix(
+                System.Text.StringBuilder sb,
+                ReadOnlySpan<ushort> hextets,
+                int bestStart,
+                int bestLen,
+                Span<char> hexBuffer
+            )
+#else
+            static void AppendIPv6Prefix(System.Text.StringBuilder sb, ushort[] hextets, int bestStart, int bestLen)
+#endif
+            {
+                if (bestLen <= 0)
+                {
+#if NET8_0_OR_GREATER
+                    AppendHextetRange(sb, hextets, 0, 6, hexBuffer);
+#else
+                    AppendHextetRange(sb, hextets, 0, 6);
+#endif
+                    sb.Append(':');
+                    return;
+                }
+
+#if NET8_0_OR_GREATER
+                AppendHextetRange(sb, hextets, 0, bestStart, hexBuffer);
+#else
+                AppendHextetRange(sb, hextets, 0, bestStart);
+#endif
                 sb.Append("::");
 
-                var afterStart = bestStart + bestLen;
-                for (var i = afterStart; i < 6; i++)
-                {
-                    if (i > afterStart)
-                    {
-                        sb.Append(':');
-                    }
-
+                var afterRunEnd = bestStart + bestLen;
 #if NET8_0_OR_GREATER
-                    hextets[i].TryFormat(hexBuf, out var hexLen, "x");
-                    sb.Append(hexBuf[..hexLen]);
+                AppendHextetRange(sb, hextets, afterRunEnd, 6, hexBuffer);
 #else
-                    sb.Append(hextets[i].ToString("x"));
+                AppendHextetRange(sb, hextets, afterRunEnd, 6);
 #endif
-                }
 
-                if (afterStart < 6)
+                if (afterRunEnd < 6)
                 {
                     sb.Append(':');
                 }
             }
-            else
+
+#if NET8_0_OR_GREATER
+            static void AppendHextetRange(
+                System.Text.StringBuilder sb,
+                ReadOnlySpan<ushort> hextets,
+                int from,
+                int to,
+                Span<char> hexBuffer
+            )
+#else
+            static void AppendHextetRange(System.Text.StringBuilder sb, ushort[] hextets, int from, int to)
+#endif
             {
-                for (var i = 0; i < 6; i++)
+                for (var i = from; i < to; i++)
                 {
-                    if (i > 0)
+                    if (i > from)
                     {
                         sb.Append(':');
                     }
-
 #if NET8_0_OR_GREATER
-                    hextets[i].TryFormat(hexBuf, out var hexLen, "x");
-                    sb.Append(hexBuf[..hexLen]);
+                    hextets[i].TryFormat(hexBuffer, out var charsWritten, "x");
+                    sb.Append(hexBuffer[..charsWritten]);
 #else
                     sb.Append(hextets[i].ToString("x"));
 #endif
                 }
-
-                sb.Append(':');
             }
-
-            sb.Append(bytes[12]);
-            sb.Append('.');
-            sb.Append(bytes[13]);
-            sb.Append('.');
-            sb.Append(bytes[14]);
-            sb.Append('.');
-            sb.Append(bytes[15]);
-
-            return sb.ToString();
         }
 
         /// <summary>
@@ -343,6 +368,7 @@ namespace Arcus.Converters
                 AddressFamily.InterNetworkV6 => IPv6ToString(),
                 _ => ipAddress.ToString(), // all else treat as to string
             };
+
             string IPv4ToString()
             {
                 var octets = ipAddress.GetAddressBytes().Select(octet => $"{octet:D3}");
@@ -354,7 +380,9 @@ namespace Arcus.Converters
             {
                 var addressBytes = ipAddress.GetAddressBytes();
 #if NET8_0_OR_GREATER
+                const string hexDigits = "0123456789abcdef";
                 Span<char> chars = stackalloc char[(IPAddressUtilities.IPv6HextetCount * 5) - 1];
+
                 var pos = 0;
                 for (var i = 0; i < IPAddressUtilities.IPv6HextetCount; i++)
                 {
@@ -364,10 +392,10 @@ namespace Arcus.Converters
                     }
                     var hiByte = addressBytes[i * 2];
                     var loByte = addressBytes[(i * 2) + 1];
-                    chars[pos++] = "0123456789abcdef"[hiByte >> 4];
-                    chars[pos++] = "0123456789abcdef"[hiByte & 0x0F];
-                    chars[pos++] = "0123456789abcdef"[loByte >> 4];
-                    chars[pos++] = "0123456789abcdef"[loByte & 0x0F];
+                    chars[pos++] = hexDigits[hiByte >> 4];
+                    chars[pos++] = hexDigits[hiByte & 0x0F];
+                    chars[pos++] = hexDigits[loByte >> 4];
+                    chars[pos++] = hexDigits[loByte & 0x0F];
                 }
                 return new string(chars);
 #else
