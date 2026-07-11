@@ -2,7 +2,6 @@
 
 [![Build](https://img.shields.io/github/actions/workflow/status/sandialabs/Arcus/build.yml?branch=main&logo=github)](https://github.com/sandialabs/Arcus/actions/workflows/build.yml)
 [![NuGet](https://img.shields.io/nuget/v/Arcus?logo=nuget)](https://www.nuget.org/packages/Arcus)
-[![OpenSSF Scorecard](https://api.securityscorecards.dev/projects/github.com/sandialabs/Arcus/badge)](https://securityscorecards.dev/viewer/?uri=github.com/sandialabs/Arcus)
 ![Targets](https://img.shields.io/badge/.NET_Standard_2.0_%7C_.NET_8.0_%7C_.NET_9.0_%7C_.NET_10.0-blue)
 [![License](https://img.shields.io/github/license/sandialabs/Arcus?logo=apache)](https://github.com/sandialabs/Arcus/blob/main/LICENSE)
 
@@ -386,13 +385,15 @@ SubnetUtilities.LinkLocalIPAddressRangesList;
 
 This project was built with the aid of:
 
-- [CSharpier](https://csharpier.com/)
-- [dotnet-outdated](https://github.com/dotnet-outdated/dotnet-outdated)
-- [Husky.Net](https://alirezanet.github.io/Husky.Net/)
-- [Roslynator](https://josefpihrt.github.io/docs/roslynator/)
-- [SonarAnalyzer](https://www.sonarsource.com/products/sonarlint/features/visual-studio/)
-- [StyleCop.Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers)
-- [xUnit.net](https://xunit.net/)
+- [BenchmarkDotNet](https://benchmarkdotnet.com/) - microbenchmarking
+- [CSharpier](https://csharpier.com/) - code formatting
+- [dotnet-outdated](https://github.com/dotnet-outdated/dotnet-outdated) - dependency updates
+- [Husky.Net](https://alirezanet.github.io/Husky.Net/) - git hooks
+- [Pre-commit](https://pre-commit.com/) - pre-commit hooks (trailing whitespace, codespell, markdownlint)
+- [Roslynator](https://josefpihrt.github.io/docs/roslynator/) - Roslyn analyzers
+- [SonarAnalyzer](https://www.sonarsource.com/products/sonarlint/features/visual-studio/) - code quality
+- [StyleCop.Analyzers](https://github.com/DotNetAnalyzers/StyleCopAnalyzers) - style enforcement
+- [xUnit.net](https://xunit.net/) - unit testing
 
 ### Versioning
 
@@ -400,7 +401,9 @@ This project uses [Semantic Versioning](https://semver.org/)
 
 ### Targeting
 
-The project targets [.NET Standard 2.0](https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0), [.NET 8](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8), [.NET 9](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview), and [.NET 10](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-10/overview). The test project similarly targets .NET 8, .NET 9, .NET 10, but targets [.NET Framework 4.8](https://dotnet.microsoft.com/en-us/download/dotnet-framework/net48) for the .NET Standard 2.0 tests.
+The library targets [.NET Standard 2.0](https://learn.microsoft.com/en-us/dotnet/standard/net-standard?tabs=net-standard-2-0), [.NET 8](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-8), [.NET 9](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-9/overview), and [.NET 10](https://learn.microsoft.com/en-us/dotnet/core/whats-new/dotnet-10/overview). The test project targets `net48` (Windows only), `net8.0`, `net9.0`, and `net10.0`. The benchmark project targets `net48`, `net8.0`, `net9.0`, and `net10.0`.
+
+Language version: C# 14.0.
 
 ### Commit Hook
 
@@ -424,7 +427,28 @@ These commands may be called independently, but order may matter.
 
 #### Testing
 
-After making changes tests should be run that include all targets
+After making changes, tests should be run that include all targets:
+
+```shell
+cd src
+dotnet test
+```
+
+Tests target `net48` (Windows only, for `netstandard2.0` consumers), `net8.0`, `net9.0`, and `net10.0`. On Ubuntu CI, tests run per-TFM sequentially; on Windows, all TFMs run in one `dotnet test` call.
+
+To run a single TFM or test class:
+
+```shell
+dotnet test --framework net10.0
+dotnet test --filter "FullyQualifiedName~SubnetTests"
+```
+
+Smoke tests validate the packed NuGet package against real runtimes:
+
+```shell
+cd smoketests
+./run-smoke-tests.sh
+```
 
 ## Acknowledgments
 
